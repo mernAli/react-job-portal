@@ -1,39 +1,38 @@
-# Day 7 – Job Listing App (useEffect & Lifecycle)
+# React Job Listing App
 
-This project is created as part of my internship **Day 7 task** to understand and implement **React useEffect, component lifecycle, and API integration**.
+This project is developed as part of my MERN stack internship to understand **React fundamentals, hooks, API integration, and clean project architecture**.
 
-The application fetches real job data from a **public jobs API** and displays it in a clean, responsive UI inspired by modern job platforms.
+The application fetches real job listings from a public API and displays them in a modern, responsive UI.
 
 ---
 
 ## 🚀 Features
 
-- Fetches job listings from a public API
-- Uses `useEffect` for side effects and lifecycle handling
-- Shows a loading state while fetching data
-- Displays error message if API fails
-- Auto refreshes job data every 60 seconds
-- Responsive UI (Desktop & Mobile)
-- Reusable components (`JobCard`, `JobList`, `Loader`)
+- Fetches real job data from a public jobs API
+- Uses `useEffect` for handling side effects
+- Loading and error states for better UX
+- Auto-refreshes job data every 60 seconds
+- Responsive layout (Desktop & Mobile)
+- Reusable and scalable component structure
 
 ---
 
 ## 🧠 Concepts Covered
 
-- React `useEffect()` hook
-- Component lifecycle (mount, cleanup)
-- API fetching using `fetch`
-- State management with `useState`
-- Conditional rendering (Loader / Error / Data)
-- Component reusability
-- Responsive layout using CSS
+- React Hooks (`useEffect`, `useState`)
+- Component lifecycle & cleanup
+- API fetching and async handling
+- Separation of concerns
+- Services layer architecture
+- Environment variables configuration
+- Clean and maintainable folder structure
 
 ---
 
 ## 🔗 API Used
 
 **Arbeitnow Job Board API**
-https://www.arbeitnow.com/api/job-board-ap
+https://www.arbeitnow.com/api/job-board-api
 
 
 This is a public API that provides real job listings and does not require authentication.
@@ -48,58 +47,46 @@ src/
 │ ├─ Loader.jsx
 │ ├─ Job.css
 │ └─ layout.css
+├─ services/
+│ └─ jobService.js
+├─ constants/
+│ └─ api.js
 ├─ App.jsx
 ├─ main.jsx
-├─ index.css
-└─ App.css
+└─ index.css
 
 
 ---
 
-## ⚙️ How It Works
+## 🏗 Internship Progress
 
-1. `JobList` component fetches job data using `useEffect`
-2. While data is loading, a loader is shown
-3. If an error occurs, an error message is displayed
-4. On successful fetch, jobs are rendered using `JobCard`
-5. Data automatically refreshes every 60 seconds
-6. Cleanup function clears the interval on unmount
+### ✅ Day 7 – useEffect & Lifecycle
+- Implemented job listing using a public API
+- Managed loading and error states
+- Used `useEffect` for API calls and auto refresh
+- Built responsive UI with reusable components
+
+### ✅ Day 8 – Project Structure & Architecture
+- Refactored API logic into a dedicated services layer
+- Implemented separation of concerns
+- Created constants for configuration values
+- Added environment variable support using `.env`
+- Improved folder discipline and scalability
 
 ---
 
-## 🖥️ Tech Stack
+## ⚙️ Environment Setup
 
+Create a `.env` file in the root directory:
+
+```env
+VITE_JOB_API_URL=https://www.arbeitnow.com/api/job-board-api
+
+Note: The .env file is ignored in Git for security reasons.
+
+
+🖥 Tech Stack
 - React (Vite)
 - JavaScript (ES6)
 - CSS
 - Public REST API
-
----
-
-## 📌 Internship Task Reference
-
-**Day 7 – useEffect & Lifecycle**
-
-- Handle side effects and API data  
-- Implement loading and error states  
-- Build a data-driven UI  
-- Demonstrate clean and stable React code  
-
----
-
-## 👤 Author
-
-**Ali**  
-MERN Stack Intern  
-
----
-
-## ✅ Status
-
-✔ Task Completed  
-✔ API Integrated  
-✔ Responsive UI  
-✔ Ready for Evaluation
-
-
-
