@@ -1,20 +1,60 @@
-.page-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 260px;
-  gap: 24px;
-
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
+.app-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: auto;
+  padding: 1rem;
+  gap: 1.5rem;
 }
 
-/* Left & Right placeholders */
-.left-sidebar,
-.right-sidebar {
-  min-height: 100vh;
+/* LEFT SIDEBAR */
+.sidebar {
+  width: 260px;
 }
 
-/* Center column */
-.center-content {
-  width: 100%;
+.profile-card {
+  background: #111;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: #333;
+  border-radius: 50%;
+  margin: auto;
+}
+
+.menu {
+  margin-top: 1rem;
+  background: #111;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.menu p {
+  margin: 0.7rem 0;
+  color: #ccc;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+}
+
+.subtitle {
+  color: #aaa;
+  margin-bottom: 1rem;
+}
+
+/* RESPONSIVE (MOBILE) */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .app-layout {
+    padding: 0.5rem;
+  }
 }

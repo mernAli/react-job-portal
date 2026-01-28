@@ -1,5 +1,5 @@
 const Loader = () => {
-  return <p style={{ textAlign: "center" }}>Loading jobs...</p>;
+  return <p className="loader">Loading jobs...</p>;
 };
 
 export default Loader;

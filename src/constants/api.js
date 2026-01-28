@@ -1,0 +1,1 @@
+export const JOB_API_URL = import.meta.env.VITE_JOB_API_URL;
