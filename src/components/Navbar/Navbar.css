@@ -1,0 +1,67 @@
+.navbar {
+  background: #111;
+  color: #fff;
+}
+
+/* Desktop */
+.desktop-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+}
+
+.nav-item {
+  color: #aaa;
+  text-decoration: none;
+  padding-bottom: 6px;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  color: white;
+}
+
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.search {
+  background: #222;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+}
+
+/* Mobile */
+.mobile-nav {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+  }
+
+  .add {
+    font-size: 28px;
+    background: #0a66c2;
+    padding: 6px 14px;
+    border-radius: 50%;
+  }
+}
