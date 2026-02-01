@@ -73,6 +73,42 @@ src/
 - Added environment variable support using `.env`
 - Improved folder discipline and scalability
 
+### ✅ Day 9 – Git & Workflow
+
+- Implemented an experimental **active and responsive Navbar**
+- Added route-based navigation using **React Router**
+- Jobs page displays job listings dynamically
+- Other pages show a **Work Under Progress** state
+- Followed real-world Git workflow practices:
+  - Feature branch creation
+  - Meaningful commit messages
+  - Pull request creation and merge
+- Improved repository professionalism and structure
+
+As the completence of Day 9 task the project structure is also changed:
+src/
+├─ components/
+│ ├─ JobCard.jsx
+│ ├─ JobList.jsx
+│ ├─ Loader.jsx
+│ ├─ Navbar/
+│ │ ├─ Navbar.jsx
+│ │ └─ Navbar.css
+│ ├─ Job.css
+│ └─ layout.css
+├─ pages/
+│ ├─ Home.jsx
+│ ├─ Jobs.jsx
+│ ├─ Network.jsx
+│ └─ Notification.jsx
+├─ services/
+│ └─ jobService.js
+├─ constants/
+│ └─ api.js
+├─ App.jsx
+├─ main.jsx
+└─ index.css
+
 ---
 
 ## ⚙️ Environment Setup
