@@ -1,6 +1,7 @@
 .navbar {
   background: #111;
   color: #fff;
+  border-radius: 20px;
 }
 
 /* Desktop */
@@ -20,6 +21,11 @@
 
 .nav-item:hover {
   color: white;
+}
+
+.nav-item.active {
+  border-bottom: 2px solid #0a66c2;
+  color: #0a66c2;
 }
 
 
@@ -65,3 +71,13 @@
     border-radius: 50%;
   }
 }
+
+.nav-search {
+  padding: 10px 26px;
+  border-radius: 15px;
+  border: none;
+  outline: none;
+  background: #222;
+  color: white;
+}
+
