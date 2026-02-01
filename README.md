@@ -111,6 +111,26 @@ src/
 
 ---
 
+### ✅ Day 10 – Mini Review Project
+
+Built a complete Mini Job Listing Application by combining all previously learned concepts
+Implemented a dynamic Home page with interactive job feed
+Displayed job listings using API integration with reusable components
+Added recommendation section with follow functionality and state handling
+Implemented scroll-based content flow for better user engagement
+Integrated search functionality in the Navbar
+Ensured responsive design for both desktop and mobile views using plain CSS
+Focused on clean component structure and readable code
+Deployed the application for live access
+
+Followed professional development practices:
+Clean and organized repository structure
+Meaningful commits for feature updates
+Improved UI consistency and responsiveness
+Maintained separation of concerns between components, pages, and services
+
+As the completion of Day 10 task, the project structure was refined to support scalability and maintainability:
+
 ## ⚙️ Environment Setup
 
 Create a `.env` file in the root directory:
