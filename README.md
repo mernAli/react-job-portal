@@ -1,4 +1,4 @@
-# React Job Listing App
+# Day 7 React Job Listing App
 
 This project is developed as part of my MERN stack internship to understand **React fundamentals, hooks, API integration, and clean project architecture**.
 
@@ -135,14 +135,58 @@ As the completion of Day 10 task, the project structure was refined to support s
 
 Create a `.env` file in the root directory:
 
-```env
+env
 VITE_JOB_API_URL=https://www.arbeitnow.com/api/job-board-api
 
 Note: The .env file is ignored in Git for security reasons.
-
 
 🖥 Tech Stack
 - React (Vite)
 - JavaScript (ES6)
 - CSS
 - Public REST API
+
+### ✅ Day 11 – Tailwind CSS Setup & Landing Page Design
+
+Configured Tailwind CSS (latest version) in the React project and adopted a utility-first CSS workflow.
+
+Built a clean and modern Landing Page UI using Tailwind, focusing on visual hierarchy and consistency.
+
+#### Key Implementations
+- Tailwind CSS installation and configuration (tailwind.config.js)
+- Utility-first styling approach
+- Consistent color system, spacing, and typography
+- Responsive layout using Flex and Grid utilities
+
+#### Landing Page Sections
+- Hero Section with primary headline and call-to-action
+- Feature Highlights showcasing platform benefits
+- Call-To-Action (Get Started) button
+- Footer with clean layout and branding
+
+#### Navigation Flow
+- Landing page is shown as the initial entry point
+- Clicking “Get Started” routes users to the main application (Day 10 features)
+- Navbar and sidebars are rendered only inside the app layout
+
+#### Reusability & Structure
+- Landing page built using reusable components
+- Clear separation between landing UI and app UI
+
+#### Updated Project Structure
+src/
+├─ pages/
+│  └─ Landing.jsx
+├─ components/
+│  └─ landing/
+│     ├─ Hero.jsx
+│     ├─ Features.jsx
+│     ├─ CTA.jsx
+│     └─ Footer.jsx
+
+
+#### Outcome
+- Tailwind fully configured and working
+- Clean, modern landing page UI
+- Mobile-friendly and visually consistent design
+- Smooth transition between landing page and main app
