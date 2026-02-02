@@ -12,19 +12,19 @@ const Navbar = () => {
         <div className="logo">Logo</div>
 
         <ul className="nav-links">
-          <NavLink to="/" className="nav-item">
+          <NavLink to="/app" end className="nav-item">
             Home
           </NavLink>
 
-          <NavLink to="/network" className="nav-item">
+          <NavLink to="/app/network" className="nav-item">
             My Network
           </NavLink>
 
-          <NavLink to="/jobs" className="nav-item">
+          <NavLink to="/app/jobs" className="nav-item">
             Jobs
           </NavLink>
 
-          <NavLink to="/notifications" className="nav-item">
+          <NavLink to="/app/notifications" className="nav-item">
             Notifications
           </NavLink>
         </ul>
@@ -40,16 +40,16 @@ const Navbar = () => {
 
       {/* Mobile Navbar */}
       <nav className="navbar mobile-nav">
-        <NavLink to="/" className="icon">
+        <NavLink to="/app" end className="icon">
           🏠
         </NavLink>
-        <NavLink to="/network" className="icon">
+        <NavLink to="/app/network" className="icon">
           👥
         </NavLink>
-        <NavLink to="/jobs" className="icon add">
+        <NavLink to="/app/jobs" className="icon add">
           ＋
         </NavLink>
-        <NavLink to="/notifications" className="icon">
+        <NavLink to="/app/notifications" className="icon">
           🔔
         </NavLink>
       </nav>
