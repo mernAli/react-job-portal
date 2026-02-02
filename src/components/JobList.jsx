@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchJobs } from "../services/jobService";
+import { fetchJobs } from "../services/JobService.js";
 import JobCard from "./JobCard";
 import Loader from "./Loader";
 import "./Job.css";
