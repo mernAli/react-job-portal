@@ -274,3 +274,101 @@ src/
   ✅ Responsive navigation bar
   ✅ Grid-based job & feature sections
   ✅ Works on mobile, tablet, and desktop
+
+
+## ✅ Day 13 – Authentication, Dashboard & Protected Routes
+
+Implemented a complete **authentication flow and dashboard architecture** using React Router, layouts, and protected routes—following real-world React application patterns.
+
+---
+
+### 🔐 Authentication Flow
+
+- Implemented client-side authentication using `localStorage`
+- Login sets authentication state:
+  ```localStorage.setItem("auth", "true");```
+- Authentication persists across page refresh
+- Logout clears authentication:
+  ```localStorage.removeItem("auth");```
+
+#### 🛡 Protected Routes (PrivateRoute)
+- Created a reusable PrivateRoute component
+- Restricts access to dashboard routes
+- Redirects unauthenticated users to Login page
+
+Logic:
+- Authenticated → Access dashboard
+- Not authenticated → Redirect to /login
+
+
+#### 🧱 Layout-Based Architecture
+
+AppLayout
+- Wraps all authenticated routes
+- Contains:
+  - Navbar
+  - Logout logic
+  - <Outlet /> for nested pages
+
+AuthLayout
+- Wraps Login and Register pages
+- Provides centered layout and clean UI
+
+#### 📊 Dashboard Structure
+
+Accessible via /app and includes:
+- Home (Dashboard)
+- Jobs
+- Network
+- Notifications
+
+Routing Flow:
+```
+/            → Landing
+/login       → Login
+/register    → Register
+/app         → Dashboard (Protected)
+/app/jobs
+/app/network
+/app/notifications
+```
+
+#### 🧭 Navbar & Logout
+- Desktop and mobile navigation
+- Route-aware links using NavLink
+- Logout button added for:
+  - Desktop view
+  - Mobile view
+- Logout clears auth state and redirects to Login
+
+#### 🧠 Concepts Learned
+- Authentication handling
+- Persistent login behavior
+- Protected routes
+- Nested routing
+- Layout components
+- Dashboard architecture
+- Logout implementation
+- Separation of public and private UI
+
+#### Updated Project Structure (Day-13)
+src/
+├─ layouts/
+│  ├─ AppLayout.jsx
+│  └─ AuthLayout.jsx
+├─ route/
+│  └─ PrivateRoute.jsx
+├─ pages/
+│  ├─ Landing.jsx
+│  ├─ Login.jsx
+│  ├─ Register.jsx
+│  ├─ Home.jsx
+│  ├─ Jobs.jsx
+│  ├─ Network.jsx
+│  └─ Notification.jsx
+├─ components/
+│  └─ Navbar/
+│     ├─ Navbar.jsx
+│     └─ Navbar.css
+├─ App.jsx
+└─ main.jsx
