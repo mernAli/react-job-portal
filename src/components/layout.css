@@ -8,7 +8,7 @@
 
 /* LEFT SIDEBAR */
 .sidebar {
-  width: 260px;
+  width: 230px;
 }
 
 .profile-card {
@@ -16,6 +16,7 @@
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
+  width: 200px;
 }
 
 .avatar {
@@ -88,11 +89,13 @@
   height: calc(100vh - 70px);
   overflow-y: auto;
   padding-right: 10px;
+  width: 700px;
+  
 }
 
 /* smooth scrolling */
 .main-content::-webkit-scrollbar {
-  width: 6px;
+  width: 2px;
 }
 
 .main-content::-webkit-scrollbar-thumb {
@@ -103,6 +106,7 @@
 .right-sidebar {
   height: calc(100vh - 70px);
   overflow-y: auto;
+  
 }
 
 .box {

@@ -93,7 +93,7 @@ const LandingNavbar = ({ onJobsClick, onFeateresClick, onContactsClick }) => {
             Contacts
           </p>
           <button
-            onClick={() => navigate('/app') }
+            onClick={() => navigate('/app')}
             className="w-full bg-blue-600 py-2 rounded-full mt-10"
           
           >

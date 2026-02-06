@@ -1,9 +1,15 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { useState } from "react";
 
 const Navbar = () => {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -36,6 +42,10 @@ const Navbar = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="nav-search"
         />
+
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </nav>
 
       {/* Mobile Navbar */}
@@ -52,6 +62,10 @@ const Navbar = () => {
         <NavLink to="/app/notifications" className="icon">
           🔔
         </NavLink>
+
+        <button className="icon logout-icon" onClick={handleLogout}>
+          🚪
+        </button>
       </nav>
     </>
   );

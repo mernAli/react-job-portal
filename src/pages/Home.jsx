@@ -34,6 +34,10 @@ const recommendations = [
   { id: 1, name: "Adwaith", role: "MERN Developer" },
   { id: 2, name: "Aravind", role: "UI Engineer" },
   { id: 3, name: "Deepu Das", role: "Product Designer" },
+  { id: 4, name: "Hari Nair", role: "Python Developer" },
+  { id: 5, name: "Milada", role: "php Developer" },
+  { id: 4, name: "Riswan", role: "CEO of Apple" },
+
 ];
 
 const shareUsers = [

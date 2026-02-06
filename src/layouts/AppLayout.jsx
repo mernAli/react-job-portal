@@ -1,10 +1,8 @@
-import React from "react";
+
 import Navbar from "../components/Navbar/Navbar";
-import { Route, Routes } from "react-router-dom";
-import Home from "../pages/Home";
-import Jobs from "../pages/Jobs";
-import Network from "../pages/Network";
-import Notifications from "../pages/Notification";
+import { Outlet, Route, Routes } from "react-router-dom";
+import "../components/layout.css";
+
 
 const AppLayout = () => {
   return (
@@ -26,13 +24,8 @@ const AppLayout = () => {
           </div>
         </aside>
 
-        <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/jobs' element={<Jobs />} />
-            <Route path='/network' element={<Network />} />
-            <Route path='/notifications' element={<Notifications />} />
-
-        </Routes>
+        
+        <Outlet />
       </div>
     </>
   );

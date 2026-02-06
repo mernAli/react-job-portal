@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 const Hero = () => {
+  const navigate = useNavigate()
   return (
     <section className="min-h-screen flex items-center justify-center px-6">
       <div className="max-w-4xl text-center">
@@ -12,11 +15,17 @@ const Hero = () => {
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition">
+          <button 
+            className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
+            onClick={() => navigate('/app')}
+          >
             Browse Jobs
           </button>
 
-          <button className="px-6 py-3 rounded-lg border border-slate-700 hover:bg-slate-800 transition">
+          <button 
+            className="px-6 py-3 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
+            onClick={() => navigate('/app')}
+          >
             Post a Job
           </button>
         </div>
