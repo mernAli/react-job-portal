@@ -372,3 +372,114 @@ src/
 │     └─ Navbar.css
 ├─ App.jsx
 └─ main.jsx
+
+## ✅ Day 14 – Forms, Validation & User Experience Enhancements
+Enhanced the authentication system by building professional Login and Register forms with strong validation, improved user feedback, and production-level UX practices.
+
+This task focused on transforming basic forms into real-world, user-friendly authentication interfaces.
+
+### 🎯 Objective
+To implement robust form handling, validation logic, and UX improvements for authentication workflows using React controlled components.
+
+### 📝 Authentication Forms Implemented
+Login Form
+  - Email and Password fields
+  - Controlled input handling
+  - Inline validation and error display
+  - Password visibility toggle
+  - Loading state during authentication
+  - Disabled submit button when invalid
+
+Register Form
+  - Name, Email, Password, Confirm Password fields
+  - Reused consistent design system from Login
+  - Password match validation
+  - Same UX improvements as Login
+
+### 🧠 Validation System
+Implemented client-side validation logic to prevent invalid submissions.
+
+Validation Rules
+
+Login:
+  - Email required
+  - Email format validation (Regex)
+  - Password required
+  - Minimum password length
+
+Register:
+  - Name required
+  - Valid email format
+  - Password length validation
+  - Confirm password must match
+
+Validation errors are displayed directly below each input field for clarity.
+
+### 🎛 Form State Management
+Forms were built using controlled components:
+  - Input values managed using React useState
+  - Real-time state updates on user interaction
+  - Centralized form data handling for scalability
+Benefits:
+  - Easier validation
+  - Predictable state updates
+  - Cleaner logic structure
+
+### 👁 Password Visibility Toggle
+Implemented show/hide password functionality:
+  - Users can toggle password visibility
+  - Improves usability and reduces input errors
+
+Technique Used:
+  - Dynamic input type switching (password ↔ text)
+
+### ⏳ Loading & UX Feedback
+
+Improved user experience during authentication actions:
+  - Loading state displayed on submit
+  - Prevents multiple form submissions
+  - Simulates real API authentication behavior
+
+Example:
+  - Button text changes to “Logging in…” / “Registering…”
+  - Button disabled while processing
+
+### 🚫 Disabled Submit Protection
+Submit buttons remain disabled when:
+  - Required fields are empty
+  - Validation fails
+  - Loading state is active
+This ensures only valid data is submitted.
+
+### 🎨 UI & UX Improvements
+  - Updated UI based on Figma design
+  - Consistent layout between Login and Register
+  - Clean spacing, typography, and input hierarchy
+  - Mobile-friendly form design
+  - Inline error messaging for better clarity
+
+### 🔗 Integration with Existing Authentication Flow
+  - Forms connect directly with the existing Day-13 authentication logic
+  - Successful login sets authentication state in localStorage
+  - Register redirects user to login after success
+  - Protected routes remain unchanged
+
+### 🧠 Concepts Covered
+  - Controlled Inputs
+  - Form State Handling
+  - Client-Side Validation
+  - Error Handling & Feedback
+  - UX-Focused Form Design
+  - Password Visibility Toggle
+  - Loading & Disabled States
+  - Consistent Component Design
+
+### Updated Project Structure (Day-14)
+src/
+├─ pages/
+│ ├─ Login.jsx
+│ └─ Register.jsx
+├─ layouts/
+│ └─ AuthLayout.jsx
+├─ route/
+│ └─ PrivateRoute.jsx
