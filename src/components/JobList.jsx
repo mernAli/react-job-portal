@@ -13,7 +13,7 @@ const JobList = () => {
     try {
       setLoading(true);
       const jobsData = await fetchJobs();
-      setJobs(jobsData.slice(0, 10));
+      setJobs(jobsData.slice(0, 20));
       setError("");
     } catch (err) {
       setError(err.message);
