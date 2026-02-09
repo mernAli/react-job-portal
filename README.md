@@ -483,3 +483,74 @@ src/
 │ └─ AuthLayout.jsx
 ├─ route/
 │ └─ PrivateRoute.jsx
+
+
+## ✅ Day 15 – Reusable UI Component System
+
+On Day 15, the project was enhanced by building a reusable UI component architecture to improve consistency, scalability, and maintainability across the application.
+Instead of writing UI elements repeatedly, common components were modularized and reused across multiple pages such as Login, Register, Jobs, Network, and Notifications.
+
+Objectives
+  - Create reusable and configurable UI components
+  - Maintain consistent design across all pages
+  - Improve development speed
+  - Follow scalable React folder structure practices
+
+### Implemented Components
+
+Button Component
+ - Supports loading state
+ - Full-width option
+ - Reused in Login and Register pages
+
+Input Component
+  - Supports label, error display, and controlled inputs
+  - Used for Name, Email, Password, and Confirm Password fields
+
+Loader Component
+  - Displays loading animation
+  - Used in JobList while fetching jobs
+
+Toast Notification System
+  - Global toast messages using Context API
+  - Shows success and error messages for:
+    - Login
+    - Register
+    - Job Apply
+    - Network and Notification pages
+
+Modal Component
+  - Reusable modal dialog
+  - Used for confirmation actions (example: Logout confirmation)
+
+### Folder Structure Added
+src/
+ ├── ui/
+ │   ├── Button.jsx
+ │   ├── Input.jsx
+ │   ├── Loader.jsx
+ │   ├── Modal.jsx
+ │   └── toast/
+ │       ├── Toast.jsx
+ │       ├── ToastProvider.jsx
+ │       └── useToast.js
+
+### UI Demo Page
+
+A dedicated UIDemo.jsx page was created to demonstrate:
+  - All reusable UI components
+  - Their different states and variations
+  - Real-time behavior in the browser
+This helps in testing and future scalability.
+
+Features Achieved
+  - Consistent UI across the application
+  - Reduced code duplication
+  - Centralized notification system
+  - Professional component-based architecture
+
+Technologies Used
+  - React JS
+  - Tailwind CSS
+  - Context API
+  - React Hook
