@@ -1,12 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { useState } from "react";
+import Modal from "../../ui/Modal";
 
 const Navbar = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const confirmLogout = () => {
     localStorage.removeItem("auth");
     navigate("/login");
   };
@@ -33,6 +35,10 @@ const Navbar = () => {
           <NavLink to="/app/notifications" className="nav-item">
             Notifications
           </NavLink>
+
+          <NavLink to="/app/ui-demo" className="nav-item">
+            UI Demo
+          </NavLink>
         </ul>
 
         <input
@@ -43,7 +49,7 @@ const Navbar = () => {
           className="nav-search"
         />
 
-        <button className="logout-btn" onClick={handleLogout}>
+        <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
           Logout
         </button>
       </nav>
@@ -63,10 +69,39 @@ const Navbar = () => {
           🔔
         </NavLink>
 
-        <button className="icon logout-icon" onClick={handleLogout}>
+        <button
+          className="icon logout-icon"
+          onClick={() => setShowLogoutModal(true)}
+        >
           🚪
         </button>
       </nav>
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Confirm Logout"
+        footer={
+          <>
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="px-4 py-2 border rounded"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={confirmLogout}
+              className="px-4 py-2 bg-red-500 text-white rounded"
+            >
+              Logout
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-white">
+          Are you sure you want to logout from your account?
+        </p>
+      </Modal>
     </>
   );
 };

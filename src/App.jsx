@@ -9,36 +9,43 @@ import Notification from "./pages/Notification";
 import AppLayout from "./layouts/AppLayout";
 import PrivateRoute from "./route/PrivateRoute";
 import AuthLayout from "./layouts/AuthLayout";
+import ToastProvider from "./ui/toast/ToastProvider";
+import UIDemo from "./pages/UIDemo";
+
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<Landing />} />
-        
-         {/* Auth pages */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Landing />} />
 
-        {/* Protected */}
-        <Route
-          path="/app"
-          element={
-            <PrivateRoute>
-              <AppLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<Home />} />
-          <Route path="jobs" element={<Jobs />} />
-          <Route path="network" element={<Network />} />
-          <Route path="notifications" element={<Notification />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          {/* Auth pages */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+
+          {/* Protected */}
+          <Route
+            path="/app"
+            element={
+              <PrivateRoute>
+                <AppLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Home />} />
+            <Route path="jobs" element={<Jobs />} />
+            <Route path="network" element={<Network />} />
+            <Route path="notifications" element={<Notification />} />
+            <Route path="ui-demo" element={<UIDemo />} />
+
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
+import { useToast } from "../ui/toast/useToast"
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,8 +19,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState("light"); // light, dark, darker
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const { showToast } = useToast()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,6 +33,8 @@ const Register = () => {
     e.preventDefault();
 
     const newError = {};
+
+    
 
     if (!formData.name) newError.name = "Name is required";
 
@@ -39,6 +47,8 @@ const Register = () => {
     if (formData.password !== formData.confirmPassword)
       newError.confirmPassword = "Passwords do not match";
 
+    if (!agreeTerms) newError.agreeTerms = "Check the agree term box";
+
     setError(newError);
 
     if (Object.keys(newError).length === 0) {
@@ -46,6 +56,11 @@ const Register = () => {
 
       setTimeout(() => {
         localStorage.setItem("auth", "true");
+        console.log("Submit Clicked");
+        
+        showToast("Account created successfully", "success")
+        console.log("Toast called");
+        
         navigate("/app");
         setLoading(false);
       }, 1500);
@@ -118,7 +133,9 @@ const Register = () => {
   const currentTheme = themes[theme];
 
   return (
-    <div className={`h-screen w-full flex flex-col overflow-hidden ${currentTheme.bg} font-sans relative`}>
+    <div
+      className={`h-screen w-full flex flex-col overflow-hidden ${currentTheme.bg} font-sans relative`}
+    >
       {/* Theme Selector - Positioned at top right */}
       <div className="absolute top-4 right-4 z-50 flex gap-2">
         <button
@@ -183,7 +200,9 @@ const Register = () => {
           </div>
 
           {/* Welcome Title */}
-          <h2 className={`text-xl md:text-2xl font-bold ${currentTheme.cardText} mb-2`}>
+          <h2
+            className={`text-xl md:text-2xl font-bold ${currentTheme.cardText} mb-2`}
+          >
             Create an account
           </h2>
 
@@ -196,17 +215,16 @@ const Register = () => {
           <form onSubmit={handleSubmit}>
             {/* Name Input */}
             <div className="mb-4">
-              <label className={`block ${currentTheme.labelText} text-xs font-medium mb-2`}>
-                Full Name
-              </label>
-              <input
+              <Input
+                label="Full Name"
                 type="text"
                 name="name"
-                placeholder="semira"
-                className={`w-full px-4 py-3 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} ${currentTheme.inputText} focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all text-sm`}
+                placeholder="Semira"
                 value={formData.name}
                 onChange={handleChange}
+                error={error.name}
               />
+
               {error.name && (
                 <p className="text-xs text-red-500 mt-1">{error.name}</p>
               )}
@@ -214,16 +232,14 @@ const Register = () => {
 
             {/* Email Input */}
             <div className="mb-4">
-              <label className={`block ${currentTheme.labelText} text-xs font-medium mb-2`}>
-                Email
-              </label>
-              <input
+              <Input
+                label="Email"
                 type="email"
                 name="email"
                 placeholder="semira3002@gmail.com"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} ${currentTheme.inputText} focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all text-sm`}
+                error={error.email}
               />
               {error.email && (
                 <div className="text-xs text-red-500 mt-1">{error.email}</div>
@@ -232,61 +248,25 @@ const Register = () => {
 
             {/* Password Input */}
             <div className="mb-4">
-              <label className={`block ${currentTheme.labelText} text-xs font-medium mb-2`}>
-                Password
-              </label>
+              <Input
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                error={error.password}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-500 text-xs"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                }
+              />
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} ${currentTheme.inputText} focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all text-sm`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
               {error.password && (
                 <div className="text-xs text-red-500 mt-1">
                   {error.password}
@@ -296,65 +276,31 @@ const Register = () => {
 
             {/* Confirm Password Input */}
             <div className="mb-4">
-              <label className={`block ${currentTheme.labelText} text-xs font-medium mb-2`}>
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-lg border ${currentTheme.inputBorder} ${currentTheme.inputBg} ${currentTheme.inputText} focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent transition-all text-sm`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {error.confirmPassword && (
+              
+              <Input
+                label="Confirm Password"
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                error={error.confirmPassword}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-gray-500 text-xs"
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                }
+              />
+
+              {/* {error.confirmPassword && (
                 <div className="text-xs text-red-500 mt-1">
                   {error.confirmPassword}
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Terms and Conditions Checkbox */}
@@ -372,16 +318,18 @@ const Register = () => {
               >
                 I agree to the Terms & Conditions and Privacy Policy
               </label>
+
+              {error.agreeTerms && (
+                <div className="text-xs text-red-500 mt-1">
+                  {error.agreeTerms}
+                </div>
+              )}
             </div>
 
-            {/* Sign Up Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 ${currentTheme.buttonBg} ${currentTheme.buttonText} font-semibold rounded-lg ${currentTheme.buttonHover} transition-colors duration-300 shadow-lg text-sm`}
-            >
-              {loading ? "Signing Up..." : "Sign Up"}
-            </button>
+            {/* Sign Up Button from ui folder created as per the part of the Day: 15 task */}
+            <Button type="submit" loading={loading} fullWidth>
+              Sign Up
+            </Button>
           </form>
 
           {/* Divider */}

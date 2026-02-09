@@ -43,3 +43,13 @@
   border-radius: 20px;
   cursor: pointer;
 }
+
+.job-list-loader {
+  height: 60vh;
+  display: flex;
+  position: absolute;
+  right: 590px;
+  /* align-items: center; */
+  /* justify-content: center; */
+  
+}

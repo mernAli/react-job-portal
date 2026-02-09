@@ -1,4 +1,4 @@
-const JobCard = ({ title, company, location, type, remote }) => {
+const JobCard = ({ title, company, location, type, remote, onApply }) => {
   return (
     <div className="job-card">
       <div className="job-left">
@@ -13,8 +13,8 @@ const JobCard = ({ title, company, location, type, remote }) => {
         </div>
       </div>
 
-      <button 
-        onClick={() => alert(`Successfully Applied for ${title} at ${company}`)}
+      <button
+        onClick={onApply}
         className="apply-btn"
       >
         Apply
