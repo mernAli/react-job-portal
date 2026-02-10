@@ -554,3 +554,153 @@ Technologies Used
   - Tailwind CSS
   - Context API
   - React Hook
+
+## ✅ Day 16: Authentication UI & Session Handling
+Day 16 focuses on implementing a real-world authentication flow on the frontend, simulating JWT-based authentication and secure session handling. The goal is to build a production-like auth system with protected routes, session persistence, and proper user redirection.
+
+### 🎯 Objectives
+  - Implement complete authentication UI behavior
+  - Handle user sessions securely on the client side
+  - Protect routes from unauthorized access
+  - Ensure clean login and logout flows
+
+### 📚 Key Concepts Covered
+  - JWT Frontend Flow (Simulated)
+  - Token Storage using localStorage
+  - Authentication Context (AuthProvider)
+  - Protected Routes (Route Guards)
+  - Auth Layouts for Login/Register
+  - Unauthorized Redirect Handling
+
+### ✨ Features Implemented
+  - 🔑 Authentication-based route protection
+  - 🚫 Prevents unauthorized access to private routes
+  - 🔁 Automatic redirection to Login page
+  - 📍 Clean navigation using React Router
+  - ⚡ State-driven UI updates after login/logout
+
+### 🧠 How It Works
+  - Authentication state is stored in the application (e.g. token or boolean flag)
+  - A ProtectedRoute wrapper checks authentication status
+  - If the user is not authenticated, they are redirected to /login
+  - If authenticated, access to private routes is allowed
+
+### 🛠️ Implementation Details
+1. Authentication Context
+  - Created a centralized AuthContext and AuthProvider
+  - Manages:
+    - Logged-in and Sign-Up user state
+    - Login functionality (simulated JWT)
+    - Logout functionality
+    - Session persistence using localStorage
+
+2. Login Flow
+  - User submits valid credentials
+  - A fake JWT token is generated and stored
+  - User state is updated in context
+  - User is redirected to the dashboard (/app)
+  - Success feedback shown using Toast
+
+3. Protected Routes
+  - Implemented PrivateRoute
+  - Blocks access to /app/* routes if the user is not authenticated
+  - Automatically redirects unauthorized users to /login
+
+4. Logout System
+  - Logout clears the stored token
+  - Auth state is reset
+  - User is redirected back to the login page
+  - Logout confirmation handled via reusable Modal
+
+5. Session Persistence
+  - User remains logged in after page refresh
+  - Auth state is restored from localStorage on app load
+
+6. Unauthorized Access Handling
+  - Manual URL access to protected routes is blocked
+  - Logged-out users cannot access private pages
+  - Auth guard ensures application security
+
+### 📦 Files Involved
+  - AuthContext.jsx
+  - AuthProvider.jsx
+  - PrivateRoute.jsx
+  - Login.jsx
+  - Register.jsx
+  - Navbar.jsx (Logout handling with modal)
+  - App.jsx (Provider & route configuration)
+
+### ✅ Outcome
+  - Stable authentication flow
+  - Clean route protection
+  - Real-world UI behavior
+  - Secure session handling
+  - Professional app architecture
+
+### 📁 Project Structure    
+\---src
+    |   App.jsx
+    |   index.css
+    |   main.jsx
+    |
+    +---components
+    |   |   Job.css
+    |   |   JobCard.jsx
+    |   |   JobList.jsx
+    |   |   layout.css
+    |   |   Loader.jsx
+    |   |
+    |   +---Landing
+    |   |       CTA.jsx
+    |   |       Features.jsx
+    |   |       Footer.jsx
+    |   |       Hero.jsx
+    |   |       JobCard.jsx
+    |   |       JobGrid.jsx
+    |   |       LandingNavbar.jsx
+    |   |
+    |   \---Navbar
+    |           Navbar.css
+    |           Navbar.jsx
+    |
+    +---constants
+    |       api.js
+    |
+    +---context                 # Centralized routing configuration
+    |       AuthContext.jsx
+    |       AuthProvider.jsx
+    |       useAuth.js
+    |
+    +---layouts
+    |       AppLayout.jsx
+    |       AuthLayout.jsx
+    |
+    +---pages
+    |       Dashboard.jsx
+    |       Home.jsx
+    |       Jobs.jsx
+    |       Landing.jsx
+    |       Login.jsx
+    |       Network.jsx
+    |       Notification.jsx
+    |       Register.jsx
+    |       UIDemo.jsx
+    |
+    +---route
+    |       PrivateRoute.jsx
+    |
+    +---services
+    |       JobService.js
+    |
+    \---ui
+        |   Button.jsx
+        |   Input.jsx
+        |   Loader.jsx
+        |   Modal.jsx
+        |   Select.jsx
+        |
+        \---toast
+                Toast.jsx
+                ToastContext.jsx
+                ToastProvider.jsx
+                useToast.js
