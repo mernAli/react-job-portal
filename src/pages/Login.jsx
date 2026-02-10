@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useToast } from "../ui/toast/useToast";
-
+import { useAuth } from "../context/useAuth";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +16,8 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   const {showToast} = useToast();
+
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ const LoginForm = () => {
       setLoading(true);
 
       setTimeout(() => {
-        localStorage.setItem("auth", "true");
+        login(email);
         showToast("Logged in successfully", "success")
         navigate("/app");
         setLoading(false);

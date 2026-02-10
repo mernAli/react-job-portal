@@ -2,14 +2,19 @@ import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { useState } from "react";
 import Modal from "../../ui/Modal";
+import { useAuth } from "../../context/useAuth";
+
 
 const Navbar = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  const { logout } = useAuth();
+
+
   const confirmLogout = () => {
-    localStorage.removeItem("auth");
+    logout();
     navigate("/login");
   };
 

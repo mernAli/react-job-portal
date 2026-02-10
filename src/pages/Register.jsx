@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { useToast } from "../ui/toast/useToast"
+import { useAuth } from "../context/useAuth";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -24,6 +26,9 @@ const Register = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const { showToast } = useToast()
+
+  const { login } = useAuth();
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,7 +60,7 @@ const Register = () => {
       setLoading(true);
 
       setTimeout(() => {
-        localStorage.setItem("auth", "true");
+        login(formData.email);
         console.log("Submit Clicked");
         
         showToast("Account created successfully", "success")
@@ -225,9 +230,7 @@ const Register = () => {
                 error={error.name}
               />
 
-              {error.name && (
-                <p className="text-xs text-red-500 mt-1">{error.name}</p>
-              )}
+              
             </div>
 
             {/* Email Input */}
@@ -241,9 +244,7 @@ const Register = () => {
                 onChange={handleChange}
                 error={error.email}
               />
-              {error.email && (
-                <div className="text-xs text-red-500 mt-1">{error.email}</div>
-              )}
+              
             </div>
 
             {/* Password Input */}
@@ -267,11 +268,8 @@ const Register = () => {
                 }
               />
 
-              {error.password && (
-                <div className="text-xs text-red-500 mt-1">
-                  {error.password}
-                </div>
-              )}
+              
+              
             </div>
 
             {/* Confirm Password Input */}
@@ -296,11 +294,7 @@ const Register = () => {
                 }
               />
 
-              {/* {error.confirmPassword && (
-                <div className="text-xs text-red-500 mt-1">
-                  {error.confirmPassword}
-                </div>
-              )} */}
+              
             </div>
 
             {/* Terms and Conditions Checkbox */}
