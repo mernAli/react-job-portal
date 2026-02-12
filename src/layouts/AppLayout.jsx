@@ -1,33 +1,31 @@
-
-import Navbar from "../components/Navbar/Navbar";
-import { Outlet, Route, Routes } from "react-router-dom";
-import "../components/layout.css";
-
+import { Outlet } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
+import Sidebar from "../components/Dashboard/Sidebar";
+import Topbar from "../components/Dashboard/Topbar";
+import BottomNav from "../components/Dashboard/BottomNav";
 
 const AppLayout = () => {
+  const { theme } = useTheme();
+
   return (
-    <>
-      <Navbar />
+    <div className={`flex min-h-screen ${theme.bg}`}>
+      {/* Sidebar - Desktop Only */}
+      <Sidebar />
 
-      <div className="app-layout">
-        {/* LEFT SIDEBAR */}
-        <aside className="sidebar">
-          <div className="profile-card">
-            <div className="avatar"></div>
-            <h3>Ali</h3>
-            <p>MERN Intern</p>
-          </div>
+      {/* Main Content Area */}
+      <div className="flex-1 lg:ml-64 flex flex-col">
+        {/* Topbar */}
+        <Topbar />
 
-          <div className="menu">
-            <p>Preferences</p>
-            <p>Applied Jobs</p>
-          </div>
-        </aside>
+        {/* Page Content */}
+        <main className="flex-1 mt-16 mb-16 lg:mb-0 p-4 lg:p-6 overflow-y-auto">
+          <Outlet />
+        </main>
 
-        
-        <Outlet />
+        {/* Bottom Navigation - Mobile Only */}
+        <BottomNav />
       </div>
-    </>
+    </div>
   );
 };
 

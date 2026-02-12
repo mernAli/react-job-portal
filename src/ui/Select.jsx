@@ -1,17 +1,13 @@
 import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
-const Select = ({
-  label,
-  name,
-  value,
-  onChange,
-  options = [],
-  error,
-}) => {
+const Select = ({ label, name, value, onChange, options = [], error }) => {
+  const { theme } = useTheme();
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-xs font-medium mb-2 text-gray-600">
+        <label className={`block text-xs font-medium mb-2 ${theme.textSecondary}`}>
           {label}
         </label>
       )}
@@ -20,7 +16,7 @@ const Select = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-4 py-3 rounded-lg border bg-amber-200 border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
+        className={`w-full px-4 py-3 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} ${theme.focus} text-sm outline-none`}
       >
         <option value="">Select option</option>
 

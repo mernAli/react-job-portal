@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../components/layout.css";
+import { useTheme } from "../context/ThemeContext";
 
 const homeJobFeed = [
   {
@@ -9,7 +9,6 @@ const homeJobFeed = [
     title: "Digital Marketing Executive",
     description:
       "We're hiring a Digital Marketing Executive. Skills: SEO / SEM · Social Media Marketing · Content Strategy. Experience: 1–2 years. Work Mode: Remote 🌍",
-    image: null,
   },
   {
     id: 2,
@@ -18,7 +17,6 @@ const homeJobFeed = [
     title: "MERN Stack Developer",
     description:
       "Hiring MERN Stack Developer. Skills: MongoDB, Express, React, Node.js. Experience: 2–3 years. Work Mode: Remote.",
-    image: "../assets/Job1.jpg",
   },
   {
     id: 3,
@@ -26,7 +24,6 @@ const homeJobFeed = [
     time: "22 Jan 26 · 09:10 AM",
     title: "UI Developer",
     description: "Looking for UI Developer with strong CSS & React skills.",
-    image: null,
   },
 ];
 
@@ -34,20 +31,12 @@ const recommendations = [
   { id: 1, name: "Adwaith", role: "MERN Developer" },
   { id: 2, name: "Aravind", role: "UI Engineer" },
   { id: 3, name: "Deepu Das", role: "Product Designer" },
-  { id: 4, name: "Hari Nair", role: "Python Developer" },
-  { id: 5, name: "Milada", role: "php Developer" },
-  { id: 4, name: "Riswan", role: "CEO of Apple" },
-
-];
-
-const shareUsers = [
-  { id: 1, name: "Adwaith" },
-  { id: 2, name: "Aravind" },
-  { id: 3, name: "Deepu" },
-  { id: 4, name: "HR Team" },
+  { id: 4, name: "Sreya", role: "Frontend Developer" },
+  { id: 5, name: "Deepu Das", role: "Product Designer" },
 ];
 
 const Home = () => {
+  const { theme } = useTheme();
   const [showMoreNews, setShowMoreNews] = useState(false);
   const [followedUsers, setFollowedUsers] = useState([]);
 
@@ -59,13 +48,8 @@ const Home = () => {
       commentsCount: Math.floor(Math.random() * 10) + 1,
       showCommentBox: false,
       showShareBox: false,
-      sharedWith: [],
     }))
   );
-
-  const handleFollow = (id) => {
-    setFollowedUsers([...followedUsers, id]);
-  };
 
   const handleLike = (id) => {
     setFeed((prev) =>
@@ -83,168 +67,148 @@ const Home = () => {
     );
   };
 
-  const handleCommentToggle = (id) => {
-    setFeed((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, showCommentBox: !item.showCommentBox }
-          : item
-      )
-    );
-  };
-
-  const toggleShareBox = (id) => {
-    setFeed((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, showShareBox: !item.showShareBox }
-          : item
-      )
-    );
-  };
-
-  const handleShareToUser = (postId, userId) => {
-    setFeed((prev) =>
-      prev.map((item) =>
-        item.id === postId
-          ? { ...item, sharedWith: [...item.sharedWith, userId] }
-          : item
-      )
-    );
-  };
-
   return (
-    <div className="app-layout">
-      <main className="main-content">
-        <div className="feed">
-          {feed.map((job, index) => (
-            <div key={job.id} className="feed-card">
-              <div className="feed-header">
-                <div className="small"></div>
-                <div>
-                  <strong className="author">{job.author}</strong>
-                  <p className="muted">{job.time}</p>
-                </div>
-              </div>
-
-              <h4>{job.title}</h4>
-              <p>{job.description}</p>
-
-              {job.image && (
-                <img src={job.image} alt="job" className="feed-image" />
-              )}
-
-              <div className="feed-actions">
-                <button
-                  className={`like-btn ${job.liked ? "liked" : ""}`}
-                  onClick={() => handleLike(job.id)}
-                >
-                  {job.liked ? "❤️ Liked" : "🤍 Like"} · {job.likesCount}
-                </button>
-
-                <button onClick={() => handleCommentToggle(job.id)}>
-                  💬 {job.commentsCount}
-                </button>
-
-                <button onClick={() => toggleShareBox(job.id)}>
-                  ✈️ Share
-                </button>
-              </div>
-
-              {job.showShareBox && (
-                <div className="share-box">
-                  <h4>Share with</h4>
-                  {shareUsers.map((user) => (
-                    <div key={user.id} className="share-user">
-                      <span>{user.name}</span>
-                      <button
-                        disabled={job.sharedWith.includes(user.id)}
-                        onClick={() =>
-                          handleShareToUser(job.id, user.id)
-                        }
-                      >
-                        {job.sharedWith.includes(user.id)
-                          ? "Shared"
-                          : "Share"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {job.showCommentBox && (
-                <div className="comment-box">
-                  <input type="text" placeholder="Write a comment..." />
-                </div>
-              )}
-
-              {index === 2 && (
-                <div className="recommend-section">
-                  <h4>People you may know</h4>
-                  <div className="recommend-row">
-                    {recommendations.map((user) => (
-                      <div key={user.id} className="recommend-card">
-                        <div className="cover"></div>
-                        <div className="avatar"></div>
-                        <div className="card-content">
-                          <strong>{user.name}</strong>
-                          <p className="role">{user.role}</p>
-                        </div>
-                        <button
-                          disabled={followedUsers.includes(user.id)}
-                          onClick={() => handleFollow(user.id)}
-                        >
-                          {followedUsers.includes(user.id)
-                            ? "Following"
-                            : "Follow"}
-                        </button>
-                      </div>
-                    ))}
+    <div className="max-w-[1200px] mx-auto px-3 sm:px-5 lg:px-8 py-4">
+      <div className="flex flex-col lg:flex-row gap-6">
+        
+        {/* MAIN FEED */}
+        <main className="flex-1 min-w-0">
+          <div className="flex flex-col gap-4">
+            {feed.map((job) => (
+              <div
+                key={job.id}
+                className={`p-3 sm:p-4 rounded-xl border border-gray-300/30 ${theme.cardBg}`}
+              >
+                {/* HEADER */}
+                <div className="flex gap-3 mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shrink-0"></div>
+                  <div>
+                    <strong
+                      className={`block text-sm sm:text-base ${theme.textPrimary}`}
+                    >
+                      {job.author}
+                    </strong>
+                    <p className={`text-xs ${theme.textMuted}`}>
+                      {job.time}
+                    </p>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </main>
 
-      {/* RIGHT SIDEBAR stays unchanged */}
-      <aside className="sidebar right-sidebar">
-        {/* Messages */}
-        <div className="box">
-          <h3>Messages</h3>
-          <div className="scroll-box">
-            <p>recruitmentzceser</p>
-            <p>Adwaith</p>
-            <p>Aravind</p>
-            <p>HR Team</p>
-            <p>Hiring Manager</p>
+                {/* CONTENT */}
+                <h4
+                  className={`text-sm sm:text-base font-semibold mb-2 ${theme.textPrimary}`}
+                >
+                  {job.title}
+                </h4>
+                <p
+                  className={`text-xs sm:text-sm leading-relaxed ${theme.textSecondary}`}
+                >
+                  {job.description}
+                </p>
+
+                {/* ACTIONS */}
+                <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-gray-300/30">
+                  <button
+                    onClick={() => handleLike(job.id)}
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm border transition
+                    ${
+                      job.liked
+                        ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent"
+                        : "border-gray-400/30 hover:bg-gray-400/10"
+                    }`}
+                  >
+                    {job.liked ? "❤️" : "🤍"} {job.likesCount}
+                  </button>
+
+                  <button className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm border border-gray-400/30 hover:bg-gray-400/10 transition">
+                    💬 {job.commentsCount}
+                  </button>
+
+                  <button className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm border border-gray-400/30 hover:bg-gray-400/10 transition">
+                    ✈️ Share
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
 
-        {/* News */}
-        <div className="box">
-          <h3>News</h3>
-          <ul>
-            <li>React 19 released</li>
-            <li>Hiring trends 2026</li>
-
-            {showMoreNews && (
-              <>
-                <li>Remote jobs increase</li>
-                <li>AI in recruitment</li>
-              </>
-            )}
-          </ul>
-
-          <button
-            className="link-btn"
-            onClick={() => setShowMoreNews(!showMoreNews)}
+          {/* RECOMMENDATIONS */}
+          <div
+            className={`mt-6 p-4 rounded-xl border border-gray-300/30 ${theme.cardBg}`}
           >
-            {showMoreNews ? "Show less" : "Show more"}
-          </button>
-        </div>
-      </aside>
+            <h4 className={`mb-4 font-semibold ${theme.textPrimary}`}>
+              People you may know
+            </h4>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {recommendations.map((user) => (
+                <div
+                  key={user.id}
+                  className={`p-3 rounded-xl border border-gray-300/30 text-center ${theme.bg}`}
+                >
+                  <div className="w-12 h-12 mx-auto rounded-full bg-gray-400 mb-2"></div>
+                  <strong
+                    className={`block text-sm ${theme.textPrimary}`}
+                  >
+                    {user.name}
+                  </strong>
+                  <p className={`text-xs ${theme.textMuted}`}>
+                    {user.role}
+                  </p>
+                  <button
+                    disabled={followedUsers.includes(user.id)}
+                    onClick={() =>
+                      setFollowedUsers([...followedUsers, user.id])
+                    }
+                    className={`mt-3 w-full py-1.5 rounded-full text-xs font-medium
+                    ${
+                      followedUsers.includes(user.id)
+                        ? "bg-gray-600 cursor-not-allowed"
+                        : "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
+                    }`}
+                  >
+                    {followedUsers.includes(user.id)
+                      ? "Following"
+                      : "Follow"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        {/* SIDEBAR - Desktop Only */}
+        <aside className="hidden lg:block w-[280px]">
+          <div
+            className={`p-4 rounded-xl border border-gray-300/30 ${theme.cardBg}`}
+          >
+            <h3 className={`font-semibold mb-3 ${theme.textPrimary}`}>
+              News
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li className={theme.textSecondary}>React 19 released</li>
+              <li className={theme.textSecondary}>Hiring trends 2026</li>
+              {showMoreNews && (
+                <>
+                  <li className={theme.textSecondary}>
+                    Remote jobs increase
+                  </li>
+                  <li className={theme.textSecondary}>
+                    AI in recruitment
+                  </li>
+                </>
+              )}
+            </ul>
+            <button
+              onClick={() => setShowMoreNews(!showMoreNews)}
+              className={`mt-3 text-sm font-semibold ${theme.primaryText}`}
+            >
+              {showMoreNews ? "Show less" : "Show more"}
+            </button>
+          </div>
+        </aside>
+
+      </div>
     </div>
   );
 };

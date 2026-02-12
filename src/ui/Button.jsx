@@ -1,31 +1,25 @@
-const Button = ({
-  children,
-  variant = "primary",
-  disabled = false,
-  loading = false,
-  onClick,
-  type = "button",
-  fullWidth = false,
-}) => {
-  const baseStyle =
-    "px-4 py-3 rounded-lg font-semibold transition text-sm";
+import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
-  const variants = {
-    primary: "bg-[#0ea5e9] text-white hover:bg-[#0284c7]",
-    secondary: "bg-gray-200 text-black hover:bg-gray-300",
+const Button = ({ children, onClick, type = "button", loading, fullWidth, variant = "primary" }) => {
+  const { theme } = useTheme();
+
+  const variantClasses = {
+    primary: `${theme.primary} text-white ${theme.primaryHover}`,
+    secondary: `${theme.border} border ${theme.textPrimary} ${theme.hover}`,
+    danger: `${theme.danger} text-white hover:bg-red-600`,
   };
 
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled || loading}
-      className={`
-        ${baseStyle}
-        ${variants[variant]}
-        ${fullWidth ? "w-full" : ""}
-        ${disabled || loading ? "opacity-50 cursor-not-allowed" : ""}
-      `}
+      disabled={loading}
+      className={`px-6 py-3 rounded-lg font-medium text-sm transition-colors ${
+        fullWidth ? "w-full" : ""
+      } ${variantClasses[variant]} ${
+        loading ? "opacity-50 cursor-not-allowed" : ""
+      }`}
     >
       {loading ? "Loading..." : children}
     </button>

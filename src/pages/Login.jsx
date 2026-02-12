@@ -19,39 +19,84 @@ const LoginForm = () => {
 
   const { login } = useAuth();
 
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   let newError = {};
+
+  //   if (!email) {
+  //     newError.email = "Email is required";
+  //   }
+
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  //   if (!emailRegex.test(email)) {
+  //     newError.email = "Invalid email format";
+  //   }
+
+  //   if (!password) {
+  //     newError.password = "Password is required";
+  //   } else if (password.length < 8) {
+  //     newError.password = "Password must be at least 8 characters long";
+  //   }
+
+  //   setError(newError);
+
+  //   if (Object.keys(newError).length === 0) {
+  //     setLoading(true);
+
+  //     setTimeout(() => {
+  //       login(email);
+  //       showToast("Logged in successfully", "success")
+  //       navigate("/app");
+  //       setLoading(false);
+  //     }, 1500);
+  //   }
+  // };
+
   const handleSubmit = (e) => {
-    e.preventDefault();
-    let newError = {};
+  e.preventDefault();
+  let newError = {};
 
-    if (!email) {
-      newError.email = "Email is required";
-    }
+  if (!email) {
+    newError.email = "Email is required";
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
-      newError.email = "Invalid email format";
-    }
+  if (!emailRegex.test(email)) {
+    newError.email = "Invalid email format";
+  }
 
-    if (!password) {
-      newError.password = "Password is required";
-    } else if (password.length < 8) {
-      newError.password = "Password must be at least 8 characters long";
-    }
+  if (!password) {
+    newError.password = "Password is required";
+  } else if (password.length < 8) {
+    newError.password = "Password must be at least 8 characters long";
+  }
 
-    setError(newError);
+  setError(newError);
 
-    if (Object.keys(newError).length === 0) {
-      setLoading(true);
+  if (Object.keys(newError).length === 0) {
+    setLoading(true);
 
-      setTimeout(() => {
-        login(email);
-        showToast("Logged in successfully", "success")
+    setTimeout(() => {
+      // For demo: assume role based on email domain or use a stored role
+      // In real app, backend would return user role after login
+      const demoRole = email.includes("employer") ? "employer" : "candidate";
+      
+      login(email, demoRole); // Pass role to login function
+      showToast("Logged in successfully", "success");
+      
+      // Role-based redirect
+      if (demoRole === "employer") {
         navigate("/app");
-        setLoading(false);
-      }, 1500);
-    }
-  };
+      } else {
+        navigate("/app");
+      }
+      
+      setLoading(false);
+    }, 1500);
+  }
+};
 
   const handleSignUpRedirect = () => {
     navigate("/register");

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 const Input = ({
   label,
@@ -10,10 +11,12 @@ const Input = ({
   error,
   rightElement,
 }) => {
+  const { theme } = useTheme();
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-xs font-medium mb-2 text-gray-600">
+        <label className={`block text-xs font-medium mb-2 ${theme.textSecondary}`}>
           {label}
         </label>
       )}
@@ -25,9 +28,10 @@ const Input = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm shadow-lg shadow-gray-900 bg-white text-black"
+          className={`w-full px-4 py-3 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} ${theme.focus} text-sm outline-none ${
+            rightElement ? "pr-16" : ""
+          }`}
         />
-
         {rightElement && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {rightElement}

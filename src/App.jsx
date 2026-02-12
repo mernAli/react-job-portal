@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -12,41 +12,68 @@ import AuthLayout from "./layouts/AuthLayout";
 import ToastProvider from "./ui/toast/ToastProvider";
 import UIDemo from "./pages/UIDemo";
 import { AuthProvider } from "./context/AuthProvider";
+import { ThemeProvider } from "./context/ThemeContext";
+
+// Candidate pages
+import BrowseJobs from "./pages/candidate/BrowseJobs";
+import MyApplications from "./pages/candidate/MyApplications";
+import Profile from "./pages/candidate/Profile";
+
+// Employer pages
+import PostJob from "./pages/employer/PostJob";
+import MyJobs from "./pages/employer/MyJobs";
+import Applications from "./pages/employer/Applications";
 
 function App() {
   return (
-    <ToastProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Landing />} />
+    <ThemeProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={<Landing />} />
 
-            {/* Auth pages */}
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Route>
+              {/* Auth pages */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Route>
 
-            {/* Protected */}
-            <Route
-              path="/app"
-              element={
-                <PrivateRoute>
-                  <AppLayout />
-                </PrivateRoute>
-              }
-            >
-              <Route index element={<Home />} />
-              <Route path="jobs" element={<Jobs />} />
-              <Route path="network" element={<Network />} />
-              <Route path="notifications" element={<Notification />} />
-              <Route path="ui-demo" element={<UIDemo />} />
-            </Route>
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </ToastProvider>
+              {/* Protected Routes - Both roles share same structure */}
+              <Route
+                path="/app"
+                element={
+                  <PrivateRoute>
+                    <AppLayout />
+                  </PrivateRoute>
+                }
+              >
+                {/* Common pages for both roles */}
+                <Route index element={<Home />} />
+                <Route path="home" element={<Home />} />
+                <Route path="jobs" element={<Jobs />} />
+                <Route path="network" element={<Network />} />
+                <Route path="notifications" element={<Notification />} />
+                <Route path="profile" element={<Profile />} />
+
+                {/* Candidate specific */}
+                <Route path="browse-jobs" element={<BrowseJobs />} />
+                <Route path="my-applications" element={<MyApplications />} />
+
+                {/* Employer specific */}
+                <Route path="post-job" element={<PostJob />} />
+                <Route path="my-jobs" element={<MyJobs />} />
+                <Route path="applications" element={<Applications />} />
+
+                {/* UI Demo */}
+                <Route path="ui-demo" element={<UIDemo />} />
+              </Route>
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 

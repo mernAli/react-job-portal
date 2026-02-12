@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { useToast } from "../ui/toast/useToast"
+import Select from "../ui/Select";
+import { useToast } from "../ui/toast/useToast";
 import { useAuth } from "../context/useAuth";
-
 
 const Register = () => {
   const navigate = useNavigate();
@@ -14,21 +14,25 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "", // New field for role
   });
 
   const [error, setError] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState("light"); // light, dark, darker
+  const [theme, setTheme] = useState("light");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const { showToast } = useToast()
+  const { showToast } = useToast();
+  const { register: registerUser } = useAuth();
 
-  const { login } = useAuth();
-  
+  const roleOptions = [
+    { value: "candidate", label: "Candidate (Job Seeker)" },
+    { value: "employer", label: "Employer (Recruiter)" },
+  ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,8 +42,6 @@ const Register = () => {
     e.preventDefault();
 
     const newError = {};
-
-    
 
     if (!formData.name) newError.name = "Name is required";
 
@@ -52,6 +54,8 @@ const Register = () => {
     if (formData.password !== formData.confirmPassword)
       newError.confirmPassword = "Passwords do not match";
 
+    if (!formData.role) newError.role = "Please select your role";
+
     if (!agreeTerms) newError.agreeTerms = "Check the agree term box";
 
     setError(newError);
@@ -60,13 +64,16 @@ const Register = () => {
       setLoading(true);
 
       setTimeout(() => {
-        login(formData.email);
-        console.log("Submit Clicked");
+        registerUser(formData.name, formData.email, formData.role);
+        showToast("Account created successfully", "success");
         
-        showToast("Account created successfully", "success")
-        console.log("Toast called");
+        // Role-based redirect
+        if (formData.role === "employer") {
+          navigate("/app");
+        } else {
+          navigate("/app/candidate");
+        }
         
-        navigate("/app");
         setLoading(false);
       }, 1500);
     }
@@ -80,7 +87,7 @@ const Register = () => {
     navigate("/login");
   };
 
-  // Theme configurations
+  // Theme configurations (keep your existing themes object)
   const themes = {
     light: {
       bg: "bg-[#1a2758]",
@@ -141,7 +148,7 @@ const Register = () => {
     <div
       className={`h-screen w-full flex flex-col overflow-hidden ${currentTheme.bg} font-sans relative`}
     >
-      {/* Theme Selector - Positioned at top right */}
+      {/* Theme Selector */}
       <div className="absolute top-4 right-4 z-50 flex gap-2">
         <button
           onClick={() => setTheme("light")}
@@ -229,8 +236,6 @@ const Register = () => {
                 onChange={handleChange}
                 error={error.name}
               />
-
-              
             </div>
 
             {/* Email Input */}
@@ -244,7 +249,18 @@ const Register = () => {
                 onChange={handleChange}
                 error={error.email}
               />
-              
+            </div>
+
+            {/* Role Selection - NEW */}
+            <div className="mb-4">
+              <Select
+                label="Register as"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                options={roleOptions}
+                error={error.role}
+              />
             </div>
 
             {/* Password Input */}
@@ -267,14 +283,10 @@ const Register = () => {
                   </button>
                 }
               />
-
-              
-              
             </div>
 
             {/* Confirm Password Input */}
             <div className="mb-4">
-              
               <Input
                 label="Confirm Password"
                 type={showConfirmPassword ? "text" : "password"}
@@ -293,8 +305,6 @@ const Register = () => {
                   </button>
                 }
               />
-
-              
             </div>
 
             {/* Terms and Conditions Checkbox */}
@@ -312,7 +322,6 @@ const Register = () => {
               >
                 I agree to the Terms & Conditions and Privacy Policy
               </label>
-
               {error.agreeTerms && (
                 <div className="text-xs text-red-500 mt-1">
                   {error.agreeTerms}
@@ -320,7 +329,7 @@ const Register = () => {
               )}
             </div>
 
-            {/* Sign Up Button from ui folder created as per the part of the Day: 15 task */}
+            {/* Sign Up Button */}
             <Button type="submit" loading={loading} fullWidth>
               Sign Up
             </Button>
@@ -364,7 +373,6 @@ const Register = () => {
         {/* Right: Illustration (Desktop only) */}
         <div className="hidden lg:block">
           <div className="relative">
-            {/* Main illustration container */}
             <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 rounded-2xl p-8 border border-blue-700/30">
               <img
                 src="/images/Register.png.png"
