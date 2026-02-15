@@ -20,10 +20,10 @@ const Topbar = () => {
 
   // Navigation items based on role
   const navItems = [
-    { path: "/app/home", label: "Home", icon: "🏠" },
-    { path: "/app/network", label: "My Network", icon: "👥" },
-    { path: "/app/notifications", label: "Notification", icon: "🔔" },
-    { path: "/app/jobs", label: "Jobs", icon: "💼" },
+    { path: "/app/home", label: "Home", icon: "🏠︎" },
+    { path: "/app/network", label: "My Network", icon: "𐦂𖨆𐀪𖠋" },
+    { path: "/app/notifications", label: "Notification", icon: "🕭" },
+    { path: "/app/jobs", label: "Jobs", icon: ".⋅˚₊‧ 🜲 ‧₊˚ ⋅" },
   ];
 
   return (
@@ -38,12 +38,12 @@ const Topbar = () => {
           </div>
 
           {/* Center: Search Bar (Desktop) */}
-          <div className="hidden lg:flex flex-1 max-w-xl">
+          <div className="hidden lg:flex flex-1 max-w-xl ">
             <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Search"
-                className={`w-full px-4 py-2 pl-10 ${theme.cardBg} ${theme.border} border rounded-lg ${theme.focus} ${theme.textPrimary} text-sm outline-none`}
+                className={`w-full px-4 py-2 pl-10 bg-white ${theme.border} border rounded-lg ${theme.focus} text-gray-700 text-sm outline-none`}
               />
               <svg
                 className={`w-5 h-5 ${theme.textMuted} absolute left-3 top-2.5`}
@@ -64,15 +64,15 @@ const Topbar = () => {
           {/* Right: Navigation + Profile + Actions */}
           <div className="flex items-center gap-2 lg:gap-6 ml-4">
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5 bg-white h-12 rounded-lg ml-3">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                    `flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${
                       isActive
-                        ? theme.secondaryText
+                        ? 'text-black'
                         : theme.textMuted
                     } hover:${theme.hover}`
                   }
@@ -88,7 +88,7 @@ const Topbar = () => {
 
             {/* For Business Dropdown (Desktop) */}
             <button
-              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:text-black ${theme.secondaryText} text-sm`}
+              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}
             >
               <span className="text-lg " >🏢</span>
               <span>For Business</span>
@@ -97,7 +97,7 @@ const Topbar = () => {
 
             {/* Try Premium Button (Desktop) */}
             <button
-              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white hover:text-black ${theme.secondaryText} text-sm`}
+              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}
             >
               <span className="text-lg ">👑</span>
               <span>Try Premium</span>
@@ -271,7 +271,7 @@ const Topbar = () => {
         <div className="flex gap-3 justify-end">
           <button
             onClick={() => setShowLogoutModal(false)}
-            className={`px-4 py-2 ${theme.border} border rounded-lg ${theme.hover} text-sm`}
+            className={`px-4 py-2 ${theme.border} border rounded-lg ${theme.hover} text-sm text-white`}
           >
             Cancel
           </button>

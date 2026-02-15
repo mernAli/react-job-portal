@@ -1,215 +1,301 @@
 import { useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/ThemeContext";
-import Input from "../../ui/Input";
-import Button from "../../ui/Button";
 import { useToast } from "../../ui/toast/useToast";
 
 const Profile = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
-  const [loading, setLoading] = useState(false);
 
-  const [profileData, setProfileData] = useState({
+  const [profileData] = useState({
     name: user?.name || "",
-    email: user?.email || "",
-    phone: "+1 234 567 8901",
-    location: "New York, NY",
-    title: "Full Stack Developer",
-    experience: "5 years",
-    bio: "Passionate developer with expertise in React, Node.js, and modern web technologies. Always eager to learn and build innovative solutions.",
-    skills: "React, Node.js, JavaScript, TypeScript, MongoDB",
-    education: "Bachelor's in Computer Science",
-    linkedin: "https://linkedin.com/in/johndoe",
-    github: "https://github.com/johndoe",
-    portfolio: "https://johndoe.dev",
+    title: user?.role === "employer" ? "Hiring Manager" : "Developer",
+    location: "Kerala",
+    followers: 0,
+    following: 0,
+    followingPages: 0,
+    viewers: 3,
+    about: "No bio",
+    activity: "No activities",
+    education: {
+      institution: "St. Aloysius College Mangalore- Mangalore",
+      degree: "Computer Engineering",
+      years: "2021-2025",
+    },
   });
 
-  const handleChange = (e) => {
-    setProfileData({ ...profileData, [e.target.name]: e.target.value });
-  };
+  const [messages] = useState([
+    { id: 1, name: "Zamira lopez", avatar: "👤", online: true },
+    { id: 2, name: "Magna Fox", avatar: "👤", online: false },
+    { id: 3, name: "Zamira lopez", avatar: "👤", online: true },
+  ]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const [news] = useState([
+    {
+      id: 1,
+      title: "Breakthrough in solar battery technology",
+      time: "2h ago",
+      readers: "762,682",
+    },
+    {
+      id: 2,
+      title: "Neuralink achieves wireless brain-testing",
+      time: "5h ago",
+      readers: "542,800",
+    },
+    {
+      id: 3,
+      title: "Global oil prices fall amid green energy shift",
+      time: "8h ago",
+      readers: "423,156",
+    },
+    {
+      id: 4,
+      title: "EduTech platforms merge to form new giant",
+      time: "9h ago",
+      readers: "0,190",
+    },
+    {
+      id: 5,
+      title: "Remote work visa launched in 10 new countries",
+      time: "1d ago",
+      readers: "2,365",
+    },
+  ]);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Profile Updated:", profileData);
-      showToast("Profile updated successfully!", "success");
-      setLoading(false);
-    }, 1500);
-  };
+  const [showAllMessages, setShowAllMessages] = useState(false);
+  const [showAllNews, setShowAllNews] = useState(false);
+
+  const displayedMessages = showAllMessages ? messages : messages.slice(0, 3);
+  const displayedNews = showAllNews ? news : news.slice(0, 5);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>My Profile</h1>
-        <p className={`${theme.textSecondary} mt-2`}>
-          Update your information to improve your visibility to employers
-        </p>
-      </div>
+    <div className="flex gap-6">
+      {/* Center Content */}
+      <div className="flex-1 space-y-4">
+        {/* Profile Header Card */}
+        <div
+          className={`${theme.bg}  overflow-hidden`}
+        >
+          {/* Profile Header Background */}
+          <div className={`${theme.cardBg} h-27`}></div>
 
-      {/* Profile Picture Section */}
-      <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
-          Profile Picture
-        </h2>
-        <div className="flex items-center gap-6">
-          <div className={`w-24 h-24 ${theme.primary} rounded-full flex items-center justify-center text-white text-3xl font-bold`}>
-            {user?.name?.charAt(0).toUpperCase() || "U"}
+          {/* Profile Info */}
+          <div className="relative px-6 -mt-16 -pb-6">
+            <div className="flex items-end justify-between">
+              {/* Avatar and Name */}
+              <div className="flex items-end gap-4">
+                <div className="w-30 h-30 rounded-full bg-white border-4 border-white flex items-center justify-center overflow-hidden">
+                  <p className="text-4xl">👤</p>
+                </div>
+                <div className="pb-2 mb-16">
+                  <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
+                    {profileData.name}
+                  </h1>
+                  <p className={`text-sm ${theme.textSecondary} mt-1`}>
+                    {profileData.title}
+                  </p>
+                  <p className={`text-xs ${theme.textMuted} mt-1`}>
+                    {profileData.location}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className={`flex gap-3 pb-2 mt-5 ${theme.bg}`}>
+              <button
+                className={`px-6 py-2 ${theme.primary} ${theme.secondaryText} rounded-lg ${theme.primaryHover} font-medium text-sm flex items-center gap-2`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                </svg>
+                Follow
+              </button>
+              <button
+                className={`px-6 py-2 ${theme.cardBg} ${theme.textPrimary} ${theme.border} border rounded-lg ${theme.hover} font-medium text-sm flex items-center gap-2`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Message
+              </button>
+            </div>
           </div>
+
+          {/* Stats Bar */}
+          <div className={`border-t ${theme.border} px-6 py-4 mt-5 rounded-xl ${theme.cardBg}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex gap-12">
+                <div className="text-center">
+                  <p className={`text-xs ${theme.textMuted} mb-1`}>Followers</p>
+                  <p className={`text-lg font-semibold ${theme.textPrimary}`}>
+                    {profileData.followers}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-xs ${theme.textMuted} mb-1`}>Following</p>
+                  <p className={`text-lg font-semibold ${theme.textPrimary}`}>
+                    {profileData.following}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-xs ${theme.textMuted} mb-1`}>
+                    Following pages
+                  </p>
+                  <p className={`text-lg font-semibold ${theme.textPrimary}`}>
+                    {profileData.followingPages}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-xs ${theme.textMuted} mb-1`}>Viewers</p>
+                  <p className={`text-lg font-semibold ${theme.accentText}`}>
+                    {profileData.viewers}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* About Section */}
+        <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6`}>
+          <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-3`}>
+            About
+          </h2>
+          <p className={`text-sm ${theme.textSecondary}`}>
+            {profileData.about}
+          </p>
+        </div>
+
+        {/* Activity Section */}
+        <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6`}>
+          <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-3`}>
+            Activity
+          </h2>
+          <p className={`text-sm ${theme.textSecondary}`}>
+            {profileData.activity}
+          </p>
+        </div>
+
+        {/* Education Section */}
+        <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6`}>
+          <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
+            Education
+          </h2>
           <div>
-            <button className={`px-4 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm`}>
-              Upload Photo
-            </button>
-            <p className={`text-xs ${theme.textMuted} mt-2`}>
-              JPG or PNG. Max size of 2MB.
+            <h3 className={`font-semibold ${theme.textPrimary} text-sm`}>
+              {profileData.education.institution}
+            </h3>
+            <p className={`text-sm ${theme.textSecondary} mt-1`}>
+              {profileData.education.degree}
+            </p>
+            <p className={`text-xs ${theme.textMuted} mt-1`}>
+              {profileData.education.years}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Personal Information */}
-      <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
-          Personal Information
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Input
-              label="Full Name"
-              name="name"
-              value={profileData.name}
-              onChange={handleChange}
-            />
-            <Input
-              label="Email"
-              name="email"
-              type="email"
-              value={profileData.email}
-              onChange={handleChange}
-            />
-            <Input
-              label="Phone Number"
-              name="phone"
-              value={profileData.phone}
-              onChange={handleChange}
-            />
-            <Input
-              label="Location"
-              name="location"
-              value={profileData.location}
-              onChange={handleChange}
-            />
-          </div>
-
-          <Input
-            label="Professional Title"
-            name="title"
-            placeholder="e.g. Full Stack Developer"
-            value={profileData.title}
-            onChange={handleChange}
-          />
-
-          <Input
-            label="Years of Experience"
-            name="experience"
-            placeholder="e.g. 5 years"
-            value={profileData.experience}
-            onChange={handleChange}
-          />
-
-          <div>
-            <label className={`block text-xs font-medium mb-2 ${theme.textSecondary}`}>
-              Bio
-            </label>
-            <textarea
-              name="bio"
-              value={profileData.bio}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Tell employers about yourself..."
-              className={`w-full px-4 py-3 rounded-lg ${theme.border} border ${theme.textPrimary} ${theme.focus} ${theme.cardBg} text-sm resize-none outline-none`}
-            />
-          </div>
-
-          <Input
-            label="Skills (comma separated)"
-            name="skills"
-            placeholder="e.g. React, Node.js, MongoDB"
-            value={profileData.skills}
-            onChange={handleChange}
-          />
-
-          <Input
-            label="Education"
-            name="education"
-            placeholder="e.g. Bachelor's in Computer Science"
-            value={profileData.education}
-            onChange={handleChange}
-          />
-
-          {/* Social Links */}
-          <div className={`border-t ${theme.border} pt-5 mt-5`}>
-            <h3 className={`text-md font-semibold ${theme.textPrimary} mb-4`}>
-              Social Links
-            </h3>
-            <div className="space-y-4">
-              <Input
-                label="LinkedIn Profile"
-                name="linkedin"
-                placeholder="https://linkedin.com/in/yourprofile"
-                value={profileData.linkedin}
-                onChange={handleChange}
-              />
-              <Input
-                label="GitHub Profile"
-                name="github"
-                placeholder="https://github.com/yourprofile"
-                value={profileData.github}
-                onChange={handleChange}
-              />
-              <Input
-                label="Portfolio Website"
-                name="portfolio"
-                placeholder="https://yourportfolio.com"
-                value={profileData.portfolio}
-                onChange={handleChange}
-              />
+      {/* Right Sidebar */}
+      <div className="w-80 flex-shrink-0 space-y-4">
+        {/* Messages Section */}
+        <div
+          className={` bg-white rounded-xl ${theme.shadow} overflow-hidden`}
+        >
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg
+                className={`w-5 h-5 ${theme.textSecondary}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <h2 className={`font-semibold ${theme.textPrimary}`}>Messages</h2>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" loading={loading} fullWidth>
-              Save Changes
-            </Button>
-            <button
-              type="button"
-              className={`px-6 py-3 ${theme.border} border rounded-lg ${theme.hover} font-medium`}
-            >
-              Cancel
-            </button>
+          <div className={`border-t ${theme.border}`}>
+            {displayedMessages.map((message) => (
+              <button
+                key={message.id}
+                className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-300 transition-colors`}
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${message.avatar}&background=E8F4F8&color=1B365D&size=64`}
+                      alt={message.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {message.online && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  )}
+                </div>
+                <p className={`text-sm ${theme.textPrimary} text-left`}>
+                  {message.name}
+                </p>
+              </button>
+            ))}
           </div>
-        </form>
-      </div>
 
-      {/* Resume Section */}
-      <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>Resume</h2>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <p className={`text-sm ${theme.textSecondary}`}>
-              Upload your resume to make it easier for employers to review your
-              qualifications
-            </p>
-            <p className={`text-xs ${theme.textMuted} mt-1`}>PDF format, max 5MB</p>
+          <button
+            onClick={() => setShowAllMessages(!showAllMessages)}
+            className={`w-full py-3 text-center text-sm ${theme.primaryText} font-medium hover:bg-gray-500  border-t ${theme.border}`}
+          >
+            {showAllMessages ? "Show less" : "Show more"} ▼
+          </button>
+        </div>
+
+        {/* News Section */}
+        <div
+          className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}
+        >
+          <div className="p-4 ">
+            <h2 className={`font-semibold ${theme.textPrimary} mb-1`}>News</h2>
+            <p className={`text-xs ${theme.textMuted}`}>Top stories</p>
           </div>
-          <button className={`px-4 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm whitespace-nowrap`}>
-            Upload Resume
+
+          <div className={`border-t ${theme.border}`}>
+            {displayedNews.map((item) => (
+              <button
+                key={item.id}
+                className={`w-full px-4 py-3 text-left hover:bg-gray-300 transition-colors`}
+              >
+                <h3 className={`text-sm font-medium ${theme.textPrimary} mb-1`}>
+                  {item.title}
+                </h3>
+                <p className={`text-xs ${theme.textMuted}`}>
+                  {item.time} • {item.readers} readers
+                </p>
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowAllNews(!showAllNews)}
+            className={`w-full py-3 text-center hover:bg-gray-500 text-sm ${theme.primaryText} font-medium ${theme.hover} border-t ${theme.border}`}
+          >
+            {showAllNews ? "Show less" : "Show more"} ▼
           </button>
         </div>
       </div>

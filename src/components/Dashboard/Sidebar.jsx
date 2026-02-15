@@ -5,66 +5,86 @@ const Sidebar = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
 
+   const currentUser = {
+    name: "Mike Riz",
+    title: "UI/UX Designer",
+    company: "Kochi, Ernakulam",
+    avatar: "MR",
+    followers: 245,
+    following: 189,
+    pages: 12,
+  };
+
   return (
     <aside
-      className={`w-64 ${theme.sidebarBg} ${theme.border} border-r h-screen fixed left-0 top-0 overflow-y-auto hidden lg:block z-20`}
+      className={`w-64 ${theme.bg} ${theme.border} h-screen fixed left-0 top-0 overflow-y-auto hidden lg:block z-20`}
     >
       {/* Logo Section */}
-      <div className={`p-4 bg-blue-950 ${theme.border} border-b`}>
-        <h1 className={`text-2xl font-bold ${theme.textSecondary}`}>ZECPATH</h1>
+      <div className={`p-4 bg-blue-950`}>
+        <h1 className={`text-2xl font-bold text-white`}>ZECPATH</h1>
       </div>
 
-      {/* User Profile Card */}
-      <div className={`p-6 ${theme.border} border-b`}>
-        {/* Profile Picture with Background */}
-        <div className="relative mb-4">
-          <div className={`h-20 ${theme.primary} rounded-t-lg`}></div>
-          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-            <div className={`w-20 h-20 ${theme.primary} rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 ${theme.sidebarBg}`}>
-              {user?.name?.charAt(0).toUpperCase() || "U"}
+       {/* Left Sidebar - Profile Card */}
+      <div className="w-64 flex-shrink-0 mt-10 ml-10">
+        <div className={`${theme.cardBg}  ${theme.shadow} overflow-hidden`}>
+          {/* Profile Header */}
+          <div className={`bg-blue-950 h-20`}></div>
+          
+          {/* Avatar */}
+          <div className="relative px-6 -mt-10 pb-4">
+            <div className="w-20 h-20 rounded-full bg-white border-4 border-white flex items-center justify-center overflow-hidden">
+              <div className={`w-full h-full ${theme.infoBg} flex items-center justify-center text-2xl font-bold ${theme.primaryText}`}>
+                👤
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* User Info */}
-        <div className="mt-10 text-center">
-          <h3 className={`font-semibold ${theme.textPrimary}`}>
-            {user?.name || "User"}
-          </h3>
-          <p className={`text-sm ${theme.textSecondary} mt-1`}>
-            {user?.role === "employer" ? "UI/UX Designer" : "Full Stack Developer"}
-          </p>
-          <p className={`text-xs ${theme.textMuted} mt-1`}>
-            Kochi, Ernakulam
-          </p>
-        </div>
-
-        {/* Divider */}
-        <div className={`my-4 border-t ${theme.border}`}></div>
-
-        {/* Quick Links */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className={`text-xs ${theme.textMuted}`}>Profile viewers</span>
-            <span className={`text-xs font-semibold ${theme.primaryText}`}>48</span>
+          {/* Profile Info */}
+          <div className="px-6 pb-4">
+            <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
+              {user?.name || "Guest User"}
+            </h2>
+            <p className={`text-sm ${theme.textSecondary} mt-1`}>
+              {user?.role === "employer" ? "Hiring Manager" : "Developer"}
+            </p>
+            <p className={`text-xs ${theme.textMuted} mt-1`}>
+              {currentUser.company}
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <span className={`text-xs ${theme.textMuted}`}>Post impressions</span>
-            <span className={`text-xs font-semibold ${theme.primaryText}`}>1,234</span>
+
+          {/* Stats */}
+          <div className={`border-t ${theme.border}`}>
+            <button className={`w-full px-6 py-3 flex items-center gap-3 ${theme.hover} transition-colors`}>
+              <svg className={`w-5 h-5 ${theme.textSecondary}`} fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+              <div className="flex-1 text-left">
+                <p className={`text-xs ${theme.textMuted}`}>Followers</p>
+                <p className={`text-sm font-semibold ${theme.textPrimary}`}>{currentUser.followers}</p>
+              </div>
+            </button>
+
+            <button className={`w-full px-6 py-3 flex items-center gap-3 ${theme.hover} transition-colors`}>
+              <svg className={`w-5 h-5 ${theme.textSecondary}`} fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+              </svg>
+              <div className="flex-1 text-left">
+                <p className={`text-xs ${theme.textMuted}`}>Following</p>
+                <p className={`text-sm font-semibold ${theme.textPrimary}`}>{currentUser.following}</p>
+              </div>
+            </button>
+
+            <button className={`w-full px-6 py-3 flex items-center gap-3 ${theme.hover} transition-colors`}>
+              <svg className={`w-5 h-5 ${theme.textSecondary}`} fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1 text-left">
+                <p className={`text-xs ${theme.textMuted}`}>Pages</p>
+                <p className={`text-sm font-semibold ${theme.textPrimary}`}>{currentUser.pages}</p>
+              </div>
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Saved Items Section */}
-      <div className="p-4">
-        <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg ${theme.hover} transition-colors ${theme.textPrimary}`}>
-          <span className="text-lg">🔖</span>
-          <span className="text-sm font-medium">Saved</span>
-        </button>
-        <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg ${theme.hover} transition-colors ${theme.textPrimary} mt-2`}>
-          <span className="text-lg">📧</span>
-          <span className="text-sm font-medium">Newsletter</span>
-        </button>
       </div>
 
       {/* Footer Section */}

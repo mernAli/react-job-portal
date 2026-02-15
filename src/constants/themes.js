@@ -2,7 +2,7 @@ export const themes = {
   light: {
     // Background colors
     bg: "bg-[#F5F3EF]", // Beige/cream background
-    cardBg: "bg-white",
+    cardBg: "bg-gradient-to-br from-[#dadadc] to-[#898eac]", // Subtle gradient for cards
     sidebarBg: "bg-white",
     topbarBg: "bg-white",
     
@@ -20,6 +20,7 @@ export const themes = {
     secondaryText: "text-[#ffffff]",
     primaryHover: "hover:bg-[#152948]",
     primaryBorder: "border-[#1B365D]",
+    profilePrimary: "bg-[#c7cada]",
     
     // Secondary/accent (Orange from design)
     accent: "bg-[#FF6B35]",
@@ -56,7 +57,7 @@ export const themes = {
   dark: {
     // Background colors
     bg: "bg-[#2C2C2C]", // Dark gray background
-    cardBg: "bg-[#383838]",
+    cardBg: "bg-[#57575d]",
     sidebarBg: "bg-[#383838]",
     topbarBg: "bg-[#383838]",
     
@@ -73,6 +74,7 @@ export const themes = {
     primaryText: "text-[#4A90E2]",
     primaryHover: "hover:bg-[#152948]",
     primaryBorder: "border-[#4A90E2]",
+    profilePrimary: "bg-[#57575d]",
     
     // Secondary/accent
     accent: "bg-[#FF6B35]",
@@ -109,7 +111,7 @@ export const themes = {
   darker: {
     // Background colors
     bg: "bg-black",
-    cardBg: "bg-[#1A1A1A]",
+    cardBg: "bg-[#3C3C43]",
     sidebarBg: "bg-[#1A1A1A]",
     topbarBg: "bg-[#1A1A1A]",
     
@@ -126,6 +128,8 @@ export const themes = {
     primaryText: "text-[#4A90E2]",
     primaryHover: "hover:bg-[#152948]",
     primaryBorder: "border-[#4A90E2]",
+    profilePrimary: "bg-[#c7cada]",
+    
     
     // Secondary/accent
     accent: "bg-[#FF6B35]",

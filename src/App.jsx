@@ -13,6 +13,7 @@ import ToastProvider from "./ui/toast/ToastProvider";
 import UIDemo from "./pages/UIDemo";
 import { AuthProvider } from "./context/AuthProvider";
 import { ThemeProvider } from "./context/ThemeContext";
+import JobDetails from "./pages/JobDetails";
 
 // Candidate pages
 import BrowseJobs from "./pages/candidate/BrowseJobs";
@@ -68,6 +69,8 @@ function App() {
 
                 {/* UI Demo */}
                 <Route path="ui-demo" element={<UIDemo />} />
+
+                <Route path="jobs/:jobId" element={<JobDetails />} />
               </Route>
             </Routes>
           </AuthProvider>

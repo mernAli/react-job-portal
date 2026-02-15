@@ -65,7 +65,7 @@ const Register = () => {
 
       setTimeout(() => {
         registerUser(formData.name, formData.email, formData.role);
-        showToast("Account created successfully", "success");
+        
         
         // Role-based redirect
         if (formData.role === "employer") {
@@ -75,6 +75,7 @@ const Register = () => {
         }
         
         setLoading(false);
+        showToast("Account created successfully", "success");
       }, 1500);
     }
   };
