@@ -34,7 +34,7 @@ const Topbar = () => {
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           {/* Left: Logo (Mobile only) */}
           <div className="lg:hidden ">
-            <h1 className={`text-xl font-bold ${theme.primaryText}`}>ZECPATH</h1>
+            <h1 className={`text-xl font-bold text-white`}>ZECPATH</h1>
           </div>
 
           {/* Center: Search Bar (Desktop) */}

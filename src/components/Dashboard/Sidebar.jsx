@@ -25,8 +25,8 @@ const Sidebar = () => {
       </div>
 
        {/* Left Sidebar - Profile Card */}
-      <div className="w-64 flex-shrink-0 mt-10 ml-10">
-        <div className={`${theme.cardBg}  ${theme.shadow} overflow-hidden`}>
+      <div className="w-50 flex-shrink-0 mt-10 ml-10 rounded-lg">
+        <div className={`${theme.cardBg}  ${theme.shadow} overflow-hidden rounded-lg`}>
           {/* Profile Header */}
           <div className={`bg-blue-950 h-20`}></div>
           
