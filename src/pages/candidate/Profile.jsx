@@ -3,6 +3,8 @@ import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/ThemeContext";
 import { useToast } from "../../ui/toast/useToast";
 import Input from "../../ui/Input";
+import SidebarJobs from "../../components/Dashboard/SideBarJobs";
+import Sidebar from "../../components/Dashboard/Sidebar";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -304,6 +306,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
+      <Sidebar />
       <div className="lg:flex lg:gap-6 lg:px-6">
         {/* Center Content */}
         <div className="flex-1 space-y-4 lg:space-y-4">

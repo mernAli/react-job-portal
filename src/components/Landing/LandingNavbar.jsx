@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LandingNavbar = ({ onJobsClick, onFeateresClick, onContactsClick }) => {
+const LandingNavbar = ({ onHomeClick, onJobsClick, onFeateresClick, onContactsClick }) => {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate()
 
   return (
-    <nav className="w-full bg-black text-white px-6 py-4">
+    <nav className="fixed top-0 left-0 w-full bg-black text-white px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="text-xl font-bold text-blue-500">
@@ -16,7 +16,12 @@ const LandingNavbar = ({ onJobsClick, onFeateresClick, onContactsClick }) => {
 
         {/* Desktop Links */}
         <ul className="hidden md:flex gap-8 text-gray-300">
-          <li className="hover:text-blue-500 cursor-pointer">Home</li>
+          <li 
+            className="hover:text-blue-500 cursor-pointer"
+            onClick={onHomeClick}
+          >
+            Home
+          </li>
 
           <li 
             className="hover:text-blue-500 cursor-pointer"
@@ -60,7 +65,15 @@ const LandingNavbar = ({ onJobsClick, onFeateresClick, onContactsClick }) => {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden mt-4 bg-[#111] rounded-xl p-4 space-y-4">
-          <p className="text-gray-300">Home</p>
+          <p 
+            className="text-gray-300 cursor-pointer"
+            onClick={() => {
+              onHomeClick()
+              setOpen(false)
+            }}
+          >
+            Home
+          </p>
 
           <p 
             className="text-gray-300"

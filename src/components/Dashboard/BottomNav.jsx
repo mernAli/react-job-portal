@@ -5,10 +5,10 @@ const BottomNav = () => {
   const { theme } = useTheme();
 
   const navItems = [
-    { path: "/app/home", label: "Home", icon: "🏠" },
-    { path: "/app/network", label: "Network", icon: "👥" },
-    { path: "/app/notifications", label: "Notifications", icon: "🔔" },
-    { path: "/app/jobs", label: "Jobs", icon: "💼" },
+    { path: "/app/home", label: "Home", icon: "🏠︎" },
+    { path: "/app/network", label: "Network", icon: "𐦂𖨆𐀪𖠋" },
+    { path: "/app/notifications", label: "Notifications", icon: "🕭" },
+    { path: "/app/jobs", label: "Jobs", icon: "🜲" },
   ];
 
   return (

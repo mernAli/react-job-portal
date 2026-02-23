@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/ThemeContext";
 import Modal from "../../ui/Modal";
+import { useToast } from "../../ui/toast/useToast";
 
 const Topbar = () => {
   const { user, logout } = useAuth();
@@ -12,10 +13,13 @@ const Topbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
 
+  const {showToast} = useToast()
+
   const handleLogout = () => {
     logout();
     navigate("/login");
     setShowLogoutModal(false);
+    showToast("You are logged Out", "info")
   };
 
   // Navigation items based on role

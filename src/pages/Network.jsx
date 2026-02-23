@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import Sidebar from "../components/Dashboard/Sidebar";
 
 const Network = () => {
   const { theme } = useTheme();
@@ -83,7 +84,7 @@ const Network = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row lg:gap-6">
-     
+      <Sidebar /> 
 
       {/* Main Content */}
       <div className="flex-1 pb-20 lg:pb-0 ">

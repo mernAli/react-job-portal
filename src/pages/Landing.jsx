@@ -8,6 +8,7 @@ import JobGrid from '../components/Landing/JobGrid'
 
 const Landing = () => {
 
+  const homeRef = useRef(null)
   const jobsRef = useRef(null);
   const featuresRef = useRef(null);
   const contactsRef = useRef(null);
@@ -15,6 +16,9 @@ const Landing = () => {
   return (
     <main className='bg-slate-900 text-white'>
         <LandingNavbar 
+          onHomeClick={() =>
+            homeRef.current.scrollIntoView({ behavior: "smooth" })
+          }
           onJobsClick={() => 
             jobsRef.current.scrollIntoView({ behavior: "smooth" })
           }
@@ -26,7 +30,10 @@ const Landing = () => {
           }
         />
 
-        <Hero />
+        <div ref={homeRef}>
+          <Hero />
+        </div>
+        
 
         {/* Jobs section */}
         <div ref={jobsRef}>

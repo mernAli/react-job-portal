@@ -10,7 +10,7 @@ const AppLayout = () => {
   return (
     <div className={`flex min-h-screen ${theme.bg}`}>
       {/* Sidebar - Desktop Only */}
-      <Sidebar />
+      {/* <Sidebar /> */}
 
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col">

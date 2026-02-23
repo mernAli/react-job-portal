@@ -22,3 +22,26 @@ body {
   animation: fadeIn 0.15s ease-in-out;
 }
 
+/* Custom Scrollbar for Recommendations */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #9CA3AF;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+/* Hide scrollbar for Firefox but keep functionality */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #9CA3AF transparent;
+}

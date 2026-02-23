@@ -18,10 +18,21 @@ const JobCard = ({ job, onApply, onSave, showActions = true }) => {
     return `${Math.floor(diffInDays / 30)} months ago`;
   };
 
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    // Pass job data through navigation state for immediate display
+    navigate(`/app/jobs/${job.id}`, { state: { job } });
+  };
+
+  const handleCardClick = () => {
+    // Pass job data through navigation state for immediate display
+    navigate(`/app/jobs/${job.id}`, { state: { job } });
+  };
+
   return (
     <div
       className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border ${theme.hover} transition-all cursor-pointer`}
-      onClick={() => navigate(`/app/jobs/${job.id}`)}
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -68,7 +79,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true }) => {
               e.stopPropagation();
               onSave && onSave(job.id);
             }}
-            className={`${theme.textMuted} hover:${theme.primaryText} transition-colors`}
+            className={`${theme.textMuted} ${theme.hover} transition-colors`}
           >
             🔖
           </button>
@@ -137,10 +148,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true }) => {
             Apply Now
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/app/jobs/${job.id}`);
-            }}
+            onClick={handleViewDetails}
             className={`flex-1 sm:flex-none px-6 py-2 ${theme.border} border rounded-lg ${theme.hover} font-medium text-sm`}
           >
             View Details

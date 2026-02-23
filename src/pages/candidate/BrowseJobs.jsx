@@ -5,6 +5,8 @@ import Loader from "../../ui/Loader";
 import { useToast } from "../../ui/toast/useToast";
 import JobCard from "../../components/Jobs/JobCard";
 import FilterPanel from "../../components/Jobs/FilterPanel";
+import Sidebar from "../../components/Dashboard/SideBarJobs";
+import SidebarJobs from "../../components/Dashboard/SideBarJobs";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
@@ -185,6 +187,7 @@ const BrowseJobs = () => {
 
   return (
     <div>
+      <SidebarJobs />
       {/* Header */}
       <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
         <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Browse Jobs</h1>

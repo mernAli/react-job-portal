@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import Sidebar from "../components/Dashboard/Sidebar";
 
 const homeJobFeed = [
   {
@@ -35,15 +36,12 @@ const recommendations = [
   { id: 5, name: "Deepu Das", role: "Product Designer" },
 ];
 
-
-
 const Home = () => {
   const { theme } = useTheme();
   const [showMoreNews, setShowMoreNews] = useState(false);
   const [followedUsers, setFollowedUsers] = useState([]);
   const [showAllMessages, setShowAllMessages] = useState(false);
-    const [showAllNews, setShowAllNews] = useState(false);
-  
+  const [showAllNews, setShowAllNews] = useState(false);
 
   const [feed, setFeed] = useState(
     homeJobFeed.map((job) => ({
@@ -53,7 +51,7 @@ const Home = () => {
       commentsCount: Math.floor(Math.random() * 10) + 1,
       showCommentBox: false,
       showShareBox: false,
-    }))
+    })),
   );
 
   const [messages] = useState([
@@ -62,7 +60,7 @@ const Home = () => {
     { id: 3, name: "Zamira lopez", avatar: "👤", online: true },
   ]);
 
-   const [news] = useState([
+  const [news] = useState([
     {
       id: 1,
       title: "Breakthrough in solar battery technology",
@@ -109,15 +107,16 @@ const Home = () => {
                 ? item.likesCount - 1
                 : item.likesCount + 1,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
   return (
+    
     <div className="max-w-[1200px] mx-auto px-3 sm:px-5 lg:px-8 py-4">
+      <Sidebar />
       <div className="flex flex-col lg:flex-row gap-6">
-        
         {/* MAIN FEED */}
         <main className="flex-1 min-w-0">
           <div className="flex flex-col gap-4">
@@ -135,9 +134,7 @@ const Home = () => {
                     >
                       {job.author}
                     </strong>
-                    <p className={`text-xs ${theme.textMuted}`}>
-                      {job.time}
-                    </p>
+                    <p className={`text-xs ${theme.textMuted}`}>{job.time}</p>
                   </div>
                 </div>
 
@@ -179,141 +176,146 @@ const Home = () => {
             ))}
           </div>
 
-          {/* RECOMMENDATIONS */}
+          {/* RECOMMENDATIONS - Horizontal Scroll */}
           <div
-            className={`mt-6 p-4 rounded-xl border border-gray-300/30 ${theme.cardBg}`}
+            className={`mt-6 p-4 w-152 lg:w-138  rounded-xl border border-gray-300/30 ${theme.cardBg}`}
           >
             <h4 className={`mb-4 font-semibold ${theme.textPrimary}`}>
               People you may know
             </h4>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {recommendations.map((user) => (
-                <div
-                  key={user.id}
-                  className={`p-3 rounded-xl border border-gray-300/30 text-center ${theme.bg}`}
-                >
-                  <div className="w-12 h-12 mx-auto rounded-full bg-gray-400 mb-2"></div>
-                  <strong
-                    className={`block text-sm ${theme.textPrimary}`}
+            {/* Horizontal Scroll Container */}
+            <div className="relative">
+              <div
+                className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+                style={{
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#9CA3AF transparent",
+                }}
+              >
+                {recommendations.map((user) => (
+                  <div
+                    key={user.id}
+                    className={`flex-shrink-0 w-[160px] sm:w-[180px] p-3 rounded-xl border border-gray-300/30 text-center ${theme.bg}`}
                   >
-                    {user.name}
-                  </strong>
-                  <p className={`text-xs ${theme.textMuted}`}>
-                    {user.role}
-                  </p>
-                  <button
-                    disabled={followedUsers.includes(user.id)}
-                    onClick={() =>
-                      setFollowedUsers([...followedUsers, user.id])
-                    }
-                    className={`mt-3 w-full py-1.5 rounded-full text-xs font-medium
-                    ${
-                      followedUsers.includes(user.id)
-                        ? "bg-gray-600 cursor-not-allowed"
-                        : "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
-                    }`}
-                  >
-                    {followedUsers.includes(user.id)
-                      ? "Following"
-                      : "Follow"}
-                  </button>
-                </div>
-              ))}
+                    <div className="w-12 h-12 mx-auto rounded-full bg-gray-400 mb-2"></div>
+                    <strong
+                      className={`block text-sm ${theme.textPrimary} truncate px-1`}
+                    >
+                      {user.name}
+                    </strong>
+                    <p className={`text-xs ${theme.textMuted} truncate px-1`}>
+                      {user.role}
+                    </p>
+                    <button
+                      disabled={followedUsers.includes(user.id)}
+                      onClick={() =>
+                        setFollowedUsers([...followedUsers, user.id])
+                      }
+                      className={`mt-3 w-full py-1.5 rounded-full text-xs font-medium transition-all ${
+                        followedUsers.includes(user.id)
+                          ? "bg-gray-600 cursor-not-allowed"
+                          : "bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:shadow-lg"
+                      }`}
+                    >
+                      {followedUsers.includes(user.id) ? "Following" : "Follow"}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </main>
 
         {/* Right Sidebar */}
-      <div className="w-80 flex-shrink-0 space-y-4">
-        {/* Messages Section */}
-        <div
-          className={` bg-white rounded-xl ${theme.shadow} overflow-hidden`}
-        >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg
-                className={`w-5 h-5 text-gray-700 `}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <h2 className={`font-semibold text-gray-700`}>Messages</h2>
+        <div className="hidden lg:block w-80 flex-shrink-0 space-y-4">
+          {/* Messages Section */}
+          <div
+            className={` bg-white rounded-xl ${theme.shadow} overflow-hidden`}
+          >
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg
+                  className={`w-5 h-5 text-gray-700 `}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <h2 className={`font-semibold text-gray-700`}>Messages</h2>
+              </div>
             </div>
-          </div>
 
-          <div className={`border-t ${theme.border}`}>
-            {displayedMessages.map((message) => (
-              <button
-                key={message.id}
-                className={`w-full px-4 py-3 flex items-center gap-3 text-black hover:bg-gray-300 transition-colors`}
-              >
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${message.avatar}&background=E8F4F8&color=1B365D&size=64`}
-                      alt={message.name}
-                      className="w-full h-full object-cover"
-                    />
+            <div className={`border-t ${theme.border}`}>
+              {displayedMessages.map((message) => (
+                <button
+                  key={message.id}
+                  className={`w-full px-4 py-3 flex items-center gap-3 text-black hover:bg-gray-300 transition-colors`}
+                >
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${message.avatar}&background=E8F4F8&color=1B365D&size=64`}
+                        alt={message.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {message.online && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
-                  {message.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
-                </div>
-                <p className={`text-sm text-black text-left`}>
-                  {message.name}
-                </p>
-              </button>
-            ))}
+                  <p className={`text-sm text-black text-left`}>
+                    {message.name}
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowAllMessages(!showAllMessages)}
+              className={`w-full py-3 text-center text-sm ${theme.primaryText} font-medium hover:bg-gray-500  border-t ${theme.border}`}
+            >
+              {showAllMessages ? "Show less" : "Show more"} ▼
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowAllMessages(!showAllMessages)}
-            className={`w-full py-3 text-center text-sm ${theme.primaryText} font-medium hover:bg-gray-500  border-t ${theme.border}`}
+          {/* News Section */}
+          <div
+            className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}
           >
-            {showAllMessages ? "Show less" : "Show more"} ▼
-          </button>
-        </div>
+            <div className="p-4 ">
+              <h2 className={`font-semibold text-gray-700 mb-1`}>News</h2>
+              <p className={`text-xs text-gray-500`}>Top stories</p>
+            </div>
 
-        {/* News Section */}
-        <div
-          className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}
-        >
-          <div className="p-4 ">
-            <h2 className={`font-semibold text-gray-700 mb-1`}>News</h2>
-            <p className={`text-xs text-gray-500`}>Top stories</p>
+            <div className={`border-t ${theme.border}`}>
+              {displayedNews.map((item) => (
+                <button
+                  key={item.id}
+                  className={`w-full px-4 py-3 text-left hover:bg-gray-300 transition-colors`}
+                >
+                  <h3 className={`text-sm font-medium text-black mb-1`}>
+                    {item.title}
+                  </h3>
+                  <p className={`text-xs text-gray-700`}>
+                    {item.time} • {item.readers} readers
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowAllNews(!showAllNews)}
+              className={`w-full py-3 text-center hover:bg-gray-500 text-sm ${theme.primaryText} font-medium ${theme.hover} border-t ${theme.border}`}
+            >
+              {showAllNews ? "Show less" : "Show more"} ▼
+            </button>
           </div>
-
-          <div className={`border-t ${theme.border}`}>
-            {displayedNews.map((item) => (
-              <button
-                key={item.id}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-300 transition-colors`}
-              >
-                <h3 className={`text-sm font-medium text-black mb-1`}>
-                  {item.title}
-                </h3>
-                <p className={`text-xs text-gray-700`}>
-                  {item.time} • {item.readers} readers
-                </p>
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => setShowAllNews(!showAllNews)}
-            className={`w-full py-3 text-center hover:bg-gray-500 text-sm ${theme.primaryText} font-medium ${theme.hover} border-t ${theme.border}`}
-          >
-            {showAllNews ? "Show less" : "Show more"} ▼
-          </button>
         </div>
-      </div>
-
       </div>
     </div>
   );

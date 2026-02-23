@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
@@ -19,39 +19,7 @@ const LoginForm = () => {
 
   const { login } = useAuth();
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   let newError = {};
-
-  //   if (!email) {
-  //     newError.email = "Email is required";
-  //   }
-
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  //   if (!emailRegex.test(email)) {
-  //     newError.email = "Invalid email format";
-  //   }
-
-  //   if (!password) {
-  //     newError.password = "Password is required";
-  //   } else if (password.length < 8) {
-  //     newError.password = "Password must be at least 8 characters long";
-  //   }
-
-  //   setError(newError);
-
-  //   if (Object.keys(newError).length === 0) {
-  //     setLoading(true);
-
-  //     setTimeout(() => {
-  //       login(email);
-  //       showToast("Logged in successfully", "success")
-  //       navigate("/app");
-  //       setLoading(false);
-  //     }, 1500);
-  //   }
-  // };
+  const emailRef = useRef(null);
 
   const handleSubmit = (e) => {
   e.preventDefault();
@@ -160,6 +128,12 @@ const LoginForm = () => {
 
   const currentTheme = themes[theme];
 
+  useEffect(() => {
+    if (emailRef.current) {
+      emailRef.current.focus();
+    }
+  }, [])
+
   return (
     <div
       className={`h-screen w-full flex flex-col overflow-hidden ${currentTheme.bg} font-sans relative`}
@@ -247,6 +221,7 @@ const LoginForm = () => {
               <Input
                 label="Email"
                 type="email"
+                ref={emailRef}
                 placeholder="semira3002@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -278,11 +253,7 @@ const LoginForm = () => {
                   }
                 />
               </div>
-              {/* {error.password && (
-                <div className="text-xs text-red-500 mt-1">
-                  {error.password}
-                </div>
-              )} */}
+             
             </div>
 
             {/* Forgot Password */}
