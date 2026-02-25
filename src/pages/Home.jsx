@@ -114,11 +114,11 @@ const Home = () => {
 
   return (
     
-    <div className="max-w-[1200px] mx-auto px-3 sm:px-5 lg:px-8 py-4">
+    <div className="max-w-[1200px] mx-auto px-3 sm:px-5 lg:px-8 py-4 lg:w-200 w-80">
       <Sidebar />
       <div className="flex flex-col lg:flex-row gap-6">
         {/* MAIN FEED */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1">
           <div className="flex flex-col gap-4">
             {feed.map((job) => (
               <div
@@ -178,7 +178,7 @@ const Home = () => {
 
           {/* RECOMMENDATIONS - Horizontal Scroll */}
           <div
-            className={`mt-6 p-4 w-152 lg:w-138  rounded-xl border border-gray-300/30 ${theme.cardBg}`}
+            className={`mt-6 p-4 w-75 lg:w-138  rounded-xl border border-gray-300/30 ${theme.cardBg} `}
           >
             <h4 className={`mb-4 font-semibold ${theme.textPrimary}`}>
               People you may know
@@ -187,7 +187,7 @@ const Home = () => {
             {/* Horizontal Scroll Container */}
             <div className="relative">
               <div
-                className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+                className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500 "
                 style={{
                   scrollbarWidth: "thin",
                   scrollbarColor: "#9CA3AF transparent",

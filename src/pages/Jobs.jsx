@@ -232,7 +232,7 @@ const Jobs = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0">
+    <div className={`min-h-screen lg:pb-0 w-90 lg:w-200 ${theme.bg}`}>
       {/* Desktop Sidebar */}
       <SideBarJobs onPreferencesClick={() => setIsPreferencesOpen(true)} />
       
@@ -245,7 +245,7 @@ const Jobs = () => {
       />
 
       {/* Mobile: Search Bar */}
-      <div className="lg:hidden px-4 py-4 flex items-center gap-3 w-150 h-25 mb-10"> 
+      <div className="lg:hidden px-4 py-4 flex items-center gap-3 lg:w-150 w-80 h-25 mb-10"> 
         <div className="text-3xl mr-3">🔎︎</div>
         <div className="flex-1 relative">
           
@@ -280,9 +280,9 @@ const Jobs = () => {
 
       <div className="lg:flex lg:gap-6 lg:px-6">
         {/* Main Content */}
-        <div className="flex-1 px-4 lg:px-0 lg:w-220 w-150">
+        <div className="flex-1 px-4 lg:px-0 lg:w-220 w-80">
           {/* Header */}
-          <div className="mb-6">
+          <div className="mb-6 lg:w-200 w-80">
             <div className="flex items-center justify-between mb-2">
               <div className="flex-1">
                 <h1 className={`text-3xl lg:text-2xl font-bold ${theme.textPrimary}`}>
@@ -319,7 +319,7 @@ const Jobs = () => {
                 <div
                   key={job.id}
                   
-                  className={`${theme.cardBg} rounded-xl ${theme.shadow} p-4 lg:p-6 transition-transform hover:scale-[1.01] lg:w-200 w-140`}
+                  className={`${theme.cardBg} rounded-xl ${theme.shadow} p-4 lg:p-6 transition-transform hover:scale-[1.01] lg:w-200 w-80`}
                 >
                   <h3 className={`text-xl  lg:text-lg font-semibold ${theme.textPrimary} mb-3`}>
                     {job.title}
@@ -403,7 +403,7 @@ const Jobs = () => {
 
           {/* Pagination */}
           {totalPages > 1 && currentJobs.length > 0 && (
-            <div className="flex justify-center items-center gap-2 mt-8 w-full overflow-x-auto px-4 lg:px-0">
+            <div className="flex justify-center items-center gap-2 mt-8 lg:w-200 w-80 overflow-x-auto px-4 lg:px-0">
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
