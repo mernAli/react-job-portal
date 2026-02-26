@@ -38,12 +38,12 @@ const recommendations = [
 
 const Home = () => {
   const { theme } = useTheme();
-  const [showMoreNews, setShowMoreNews] = useState(false);
+
   const [followedUsers, setFollowedUsers] = useState([]);
   const [showAllMessages, setShowAllMessages] = useState(false);
   const [showAllNews, setShowAllNews] = useState(false);
 
-  const [feed, setFeed] = useState(
+  const [feed, setFeed] = useState(() =>
     homeJobFeed.map((job) => ({
       ...job,
       liked: false,

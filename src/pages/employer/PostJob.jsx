@@ -5,6 +5,7 @@ import Input from "../../ui/Input";
 import Select from "../../ui/Select";
 import { useToast } from "../../ui/toast/useToast";
 import MultiStepForm from "../../components/Jobs/MultiStepForm";
+import Sidebar from "../../components/Dashboard/Sidebar";
 
 const PostJob = () => {
   const { theme } = useTheme();
@@ -85,7 +86,6 @@ const PostJob = () => {
   ];
 
   const handleComplete = () => {
-    console.log("Job Posted:", formData);
     showToast("Job posted successfully!", "success");
     navigate("/app/my-jobs");
   };
@@ -255,6 +255,7 @@ const PostJob = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
+      <Sidebar />
       {/* Header */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border mb-6`}>
         <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Post a New Job</h1>

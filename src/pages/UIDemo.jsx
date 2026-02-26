@@ -5,6 +5,7 @@ import Select from "../ui/Select";
 import Loader from "../ui/Loader";
 import Modal from "../ui/Modal";
 import { useToast } from "../ui/toast/useToast";
+import Sidebar from "../components/Dashboard/Sidebar";
 
 const UIDemo = () => {
   const { showToast } = useToast();
@@ -13,6 +14,7 @@ const UIDemo = () => {
 
   return (
     <div className="p-8 space-y-8">
+        <Sidebar />
       <h1 className="text-2xl font-bold">UI Component Demo</h1>
 
       {/* Buttons */}

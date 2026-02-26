@@ -127,7 +127,7 @@ const Profile = () => {
       setEditingEducation(null);
       setLoading(false);
       showToast("Profile updated successfully!", "success");
-    }, 1000);
+    }, 2000);
   };
 
   const handleChange = (field, value) => {

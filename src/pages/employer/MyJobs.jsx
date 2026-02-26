@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import Sidebar from "../../components/Dashboard/Sidebar";
 
 const MyJobs = () => {
   const { theme } = useTheme();
@@ -50,6 +51,7 @@ const MyJobs = () => {
 
   return (
     <div className="space-y-6">
+      <Sidebar />
       {/* Header */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
         <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>My Job Postings</h1>
