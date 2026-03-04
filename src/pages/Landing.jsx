@@ -13,8 +13,15 @@ const Landing = () => {
   const featuresRef = useRef(null);
   const contactsRef = useRef(null);
 
+
+  console.log("Landing Loaded");
+  
+
   return (
-    <main className='bg-slate-900 text-white'>
+
+    <main className='relative bg-slate-900 text-white min-h-screen overflow-hidden'>
+
+        <div className='relative z-10'>
         <LandingNavbar 
           onHomeClick={() =>
             homeRef.current.scrollIntoView({ behavior: "smooth" })
@@ -51,7 +58,7 @@ const Landing = () => {
         <div ref={contactsRef}>
           <Footer />
         </div>
-        
+       </div> 
     </main>
   )
 }

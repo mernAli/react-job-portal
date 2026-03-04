@@ -15,56 +15,59 @@ const LoginForm = () => {
 
   const navigate = useNavigate();
 
-  const {showToast} = useToast();
+  const { showToast } = useToast();
 
   const { login } = useAuth();
 
   const emailRef = useRef(null);
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-  let newError = {};
+    e.preventDefault();
 
-  if (!email) {
-    newError.email = "Email is required";
-  }
+    const newError = validateForm();
+    setError(newError);
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (Object.keys(newError).length === 0) {
+      setLoading(true);
 
-  if (!emailRegex.test(email)) {
-    newError.email = "Invalid email format";
-  }
+      setTimeout(() => {
+        const demoRole = email.includes("employer") ? "employer" : "candidate";
 
-  if (!password) {
-    newError.password = "Password is required";
-  } else if (password.length < 8) {
-    newError.password = "Password must be at least 8 characters long";
-  }
+        login(email, demoRole);
+        showToast("Logged in successfully", "success");
 
-  setError(newError);
-
-  if (Object.keys(newError).length === 0) {
-    setLoading(true);
-
-    setTimeout(() => {
-      // For demo: assume role based on email domain or use a stored role
-      // In real app, backend would return user role after login
-      const demoRole = email.includes("employer") ? "employer" : "candidate";
-      
-      login(email, demoRole); // Pass role to login function
-      showToast("Logged in successfully", "success");
-      
-      // Role-based redirect
-      if (demoRole === "employer") {
         navigate("/app");
-      } else {
-        navigate("/app");
+        setLoading(false);
+      }, 1500);
+    }
+  };
+
+  const validateForm = () => {
+    let newError = {};
+
+    if (!email) {
+      newError.email = "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        newError.email = "Invalid email format";
       }
-      
-      setLoading(false);
-    }, 1500);
-  }
-};
+    }
+
+    if (!password) {
+      newError.password = "Password is required";
+    } else if (password.length < 8) {
+      newError.password = "Password must be at least 8 characters long";
+    }
+
+    return newError;
+  };
+
+  const isFormValid =
+    email &&
+    password &&
+    password.length >= 8 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSignUpRedirect = () => {
     navigate("/register");
@@ -132,7 +135,7 @@ const LoginForm = () => {
     if (emailRef.current) {
       emailRef.current.focus();
     }
-  }, [])
+  }, []);
 
   return (
     <div
@@ -227,13 +230,10 @@ const LoginForm = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 error={error.email}
               />
-
-              
             </div>
 
             {/* Password Input */}
             <div className="mb-4">
-              
               <div className="relative">
                 <Input
                   label="Password"
@@ -253,7 +253,6 @@ const LoginForm = () => {
                   }
                 />
               </div>
-             
             </div>
 
             {/* Forgot Password */}
@@ -266,7 +265,12 @@ const LoginForm = () => {
             </div>
 
             {/* Login Button from ui folder created as per the part of the Day: 15 task */}
-            <Button type="submit" loading={loading} fullWidth>
+            <Button
+              type="submit"
+              loading={loading}
+              fullWidth
+              disabled={!isFormValid || loading}
+            >
               Login
             </Button>
           </form>

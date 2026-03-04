@@ -8,7 +8,7 @@ const Loader = () => {
   const pulseClass = "bg-gray-300 dark:bg-gray-700 animate-pulse";
 
   return (
-    <div className="space-y-6 w-185 lg:w-240 mt-193.5">
+    <div className="space-y-6 w-65 lg:w-240 mt-193.5">
       {/* Header Skeleton */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
         <div className={`h-8 w-1/3 ${pulseClass} rounded mb-4`}></div>

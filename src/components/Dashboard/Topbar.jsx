@@ -27,7 +27,7 @@ const Topbar = () => {
     { path: "/app/home", label: "Home", icon: "🏠︎" },
     { path: "/app/network", label: "My Network", icon: "𐦂𖨆𐀪𖠋" },
     { path: "/app/notifications", label: "Notification", icon: "🕭" },
-    { path: "/app/jobs", label: "Jobs", icon: ".⋅˚₊‧ 🜲 ‧₊˚ ⋅" },
+    { path: "/app/jobs", label: "Jobs", icon: "🜲" },
   ];
 
   return (
@@ -163,7 +163,7 @@ const Topbar = () => {
                 <div className={`w-8 h-8 ${theme.primary} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <span className="hidden lg:block text-xs">▼</span>
+                <span className="hidden lg:block text-xs">{showProfileMenu ? "▲" : "▼"}</span>
               </button>
 
               {showProfileMenu && (

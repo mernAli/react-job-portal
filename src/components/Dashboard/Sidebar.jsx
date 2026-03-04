@@ -48,7 +48,7 @@ const Sidebar = () => {
               {user?.role === "employer" ? "Hiring Manager" : "Developer"}
             </p>
             <p className={`text-xs ${theme.textMuted} mt-1`}>
-              {currentUser.company}
+              {user?.location || "Unknown Location"}
             </p>
           </div>
 

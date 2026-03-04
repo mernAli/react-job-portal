@@ -1,7 +1,16 @@
 
 import { useTheme } from "../context/ThemeContext";
 
-const Button = ({ children, onClick, type = "button", loading, fullWidth, variant = "primary" }) => {
+const Button = ({ 
+  children, 
+  onClick, 
+  type = "button", 
+  loading= false,
+  disabled = false, 
+  fullWidth, 
+  variant = "primary" 
+
+}) => {
   const { theme } = useTheme();
 
   const variantClasses = {
@@ -14,11 +23,11 @@ const Button = ({ children, onClick, type = "button", loading, fullWidth, varian
     <button
       type={type}
       onClick={onClick}
-      disabled={loading}
+      disabled={loading || disabled}
       className={`px-6 py-3 rounded-lg font-medium text-sm transition-colors ${
         fullWidth ? "w-full" : ""
       } ${variantClasses[variant]} ${
-        loading ? "opacity-50 cursor-not-allowed" : ""
+        loading || disabled ? "opacity-50 cursor-not-allowed" : ""
       }`}
     >
       {loading ? "Loading..." : children}

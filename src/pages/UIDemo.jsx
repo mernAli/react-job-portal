@@ -13,8 +13,8 @@ const UIDemo = () => {
   const [name, setName] = useState("");
 
   return (
-    <div className="p-8 space-y-8">
-        <Sidebar />
+    <div className="p-8 space-y-8 w-65 lg:w-180">
+      <Sidebar />
       <h1 className="text-2xl font-bold">UI Component Demo</h1>
 
       {/* Buttons */}
@@ -55,35 +55,35 @@ const UIDemo = () => {
       {/* Loader */}
       <section>
         <h2 className="font-semibold mb-2">Loader</h2>
-        <Loader size="lg" />
+        <div className="relative bottom-188 mb-24">
+          <Loader size="lg" />
+        </div>
       </section>
 
-      {/* Toast */}
-      <section>
-        <h2 className="font-semibold mb-2">Toast</h2>
-        <Button onClick={() => showToast("Success Toast", "success")}>
-          Show Success Toast
-        </Button>
-      </section>
-
-      {/* Modal */}
-      <section>
-        <h2 className="font-semibold mb-2">Modal</h2>
-        <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
-      </section>
-
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Demo Modal"
-        footer={
-          <Button onClick={() => setModalOpen(false)}>
-            Close
+      <div className="relative bottom-188 mb-24">
+        {/* Toast */}
+        <section className="mb-5">
+          <h2 className="font-semibold mb-2">Toast</h2>
+          <Button onClick={() => showToast("Success Toast", "success")}>
+            Show Success Toast
           </Button>
-        }
-      >
-        <p className="text-white">This is reusable modal content.</p>
-      </Modal>
+        </section>
+
+        {/* Modal */}
+        <section>
+          <h2 className="font-semibold mb-2">Modal</h2>
+          <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
+        </section>
+
+        <Modal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="Demo Modal"
+          footer={<Button onClick={() => setModalOpen(false)}>Close</Button>}
+        >
+          <p className="text-white">This is reusable modal content.</p>
+        </Modal>
+      </div>
     </div>
   );
 };

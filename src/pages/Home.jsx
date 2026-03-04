@@ -114,11 +114,14 @@ const Home = () => {
 
   return (
     
-    <div className="max-w-[1200px] mx-auto px-3 sm:px-5 lg:px-8 py-4 lg:w-200 w-80">
-      <Sidebar />
-      <div className="flex flex-col lg:flex-row gap-6">
+    <div className={`px-3 sm:px-5 lg:px-8 py-4 lg:w-200 w-80 ${theme.bg}`}>
+      <div className="hidden lg:block mb-6">
+        <Sidebar />
+      </div>
+      
+      <div className="flex flex-col lg:flex-row gap-6 ">
         {/* MAIN FEED */}
-        <main className="flex-1">
+        <main className="flex-1 ">
           <div className="flex flex-col gap-4">
             {feed.map((job) => (
               <div

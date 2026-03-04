@@ -41,23 +41,7 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const newError = {};
-
-    if (!formData.name) newError.name = "Name is required";
-
-    if (!emailRegex.test(formData.email))
-      newError.email = "Invalid email format";
-
-    if (formData.password.length < 8)
-      newError.password = "Password must be at least 8 characters";
-
-    if (formData.password !== formData.confirmPassword)
-      newError.confirmPassword = "Passwords do not match";
-
-    if (!formData.role) newError.role = "Please select your role";
-
-    if (!agreeTerms) newError.agreeTerms = "Check the agree term box";
-
+    const newError = validateForm();
     setError(newError);
 
     if (Object.keys(newError).length === 0) {
@@ -65,20 +49,56 @@ const Register = () => {
 
       setTimeout(() => {
         registerUser(formData.name, formData.email, formData.role);
-        
-        
-        // Role-based redirect
+
         if (formData.role === "employer") {
           navigate("/app");
         } else {
           navigate("/app/candidate");
         }
-        
+
         setLoading(false);
         showToast("Account created successfully", "success");
       }, 1500);
     }
   };
+
+  const validateForm = () => {
+    const newError = {};
+
+    if (!formData.name.trim()) {
+      newError.name = "Name is required";
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      newError.email = "Invalid email format";
+    }
+
+    if (!formData.password || formData.password.length < 8) {
+      newError.password = "Password must be at least 8 characters";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newError.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.role) {
+      newError.role = "Please select your role";
+    }
+
+    if (!agreeTerms) {
+      newError.agreeTerms = "Check the agree term box";
+    }
+
+    return newError;
+  };
+
+  const isFormValid =
+    formData.name.trim() &&
+    emailRegex.test(formData.email) &&
+    formData.password.length >= 8 &&
+    formData.password === formData.confirmPassword &&
+    formData.role &&
+    agreeTerms;
 
   const handleSignUpRedirect = () => {
     navigate("/register");
@@ -197,7 +217,7 @@ const Register = () => {
           className={`${currentTheme.cardBg} rounded-2xl p-6 md:p-8 w-full max-w-[400px] shadow-2xl mt-51 pt-3`}
         >
           {/* Tabs */}
-          <div className="flex mb-6 gap-2">
+          <div className="flex mb-6 gap-2 mt-22">
             <button
               onClick={handleLoginRedirect}
               className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${currentTheme.tabInactive}`}
@@ -331,7 +351,12 @@ const Register = () => {
             </div>
 
             {/* Sign Up Button */}
-            <Button type="submit" loading={loading} fullWidth>
+            <Button
+              type="submit"
+              loading={loading}
+              disabled={!isFormValid}
+              fullWidth
+            >
               Sign Up
             </Button>
           </form>

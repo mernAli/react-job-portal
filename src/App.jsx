@@ -16,6 +16,7 @@ const Network = lazy(() => import("./pages/Network"));
 const Notification = lazy(() => import("./pages/Notification"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const UIDemo = lazy(() => import("./pages/UIDemo"))
 
 // Candidate pages
 const BrowseJobs = lazy(() => import("./pages/candidate/BrowseJobs"));
@@ -73,6 +74,7 @@ function App() {
                     <Route path="network" element={<Network />} />
                     <Route path="notifications" element={<Notification />} />
                     <Route path="profile" element={<Profile />} />
+                    <Route path="ui-demo" element={<UIDemo />} />
 
                     {/* Candidate specific */}
                     <Route path="browse-jobs" element={<BrowseJobs />} />
