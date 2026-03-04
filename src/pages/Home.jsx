@@ -114,7 +114,7 @@ const Home = () => {
 
   return (
     
-    <div className={`px-3 sm:px-5 lg:px-8 py-4 lg:w-200 w-80 ${theme.bg}`}>
+    <div className={`px-3 sm:px-5 lg:px-8 py-4 lg:w-200 w-80 sm:w-180 ${theme.bg}`}>
       <div className="hidden lg:block mb-6">
         <Sidebar />
       </div>
@@ -181,7 +181,7 @@ const Home = () => {
 
           {/* RECOMMENDATIONS - Horizontal Scroll */}
           <div
-            className={`mt-6 p-4 w-75 lg:w-138  rounded-xl border border-gray-300/30 ${theme.cardBg} `}
+            className={`mt-6 p-4 w-75 lg:w-138 sm:w-170  rounded-xl border border-gray-300/30 ${theme.cardBg} `}
           >
             <h4 className={`mb-4 font-semibold ${theme.textPrimary}`}>
               People you may know

@@ -261,7 +261,7 @@ const JobDetails = () => {
           {/* Apply Button - Desktop */}
           <button
             onClick={handleApply}
-            className={`fixed lg:bottom-4 lg:right-110 bottom-55 right-55 w-50 py-3 ${theme.primary} ${theme.secondaryText} rounded-lg font-semibold text-base mb-6 items-center hover:bg-[#0077B5]`}
+            className={`fixed lg:bottom-4 lg:right-110 sm:bottom-25 sm:right-65 bottom-25 right-25 w-50 py-3 ${theme.primary} ${theme.secondaryText} rounded-lg font-semibold text-base mb-6 items-center hover:bg-[#0077B5]`}
           >
             Apply Now
           </button>
