@@ -1430,3 +1430,105 @@ src/
 - ✅ Environment-based base URL configured
 - ✅ Error handling covers network, client, and server errors
 - ✅ Loader and error UI integrated into Jobs page
+
+
+## ✅ Day 22 – Authentication Integration
+
+**Objective:** Implement a real, production-grade authentication workflow with proper token handling, session persistence, and protected routes.
+
+---
+
+### 🧠 Concepts Learned
+
+**Login & Signup API Integration**
+Connected the Login and Register forms to the `authService` layer built on Day 21. Forms no longer use `setTimeout` simulation — auth calls go through the proper async service functions that are ready for real backend integration with zero restructuring.
+
+**Token Storage Strategy**
+Used `localStorage` for JWT token persistence with a structured key system:
+- `token` — the JWT token
+- `userName` — display name
+- `userEmail` — user email
+- `userRole` — role-based access (candidate / employer)
+
+Implemented graceful handling for corrupted or incomplete storage — if any required key is missing, storage is cleared and the user is redirected to login cleanly.
+
+**Auth Context / Provider**
+Upgraded `AuthProvider` with:
+- Async `login` and `register` functions through the service layer
+- `authLoading` state that starts as `true` and resolves after session restore
+- `authError` state exposed via context for consuming components
+- Proper `try/catch/finally` pattern for every auth operation
+
+**Protected Routes**
+Upgraded `PrivateRoute` to be aware of the `authLoading` state:
+- Shows a loader while session is being restored from localStorage
+- Redirects unauthenticated users to `/login`
+- Handles wrong role redirection to the correct dashboard
+
+**Session Persistence**
+Implemented a `restoreSession` function inside a `useEffect` in `AuthProvider` that runs on every app load:
+- Reads token and user data from localStorage
+- Restores user state before any route rendering occurs
+- Wrapped in `try/catch` to handle corrupted data gracefully
+
+---
+
+### 🛠 Practical Implementation
+
+**Complete Auth Flow:**
+```
+1. User fills Login form
+2. Frontend validation runs (email format, password length)
+3. authService.loginUser() is called
+4. Token + user data saved to localStorage
+5. User state updated in AuthContext
+6. Success toast shown
+7. User redirected to /app dashboard
+8. On refresh — session restored from localStorage automatically
+9. On logout — localStorage cleared, redirected to /login
+```
+
+**7 Tests Passed:**
+- ✅ Login error UI — invalid credentials shows error toast + inline message
+- ✅ Login success — correct credentials redirect to dashboard with toast
+- ✅ Session persistence — tab close and reopen stays logged in
+- ✅ Route protection — logged out user cannot access /app/* routes
+- ✅ Logout flow — modal confirmation → toast → redirect to /login
+- ✅ Corrupted storage — missing keys cleared gracefully, redirected to login
+- ✅ No login flash — page refresh shows loader, stays on current route
+
+---
+
+### 📁 Files Modified / Created
+
+```
+src/
+├── context/
+│   └── AuthProvider.jsx     ← UPDATED: async auth, session restore, authLoading
+├── route/
+│   └── PrivateRoute.jsx     ← UPDATED: authLoading guard, no login flash
+├── pages/
+│   ├── Login.jsx            ← UPDATED: handleSubmit uses authService
+│   └── Register.jsx         ← UPDATED: handleSubmit uses authService
+└── utils/
+    └── auth.js              ← NEW: session helper utilities
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ Working auth system connected to service layer
+- ✅ Protected routes with loading state awareness
+- ✅ Persistent login across tab close and page refresh
+- ✅ Secure token handling with corrupted storage protection
+- ✅ Role-based redirection after login and register
+- ✅ Full UX feedback — toasts and inline errors on all auth actions
+- ✅ Logout confirmation modal with toast feedback
+- ✅ App ready for real backend — just uncomment 2 lines in authService.js
+
+---
+
+### 🔑 Key Takeaway
+
+> The difference between Day 21 and Day 22 is the difference between an app that *looks* like it has authentication and an app that *actually has* correct authentication architecture. Session restore, loading guards, and proper error propagation make the auth system production-ready.
