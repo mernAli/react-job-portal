@@ -38,7 +38,7 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newError = validateForm();
@@ -47,18 +47,23 @@ const Register = () => {
     if (Object.keys(newError).length === 0) {
       setLoading(true);
 
-      setTimeout(() => {
-        registerUser(formData.name, formData.email, formData.role);
+      const result = await registerUser(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.role,
+      );
 
-        if (formData.role === "employer") {
-          navigate("/app");
-        } else {
-          navigate("/app/candidate");
-        }
+      if (result.success) {
+        showToast("Account created successfully! Welcome 🎉", "success");
+        // Role-based redirect
+        navigate("/app");
+      } else {
+        showToast(result.message || "Registration failed", "error");
+        setError({ general: result.message });
+      }
 
-        setLoading(false);
-        showToast("Account created successfully", "success");
-      }, 1500);
+      setLoading(false);
     }
   };
 

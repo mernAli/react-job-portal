@@ -21,7 +21,7 @@ const LoginForm = () => {
 
   const emailRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newError = validateForm();
@@ -30,15 +30,22 @@ const LoginForm = () => {
     if (Object.keys(newError).length === 0) {
       setLoading(true);
 
-      setTimeout(() => {
-        const demoRole = email.includes("employer") ? "employer" : "candidate";
+      const result = await login(email, password);
 
-        login(email, demoRole);
-        showToast("Logged in successfully", "success");
+      if (result.success) {
+        showToast("Logged in successfully! Welcome back 👋", "success");
+        // Role-based redirect
+        if (result.role === "employer") {
+          navigate("/app");
+        } else {
+          navigate("/app");
+        }
+      } else {
+        showToast(result.message || "Login failed", "error");
+        setError({ general: result.message });
+      }
 
-        navigate("/app");
-        setLoading(false);
-      }, 1500);
+      setLoading(false);
     }
   };
 
@@ -63,11 +70,11 @@ const LoginForm = () => {
     return newError;
   };
 
-  const isFormValid =
-    email &&
-    password &&
-    password.length >= 8 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // const isFormValid =
+  //   email &&
+  //   password &&
+  //   password.length >= 8 &&
+  //   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSignUpRedirect = () => {
     navigate("/register");
@@ -269,7 +276,7 @@ const LoginForm = () => {
               type="submit"
               loading={loading}
               fullWidth
-              disabled={!isFormValid || loading}
+              disabled={loading}
             >
               Login
             </Button>

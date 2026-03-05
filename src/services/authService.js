@@ -27,6 +27,7 @@ export const registerUser = async (name, email, password, role) => {
   // const response = await api.post("/auth/register", { name, email, password, role });
   // return response.data;
 
+    //name && email && password.length >= 6
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (name && email && password.length >= 6) {
