@@ -1332,9 +1332,101 @@ Day 20 task: **UI Review, Refactor & Frontend Shell Completion**. This involved 
 - Cohesive typography
 - Professional spacing
 
----
+## ✅ Day 21 – API Integration Fundamentals
+Objective: Connect the frontend with backend services using a scalable, production-grade architecture.
 
-**Status**: ✅ Production Ready  
-**Total Development Days**: 20  
-**Final Status**: Complete Frontend Shell  
-**Next Phase**: Backend Integration
+### 🧠 Concepts Learned
+HTTP Methods
+Understanding the standard methods used to communicate with a backend:
+- GET — Fetch/read data (e.g., get all jobs)
+- POST — Create new data (e.g., post a job)
+- PUT — Update existing data (e.g., edit a job)
+- DELETE — Remove data (e.g., delete a job)
+
+### Axios vs Fetch
+Migrated from native fetch to Axios for production-grade API handling:
+
+- Axios automatically parses JSON responses
+- Axios throws errors on 4xx/5xx responses (fetch does not)
+- Axios supports request/response interceptors for global token       attachment and error handling
+- Cleaner and more readable syntax
+
+### API Service Layer Architecture
+Enforced a strict rule: components never make direct API calls. All API communication goes through the services layer. This means:
+- A single place to manage base URLs
+- Easy to swap backends without touching components
+- Centralized token attachment and error handling
+
+### Environment-Based API URLs
+Configured a single VITE_API_BASE_URL in .env as the base for all API calls, replacing scattered full URLs across files.
+### Error Handling Patterns
+Implemented three-level error handling:
+- Network errors (no response received)
+- Client errors (4xx — Unauthorized, Not Found)
+- Server errors (5xx — Internal server error)
+- Auto-redirect to /login on 401 Unauthorized
+
+### Loading State Management
+Standardized the three-state API pattern across all pages:
+
+```
+idle → loading → success
+                → error
+```
+### 🛠 Practical Implementation
+#### services/api.js — Axios Instance (Core)
+- Created a configured Axios instance with base URL and timeout
+- Request interceptor: attaches JWT token from localStorage to       every outgoing request automatically
+- Response interceptor: handles 401, 403, 404, 500 errors globally
+
+### services/jobService.js — Updated
+- Migrated from native fetch to the Axios instance
+- Cleaner functions with no manual .json() or response.ok checks
+
+### services/authService.js — New
+- Login and register functions structured for real backend            integration
+- Currently simulates API responses with a Promise delay
+- Ready to go live — just uncomment the real API call
+
+### hooks/useApi.js — Reusable API Hook
+- Custom hook that manages data, loading, and error states for any     API function
+- Extracts the most useful error message from Axios error responses
+- Eliminates repetitive try/catch + useState boilerplate across       pages
+
+### ui/ApiError.jsx — Theme-Aware Error Component
+- Displays a consistent error UI using the existing theme system
+- Includes a "Try Again" button that re-triggers the failed API       call
+- Fully responsive and theme-consistent (Light, Dark, Darker)
+
+### context/AuthProvider.jsx — Updated
+- login and register are now async functions
+- Both go through the service layer
+- Return { success: true/false } for clean component-level handling
+- authLoading and authError states exposed via context
+
+### 📁 Files Created / Modified
+```
+src/
+├── services/
+│   ├── api.js              ← NEW: Axios instance with interceptors
+│   ├── JobService.js       ← UPDATED: Uses Axios instance
+│   └── authService.js      ← NEW: Auth API functions
+├── hooks/
+│   └── useApi.js           ← NEW: Reusable loading/error/data hook
+├── ui/
+│   └── ApiError.jsx        ← NEW: Theme-aware error UI component
+├── context/
+│   └── AuthProvider.jsx    ← UPDATED: Uses authService, async auth
+├── constants/
+│   └── api.js              ← UPDATED: Centralized endpoint constants
+```
+### ✅ Deliverables Completed
+- ✅ services/api.js created with Axios instance and interceptors
+- ✅ API service layer fully implemented with separation of             concerns
+- ✅ No direct API calls inside any component
+- ✅ Reusable useApi hook for consistent loading/error state             management
+- ✅ Theme-aware ApiError component with retry functionality
+- ✅ Auth flow upgraded to use service layer
+- ✅ Environment-based base URL configured
+- ✅ Error handling covers network, client, and server errors
+- ✅ Loader and error UI integrated into Jobs page
