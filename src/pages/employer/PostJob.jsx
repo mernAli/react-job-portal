@@ -6,11 +6,14 @@ import Select from "../../ui/Select";
 import { useToast } from "../../ui/toast/useToast";
 import MultiStepForm from "../../components/Jobs/MultiStepForm";
 import Sidebar from "../../components/Dashboard/Sidebar";
+import { createJob } from "../../services/JobService";
 
 const PostJob = () => {
   const { theme } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     // Step 1: Company Info
@@ -85,10 +88,42 @@ const PostJob = () => {
     { value: "INR", label: "INR (₹)" },
   ];
 
-  const handleComplete = () => {
-    showToast("Job posted successfully!", "success");
+  const handleComplete = async () => {
+  try {
+    setSubmitting(true);
+
+    const result = await createJob({
+      title: formData.title,
+      company: formData.company,
+      companyWebsite: formData.companyWebsite,
+      companySize: formData.companySize,
+      industry: formData.industry,
+      location: formData.location,
+      jobType: formData.jobType,
+      workMode: formData.workMode,
+      salary: formData.salary,
+      currency: formData.currency,
+      experience: formData.experience,
+      education: formData.education,
+      skills: formData.skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      description: formData.description,
+    });
+
+    showToast(result.message, "success");
     navigate("/app/my-jobs");
-  };
+
+  } catch (error) {
+    showToast(
+      error.message || "Failed to post job. Please try again.",
+      "error"
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleCancel = () => {
     navigate("/app/my-jobs");

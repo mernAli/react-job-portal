@@ -17,8 +17,8 @@ const MultiStepForm = ({ steps, onComplete, onCancel }) => {
     }
   };
 
-  const handleComplete = () => {
-    onComplete();
+  const handleComplete = async() => {
+    await onComplete();
   };
 
   return (

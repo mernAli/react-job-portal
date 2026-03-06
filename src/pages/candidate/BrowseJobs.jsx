@@ -7,6 +7,7 @@ import JobCard from "../../components/Jobs/JobCard";
 import FilterPanel from "../../components/Jobs/FilterPanel";
 import Sidebar from "../../components/Dashboard/SideBarJobs";
 import SidebarJobs from "../../components/Dashboard/SideBarJobs";
+import { applyJob } from "../../services/JobService";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
@@ -15,6 +16,7 @@ const BrowseJobs = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("latest");
+  const [appliedJobs, setAppliedJobs] = useState([]);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const BrowseJobs = () => {
     try {
       setLoading(true);
       const data = await fetchJobs();
-      
+
       // Transform API data to match our structure
       const transformedJobs = data.map((job) => ({
         id: job.slug,
@@ -43,7 +45,9 @@ const BrowseJobs = () => {
         jobType: job.job_types?.[0] || "full-time",
         salary: `${Math.floor(Math.random() * 50 + 50)}k - ${Math.floor(Math.random() * 50 + 100)}k`,
         currency: "$",
-        experience: ["Entry Level", "Mid Level", "Senior Level"][Math.floor(Math.random() * 3)],
+        experience: ["Entry Level", "Mid Level", "Senior Level"][
+          Math.floor(Math.random() * 3)
+        ],
         skills: job.tags?.slice(0, 5) || [],
         postedDate: new Date(job.created_at * 1000).toISOString(),
       }));
@@ -58,9 +62,31 @@ const BrowseJobs = () => {
     }
   };
 
-  const handleApply = (jobId) => {
+  const handleApply = async (jobId) => {
     const job = jobs.find((j) => j.id === jobId);
-    showToast(`Applied to ${job?.title} successfully!`, "success");
+
+    if (appliedJobs.includes(jobId)) {
+      showToast("You have already applied to this job!", "info");
+      return;
+    }
+
+    try {
+      // Optimistic UI — mark as applied immediately
+      setAppliedJobs((prev) => [...prev, jobId]);
+
+      const result = await applyJob(jobId, {
+        jobId,
+        jobTitle: job?.title,
+        company: job?.company,
+        appliedAt: new Date().toISOString(),
+      });
+
+      showToast(result.message, "success");
+    } catch (error) {
+      // Revert optimistic update on failure
+      setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
+      showToast(error.message || "Failed to apply. Please try again.", "error");
+    }
   };
 
   const handleSave = (jobId) => {
@@ -76,28 +102,28 @@ const BrowseJobs = () => {
       filtered = filtered.filter(
         (job) =>
           job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          job.company?.toLowerCase().includes(searchTerm.toLowerCase())
+          job.company?.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
     // Location
     if (filters.location) {
       filtered = filtered.filter((job) =>
-        job.location?.toLowerCase().includes(filters.location.toLowerCase())
+        job.location?.toLowerCase().includes(filters.location.toLowerCase()),
       );
     }
 
     // Job Type
     if (filters.jobType.length > 0) {
       filtered = filtered.filter((job) =>
-        filters.jobType.includes(job.jobType)
+        filters.jobType.includes(job.jobType),
       );
     }
 
     // Work Mode
     if (filters.workMode.length > 0) {
       filtered = filtered.filter((job) =>
-        filters.workMode.includes(job.workMode)
+        filters.workMode.includes(job.workMode),
       );
     }
 
@@ -110,8 +136,8 @@ const BrowseJobs = () => {
       };
       filtered = filtered.filter((job) =>
         filters.experienceLevel.some(
-          (level) => job.experience === experienceMap[level]
-        )
+          (level) => job.experience === experienceMap[level],
+        ),
       );
     }
 
@@ -171,7 +197,7 @@ const BrowseJobs = () => {
       (job) =>
         job.title?.toLowerCase().includes(value.toLowerCase()) ||
         job.company?.toLowerCase().includes(value.toLowerCase()) ||
-        job.location?.toLowerCase().includes(value.toLowerCase())
+        job.location?.toLowerCase().includes(value.toLowerCase()),
     );
 
     setFilteredJobs(filtered);
@@ -189,15 +215,21 @@ const BrowseJobs = () => {
     <div>
       <SidebarJobs />
       {/* Header */}
-      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Browse Jobs</h1>
+      <div
+        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
+      >
+        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
+          Browse Jobs
+        </h1>
         <p className={`${theme.textSecondary} mt-2`}>
           Discover {filteredJobs.length} opportunities that match your skills
         </p>
       </div>
 
       {/* Search and Sort Bar */}
-      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
+      <div
+        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
+      >
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -242,8 +274,8 @@ const BrowseJobs = () => {
 
         {/* Results Count */}
         <div className={`mt-4 text-sm ${theme.textSecondary}`}>
-          Showing <span className="font-semibold">{filteredJobs.length}</span> of{" "}
-          <span className="font-semibold">{jobs.length}</span> jobs
+          Showing <span className="font-semibold">{filteredJobs.length}</span>{" "}
+          of <span className="font-semibold">{jobs.length}</span> jobs
         </div>
       </div>
 
@@ -266,13 +298,16 @@ const BrowseJobs = () => {
                 job={job}
                 onApply={handleApply}
                 onSave={handleSave}
+                isApplied={appliedJobs.includes(job.id)}
               />
             ))}
           </div>
 
           {/* Empty State */}
           {filteredJobs.length === 0 && (
-            <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
+            <div
+              className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}
+            >
               <p className={`${theme.textMuted} text-lg mb-2`}>
                 No jobs found matching your criteria
               </p>

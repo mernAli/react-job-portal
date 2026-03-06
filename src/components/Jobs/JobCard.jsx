@@ -1,7 +1,7 @@
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 
-const JobCard = ({ job, onApply, onSave, showActions = true }) => {
+const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
@@ -143,9 +143,10 @@ const JobCard = ({ job, onApply, onSave, showActions = true }) => {
               e.stopPropagation();
               onApply && onApply(job.id);
             }}
+            disabled={isApplied}
             className={`flex-1 sm:flex-none px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm`}
           >
-            Apply Now
+            {isApplied ? "✓ Applied" : "Apply Now"}
           </button>
           <button
             onClick={handleViewDetails}
