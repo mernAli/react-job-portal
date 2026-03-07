@@ -194,6 +194,15 @@ const Topbar = () => {
                     <>
                       <button
                         onClick={() => {
+                          setShowProfileMenu(false)
+                          navigate("/app/candidate-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📊 My Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
                           setShowProfileMenu(false);
                           navigate("/app/browse-jobs");
                         }}
@@ -215,6 +224,15 @@ const Topbar = () => {
 
                   {user?.role === "employer" && (
                     <>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/employer-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📊 My Dashboard
+                      </button>
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);

@@ -1,103 +1,83 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/ThemeContext";
 import StatCard from "../../components/Dashboard/StatCard";
+import Loader from "../../ui/Loader";
+import ApiError from "../../ui/ApiError";
+import {
+  fetchCandidateStats,
+  fetchCandidateApplications,
+  fetchRecommendedJobs,
+} from "../../services/dashboardServices.js";
+import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
 
-  // Placeholder statistics data
-  const stats = [
-    {
-      title: "Jobs Applied",
-      value: "12",
-      icon: "📋",
-      trend: "up",
-      trendValue: "+3",
-      colorType: "info",
-    },
-    {
-      title: "Profile Views",
-      value: "48",
-      icon: "👁️",
-      trend: "up",
-      trendValue: "+8",
-      colorType: "success",
-    },
-    {
-      title: "Saved Jobs",
-      value: "7",
-      icon: "⭐",
-      trend: "down",
-      trendValue: "-2",
-      colorType: "warning",
-    },
-    {
-      title: "Interview Invites",
-      value: "3",
-      icon: "📅",
-      trend: "up",
-      trendValue: "+1",
-      colorType: "info",
-    },
-  ];
+  // Data states
+  const [stats, setStats] = useState([]);
+  const [recentApplications, setRecentApplications] = useState([]);
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
 
-  // Recent applications placeholder data
-  const recentApplications = [
-    {
-      id: 1,
-      jobTitle: "Senior React Developer",
-      company: "Tech Solutions Inc.",
-      appliedDate: "2026-02-08",
-      status: "Under Review",
-    },
-    {
-      id: 2,
-      jobTitle: "Frontend Engineer",
-      company: "StartupXYZ",
-      appliedDate: "2026-02-06",
-      status: "Interview Scheduled",
-    },
-    {
-      id: 3,
-      jobTitle: "Full Stack Developer",
-      company: "InnovateCorp",
-      appliedDate: "2026-02-04",
-      status: "Rejected",
-    },
-  ];
+  // Loading states
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [jobsLoading, setJobsLoading] = useState(true);
 
-  // Recommended jobs placeholder data
-  const recommendedJobs = [
-    {
-      id: 1,
-      title: "React Developer",
-      company: "Creative Agency",
-      location: "Remote",
-      type: "Full Time",
-      salary: "$80k - $120k",
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer",
-      company: "Design Studio",
-      location: "New York, NY",
-      type: "Full Time",
-      salary: "$70k - $100k",
-    },
-    {
-      id: 3,
-      title: "Product Manager",
-      company: "Tech Ventures",
-      location: "San Francisco, CA",
-      type: "Full Time",
-      salary: "$100k - $150k",
-    },
-  ];
+  // Error states
+  const [statsError, setStatsError] = useState(null);
+  const [applicationsError, setApplicationsError] = useState(null);
+
+  // Fetch all data in parallel on mount
+  useEffect(() => {
+    loadStats();
+    loadApplications();
+    loadRecommendedJobs();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      setStatsError(null);
+      const data = await fetchCandidateStats();
+      setStats(data);
+    } catch (error) {
+      setStatsError(error.message || "Failed to load statistics");
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const loadApplications = async () => {
+    try {
+      setApplicationsLoading(true);
+      setApplicationsError(null);
+      const data = await fetchCandidateApplications();
+      setRecentApplications(data);
+    } catch (error) {
+      setApplicationsError(error.message || "Failed to load applications");
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const loadRecommendedJobs = async () => {
+    try {
+      setJobsLoading(true);
+      const data = await fetchRecommendedJobs();
+      setRecommendedJobs(data);
+    } catch (error) {
+      console.error("Failed to load recommended jobs:", error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
+      <Sidebar />
+      {/* Welcome Header — UNCHANGED */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
         <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
           Welcome back, {user?.name}! 👋
@@ -108,15 +88,23 @@ const CandidateDashboard = () => {
       </div>
 
       {/* Statistics Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
-      </div>
+      {statsLoading ? (
+        <div className="flex items-center justify-center h-32">
+          <Loader size="md" />
+        </div>
+      ) : statsError ? (
+        <ApiError message={statsError} onRetry={loadStats} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          {stats.map((stat, index) => (
+            <StatCard key={index} {...stat} />
+          ))}
+        </div>
+      )}
 
-      {/* Two Column Layout */}
+      {/* Two Column Layout — UNCHANGED STRUCTURE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Applications - Left Side (2 columns) */}
+        {/* Recent Applications */}
         <div className={`lg:col-span-2 ${theme.cardBg} rounded-xl ${theme.border} border`}>
           <div className={`p-6 ${theme.border} border-b`}>
             <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
@@ -127,39 +115,44 @@ const CandidateDashboard = () => {
             </p>
           </div>
 
-          <div className={`divide-y ${theme.border}`}>
-            {recentApplications.map((application) => (
-              <div
-                key={application.id}
-                className={`p-6 ${theme.hover} transition-colors`}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className={`font-semibold ${theme.textPrimary}`}>
-                      {application.jobTitle}
-                    </h3>
-                    <p className={`text-sm ${theme.textSecondary} mt-1`}>
-                      {application.company}
-                    </p>
-                    <p className={`text-xs ${theme.textMuted} mt-2`}>
-                      Applied: {application.appliedDate}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+          {applicationsLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader size="md" />
+            </div>
+          ) : applicationsError ? (
+            <div className="p-6">
+              <ApiError message={applicationsError} onRetry={loadApplications} />
+            </div>
+          ) : (
+            <div className={`divide-y ${theme.border}`}>
+              {recentApplications.map((application) => (
+                <div key={application.id} className={`p-6 ${theme.hover} transition-colors`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className={`font-semibold ${theme.textPrimary}`}>
+                        {application.jobTitle}
+                      </h3>
+                      <p className={`text-sm ${theme.textSecondary} mt-1`}>
+                        {application.company}
+                      </p>
+                      <p className={`text-xs ${theme.textMuted} mt-2`}>
+                        Applied: {application.appliedDate}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
                       application.status === "Interview Scheduled"
                         ? `${theme.infoBg} ${theme.infoText}`
                         : application.status === "Rejected"
                         ? `${theme.dangerBg} ${theme.dangerText}`
                         : `${theme.warningBg} ${theme.warningText}`
-                    }`}
-                  >
-                    {application.status}
-                  </span>
+                    }`}>
+                      {application.status}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className={`p-4 ${theme.border} border-t`}>
             <button className={`w-full py-2 text-sm ${theme.primaryText} font-medium ${theme.hover} rounded-lg transition-colors`}>
@@ -168,7 +161,7 @@ const CandidateDashboard = () => {
           </div>
         </div>
 
-        {/* Recommended Jobs - Right Side (1 column) */}
+        {/* Recommended Jobs */}
         <div className={`${theme.cardBg} rounded-xl ${theme.border} border`}>
           <div className={`p-6 ${theme.border} border-b`}>
             <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
@@ -177,35 +170,39 @@ const CandidateDashboard = () => {
             <p className={`text-sm ${theme.textMuted} mt-1`}>Based on your profile</p>
           </div>
 
-          <div className={`divide-y ${theme.border}`}>
-            {recommendedJobs.map((job) => (
-              <div key={job.id} className={`p-4 ${theme.hover} transition-colors`}>
-                <h3 className={`font-semibold ${theme.textPrimary} text-sm`}>
-                  {job.title}
-                </h3>
-                <p className={`text-xs ${theme.textSecondary} mt-1`}>{job.company}</p>
-                <div className={`flex items-center gap-2 mt-2 text-xs ${theme.textMuted}`}>
-                  <span>📍 {job.location}</span>
+          {jobsLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader size="md" />
+            </div>
+          ) : (
+            <div className={`divide-y ${theme.border}`}>
+              {recommendedJobs.map((job) => (
+                <div key={job.id} className={`p-4 ${theme.hover} transition-colors`}>
+                  <h3 className={`font-semibold ${theme.textPrimary} text-sm`}>
+                    {job.title}
+                  </h3>
+                  <p className={`text-xs ${theme.textSecondary} mt-1`}>{job.company}</p>
+                  <div className={`flex items-center gap-2 mt-2 text-xs ${theme.textMuted}`}>
+                    <span>📍 {job.location}</span>
+                  </div>
+                  <p className={`text-xs ${theme.successText} font-semibold mt-2`}>
+                    {job.salary}
+                  </p>
+                  <button className={`w-full mt-3 py-2 text-xs ${theme.primary} text-white rounded-lg ${theme.primaryHover} transition-colors font-medium`}>
+                    Apply Now
+                  </button>
                 </div>
-                <p className={`text-xs ${theme.successText} font-semibold mt-2`}>
-                  {job.salary}
-                </p>
-                <button className={`w-full mt-3 py-2 text-xs ${theme.primary} text-white rounded-lg ${theme.primaryHover} transition-colors font-medium`}>
-                  Apply Now
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Profile Completion */}
+      {/* Profile Completion — UNCHANGED */}
       <div className={`${theme.primary} rounded-xl p-6 text-white`}>
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
-              Complete Your Profile
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Complete Your Profile</h3>
             <p className="text-white/80 text-sm">
               A complete profile increases your chances of getting hired by 40%
             </p>
@@ -220,7 +217,6 @@ const CandidateDashboard = () => {
             </button>
           </div>
         </div>
-        {/* Progress Bar */}
         <div className="mt-4 bg-white/30 rounded-full h-2">
           <div className="bg-white h-2 rounded-full" style={{ width: "75%" }}></div>
         </div>

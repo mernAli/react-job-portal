@@ -22,11 +22,15 @@ const UIDemo = lazy(() => import("./pages/UIDemo"))
 const BrowseJobs = lazy(() => import("./pages/candidate/BrowseJobs"));
 const MyApplications = lazy(() => import("./pages/candidate/MyApplications"));
 const Profile = lazy(() => import("./pages/candidate/Profile"));
+const CandidateDashboard = lazy(() => import("./pages/candidate/CandidateDashboard"));
+
 
 // Employer pages
 const PostJob = lazy(() => import("./pages/employer/PostJob"));
 const MyJobs = lazy(() => import("./pages/employer/MyJobs"));
 const Applications = lazy(() => import("./pages/employer/Applications"));
+const EmployerDashboard = lazy(() => import("./pages/employer/EmployerDashboard"));
+
 
 // Layouts (don't lazy load these)
 import AppLayout from "./layouts/AppLayout";
@@ -84,6 +88,11 @@ function App() {
                     <Route path="post-job" element={<PostJob />} />
                     <Route path="my-jobs" element={<MyJobs />} />
                     <Route path="applications" element={<Applications />} />
+
+                    {/* Dashboard pages */}
+                    <Route path="employer-dashboard" element={<EmployerDashboard />} />
+                    <Route path="candidate-dashboard" element={<CandidateDashboard />} />
+
                   </Route>
 
                   {/* 404 */}
