@@ -1420,6 +1420,122 @@ src/
 ├── constants/
 │   └── api.js              ← UPDATED: Centralized endpoint constants
 ```
+
+## ✅ Day 23 – Job Module API Integration
+
+**Objective:** Connect core job portal features with backend services using proper CRUD operations, optimistic UI updates, and consistent error handling.
+
+---
+
+### 🧠 Concepts Learned
+
+**CRUD Operations**
+Implemented all four standard API operations for the job module:
+- `GET` — Fetch all jobs and single job by ID (existing, refined)
+- `POST` — Create a new job posting (employer) and apply to a job (candidate)
+- `PUT` — Update an existing job posting
+- `DELETE` — Remove a job posting
+
+**API State Handling**
+Every API call in the job module now follows the three-state pattern consistently:
+- Loading state — button shows "Applying..." or form shows submitting state
+- Success state — toast feedback and UI update
+- Error state — toast error and UI reverted to original state
+
+**Optimistic UI Updates**
+Implemented optimistic UI on the apply job action:
+- Apply button immediately changes to "✓ Applied" before API responds
+- If the API call fails, the button reverts back to "Apply Now"
+- Makes the app feel instant and responsive without waiting for server confirmation
+
+---
+
+### 🛠 Practical Implementation
+
+**`services/JobService.js` — Full CRUD Layer**
+
+Four new service functions added alongside existing fetch functions:
+
+```
+fetchJobs()      — GET  /job-board-api
+fetchJobById()   — GET  /job-board-api/:id
+applyJob()       — POST /jobs/:id/apply     ← NEW
+createJob()      — POST /jobs               ← NEW
+updateJob()      — PUT  /jobs/:id           ← NEW
+deleteJob()      — DELETE /jobs/:id         ← NEW
+```
+
+All new functions follow the same simulated Promise pattern — ready for real backend with just two line changes per function.
+
+**`PostJob.jsx` — Wired to createJob**
+- `handleComplete` upgraded to `async` function
+- Calls `createJob()` with complete form data
+- Skills string parsed into array before sending
+- Success toast shown with redirect to `/app/my-jobs`
+- Error toast on failure with no redirect
+
+**`MultiStepForm.jsx` — Fixed async handling**
+- `handleComplete` upgraded to `async/await`
+- Now properly waits for `PostJob`'s async `onComplete` to finish
+- Previously fired and forgot — toast never appeared
+
+**`JobDetails.jsx` — Wired to applyJob**
+- `applying` and `applied` states added
+- Optimistic UI — button changes immediately on click
+- Reverts on API failure
+- Prevents duplicate applications with "Already applied" feedback
+- Both mobile sticky and desktop buttons updated
+
+**`BrowseJobs.jsx` — Wired to applyJob**
+- `appliedJobs` array state tracks all applied job IDs
+- `isApplied` prop passed to each `JobCard`
+- Duplicate application check with toast feedback
+- Optimistic update with revert on failure
+
+**`JobCard.jsx` — Apply button upgraded**
+- Accepts `isApplied` prop
+- Button shows "✓ Applied" when already applied
+- Stays clickable (not disabled) so parent can show toast on re-click
+- Visual opacity change gives disabled appearance while keeping functionality
+
+---
+
+### 📁 Files Modified
+
+```
+src/
+├── services/
+│   └── JobService.js              ← UPDATED: applyJob, createJob, updateJob, deleteJob
+├── components/Jobs/
+│   ├── MultiStepForm.jsx          ← UPDATED: async handleComplete
+│   └── JobCard.jsx                ← UPDATED: isApplied prop, button state
+├── pages/
+│   ├── JobDetails.jsx             ← UPDATED: handleApply wired to applyJob
+│   ├── candidate/
+│   │   └── BrowseJobs.jsx         ← UPDATED: handleApply wired to applyJob
+│   └── employer/
+│       └── PostJob.jsx            ← UPDATED: handleComplete wired to createJob
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ Complete CRUD service layer for job module
+- ✅ Job posting wired to createJob service with loading and error states
+- ✅ Job listing fetching real data from public API
+- ✅ Apply job action connected to applyJob service
+- ✅ Optimistic UI on apply with revert on failure
+- ✅ Duplicate application prevention with toast feedback
+- ✅ No direct API calls inside any component
+- ✅ All actions have loading, success, and error states
+- ✅ Backend-ready architecture — uncomment 2 lines per function to go live
+
+---
+
+### 🔑 Key Takeaway
+
+> Optimistic UI updates are the difference between an app that feels slow and one that feels instant. By updating the UI before the API responds and reverting on failure, users get immediate feedback without sacrificing data integrity.
 ### ✅ Deliverables Completed
 - ✅ services/api.js created with Axios instance and interceptors
 - ✅ API service layer fully implemented with separation of             concerns
@@ -1528,7 +1644,3 @@ src/
 - ✅ App ready for real backend — just uncomment 2 lines in authService.js
 
 ---
-
-### 🔑 Key Takeaway
-
-> The difference between Day 21 and Day 22 is the difference between an app that *looks* like it has authentication and an app that *actually has* correct authentication architecture. Session restore, loading guards, and proper error propagation make the auth system production-ready.
