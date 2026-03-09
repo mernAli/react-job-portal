@@ -5,19 +5,28 @@ import Loader from "../../ui/Loader";
 import { useToast } from "../../ui/toast/useToast";
 import JobCard from "../../components/Jobs/JobCard";
 import FilterPanel from "../../components/Jobs/FilterPanel";
-import Sidebar from "../../components/Dashboard/SideBarJobs";
 import SidebarJobs from "../../components/Dashboard/SideBarJobs";
 import { applyJob } from "../../services/JobService";
+import useJobFilters from "../../hooks/useJobFilters";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [appliedJobs, setAppliedJobs] = useState([]);
   const { showToast } = useToast();
+
+  // All filter logic handled by useJobFilters hook
+  const {
+    filters,
+    filteredJobs,
+    activeFilters,
+    updateFilter,
+    toggleArrayFilter,
+    resetFilters,
+    removeFilter,
+  } = useJobFilters(jobs);
 
   useEffect(() => {
     loadJobs();
@@ -27,8 +36,6 @@ const BrowseJobs = () => {
     try {
       setLoading(true);
       const data = await fetchJobs();
-
-      // Transform API data to match our structure
       const transformedJobs = data.map((job) => ({
         id: job.slug,
         title: job.title,
@@ -40,7 +47,6 @@ const BrowseJobs = () => {
         job_types: job.job_types || [],
         created_at: job.created_at,
         url: job.url,
-        // Add simulated fields for demo
         workMode: job.remote ? "remote" : "onsite",
         jobType: job.job_types?.[0] || "full-time",
         salary: `${Math.floor(Math.random() * 50 + 50)}k - ${Math.floor(Math.random() * 50 + 100)}k`,
@@ -51,9 +57,7 @@ const BrowseJobs = () => {
         skills: job.tags?.slice(0, 5) || [],
         postedDate: new Date(job.created_at * 1000).toISOString(),
       }));
-
       setJobs(transformedJobs);
-      setFilteredJobs(transformedJobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
       showToast("Failed to load jobs", "error");
@@ -64,28 +68,22 @@ const BrowseJobs = () => {
 
   const handleApply = async (jobId) => {
     const job = jobs.find((j) => j.id === jobId);
-
     if (appliedJobs.includes(jobId)) {
       showToast("You have already applied to this job!", "info");
       return;
     }
-
     try {
-      // Optimistic UI — mark as applied immediately
       setAppliedJobs((prev) => [...prev, jobId]);
-
       const result = await applyJob(jobId, {
         jobId,
         jobTitle: job?.title,
         company: job?.company,
         appliedAt: new Date().toISOString(),
       });
-
       showToast(result.message, "success");
     } catch (error) {
-      // Revert optimistic update on failure
       setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
-      showToast(error.message || "Failed to apply. Please try again.", "error");
+      showToast(error.message || "Failed to apply.", "error");
     }
   };
 
@@ -94,114 +92,25 @@ const BrowseJobs = () => {
     showToast(`${job?.title} saved to your list`, "success");
   };
 
-  const handleFilterChange = (filters) => {
-    let filtered = [...jobs];
-
-    // Search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (job) =>
-          job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          job.company?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
-
-    // Location
-    if (filters.location) {
-      filtered = filtered.filter((job) =>
-        job.location?.toLowerCase().includes(filters.location.toLowerCase()),
-      );
-    }
-
-    // Job Type
-    if (filters.jobType.length > 0) {
-      filtered = filtered.filter((job) =>
-        filters.jobType.includes(job.jobType),
-      );
-    }
-
-    // Work Mode
-    if (filters.workMode.length > 0) {
-      filtered = filtered.filter((job) =>
-        filters.workMode.includes(job.workMode),
-      );
-    }
-
-    // Experience Level
-    if (filters.experienceLevel.length > 0) {
-      const experienceMap = {
-        entry: "Entry Level",
-        mid: "Mid Level",
-        senior: "Senior Level",
-      };
-      filtered = filtered.filter((job) =>
-        filters.experienceLevel.some(
-          (level) => job.experience === experienceMap[level],
-        ),
-      );
-    }
-
-    setFilteredJobs(filtered);
-    showToast(`Found ${filtered.length} jobs`, "success");
-  };
-
-  const handleResetFilters = () => {
-    setFilteredJobs(jobs);
-    setSearchTerm("");
-    showToast("Filters reset", "success");
-  };
-
   const handleSort = (value) => {
     setSortBy(value);
-    let sorted = [...filteredJobs];
+  };
 
-    switch (value) {
+  // Sort filtered jobs
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    switch (sortBy) {
       case "latest":
-        sorted.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-        break;
+        return new Date(b.postedDate) - new Date(a.postedDate);
       case "oldest":
-        sorted.sort((a, b) => new Date(a.postedDate) - new Date(b.postedDate));
-        break;
+        return new Date(a.postedDate) - new Date(b.postedDate);
       case "salary-high":
-        sorted.sort((a, b) => {
-          const aMax = parseInt(a.salary.split("-")[1]);
-          const bMax = parseInt(b.salary.split("-")[1]);
-          return bMax - aMax;
-        });
-        break;
+        return parseInt(b.salary?.split("-")[1] || 0) - parseInt(a.salary?.split("-")[1] || 0);
       case "salary-low":
-        sorted.sort((a, b) => {
-          const aMin = parseInt(a.salary.split("-")[0]);
-          const bMin = parseInt(b.salary.split("-")[0]);
-          return aMin - bMin;
-        });
-        break;
+        return parseInt(a.salary?.split("-")[0] || 0) - parseInt(b.salary?.split("-")[0] || 0);
       default:
-        break;
+        return 0;
     }
-
-    setFilteredJobs(sorted);
-  };
-
-  // Search handler
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    if (!value) {
-      setFilteredJobs(jobs);
-      return;
-    }
-
-    const filtered = jobs.filter(
-      (job) =>
-        job.title?.toLowerCase().includes(value.toLowerCase()) ||
-        job.company?.toLowerCase().includes(value.toLowerCase()) ||
-        job.location?.toLowerCase().includes(value.toLowerCase()),
-    );
-
-    setFilteredJobs(filtered);
-  };
+  });
 
   if (loading) {
     return (
@@ -214,31 +123,25 @@ const BrowseJobs = () => {
   return (
     <div>
       <SidebarJobs />
-      {/* Header */}
-      <div
-        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
-      >
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
-          Browse Jobs
-        </h1>
+
+      {/* Header — UNCHANGED */}
+      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
+        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Browse Jobs</h1>
         <p className={`${theme.textSecondary} mt-2`}>
-          Discover {filteredJobs.length} opportunities that match your skills
+          Discover {sortedJobs.length} opportunities that match your skills
         </p>
       </div>
 
-      {/* Search and Sort Bar */}
-      <div
-        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
-      >
+      {/* Search and Sort Bar — UNCHANGED UI, wired to useJobFilters */}
+      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
           <div className="flex-1">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search by job title, company, or location..."
-                value={searchTerm}
-                onChange={handleSearch}
+                value={filters.keyword}
+                onChange={(e) => updateFilter("keyword", e.target.value)}
                 className={`w-full px-4 py-3 pl-10 ${theme.border} border rounded-lg ${theme.focus} ${theme.textPrimary} ${theme.cardBg} text-sm outline-none`}
               />
               <svg
@@ -247,17 +150,10 @@ const BrowseJobs = () => {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
-
-          {/* Sort */}
           <div className="w-full md:w-48">
             <select
               value={sortBy}
@@ -272,27 +168,53 @@ const BrowseJobs = () => {
           </div>
         </div>
 
-        {/* Results Count */}
+        {/* Results Count — UNCHANGED */}
         <div className={`mt-4 text-sm ${theme.textSecondary}`}>
-          Showing <span className="font-semibold">{filteredJobs.length}</span>{" "}
-          of <span className="font-semibold">{jobs.length}</span> jobs
+          Showing <span className="font-semibold">{sortedJobs.length}</span> of{" "}
+          <span className="font-semibold">{jobs.length}</span> jobs
         </div>
+
+        {/* Active Filter Chips — NEW */}
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {activeFilters.map((filter, index) => (
+              <span
+                key={index}
+                className={`flex items-center gap-1 px-3 py-1 ${theme.infoBg} ${theme.infoText} rounded-full text-xs font-medium`}
+              >
+                {filter.label}
+                <button
+                  onClick={() => removeFilter(filter.key, filter.value)}
+                  className="ml-1 hover:opacity-70"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={resetFilters}
+              className={`px-3 py-1 ${theme.dangerBg} ${theme.dangerText} rounded-full text-xs font-medium`}
+            >
+              Clear All
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Main Content: Filter Panel + Job List */}
+      {/* Main Content — UNCHANGED UI */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filter Panel - Left Sidebar */}
         <div className="lg:col-span-1">
           <FilterPanel
-            onFilterChange={handleFilterChange}
-            onReset={handleResetFilters}
+            filters={filters}
+            onFilterChange={updateFilter}
+            onToggleArray={toggleArrayFilter}
+            onReset={resetFilters}
           />
         </div>
 
-        {/* Job List - Main Area */}
         <div className="lg:col-span-3">
           <div className="space-y-4">
-            {filteredJobs.map((job) => (
+            {sortedJobs.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -303,11 +225,8 @@ const BrowseJobs = () => {
             ))}
           </div>
 
-          {/* Empty State */}
-          {filteredJobs.length === 0 && (
-            <div
-              className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}
-            >
+          {sortedJobs.length === 0 && (
+            <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
               <p className={`${theme.textMuted} text-lg mb-2`}>
                 No jobs found matching your criteria
               </p>
@@ -315,7 +234,7 @@ const BrowseJobs = () => {
                 Try adjusting your filters or search terms
               </p>
               <button
-                onClick={handleResetFilters}
+                onClick={resetFilters}
                 className={`px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium`}
               >
                 Clear All Filters
