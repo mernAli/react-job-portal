@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Loader from "../../ui/Loader";
 import ApiError from "../../ui/ApiError";
-import { fetchEmployerJobs } from "../../services/dashboardService";
+import { fetchEmployerJobs } from "../../services/dashboardService.js";
 import { useToast } from "../../ui/toast/useToast";
 
 const MyJobs = () => {
