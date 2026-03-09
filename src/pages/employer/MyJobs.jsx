@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Loader from "../../ui/Loader";

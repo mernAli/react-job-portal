@@ -6,7 +6,7 @@ import { useToast } from "../../ui/toast/useToast";
 import {
   fetchAllApplications,
   updateApplicationStatus,
-} from "../../services/dashboardServices.js";
+} from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 
 const Applications = () => {
