@@ -8,7 +8,7 @@ import {
   fetchEmployerStats,
   fetchRecentApplications,
   fetchEmployerActivity,
-} from "../../services/dashboardServices.js";
+} from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 import { Navigate, useNavigate } from "react-router-dom";
 

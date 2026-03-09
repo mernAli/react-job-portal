@@ -6,8 +6,8 @@ import { useToast } from "../../ui/toast/useToast";
 import JobCard from "../../components/Jobs/JobCard";
 import FilterPanel from "../../components/Jobs/FilterPanel";
 import SidebarJobs from "../../components/Dashboard/SideBarJobs";
-import { applyJob } from "../../services/JobService";
-import useJobFilters from "../../hooks/useJobFilters";
+import { applyJob } from "../../services/JobService.js";
+import useJobFilters from "../../hooks/useJobFilters.js";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();

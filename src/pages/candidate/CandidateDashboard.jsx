@@ -8,7 +8,7 @@ import {
   fetchCandidateStats,
   fetchCandidateApplications,
   fetchRecommendedJobs,
-} from "../../services/dashboardServices.js";
+} from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 
 const CandidateDashboard = () => {

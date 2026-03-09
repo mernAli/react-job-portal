@@ -3,7 +3,7 @@ import { useTheme } from "../../context/ThemeContext";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Loader from "../../ui/Loader";
 import ApiError from "../../ui/ApiError";
-import { fetchEmployerJobs } from "../../services/dashboardService.js";
+import { fetchEmployerJobs } from "../../services/dashboardService";
 import { useToast } from "../../ui/toast/useToast";
 
 const MyJobs = () => {
