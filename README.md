@@ -1846,3 +1846,101 @@ Status updates persist during the current session but reset on page reload. This
 ### 🔑 Key Takeaway
 
 > A well-designed ATS reduces recruiter workload by making status management instant and visual. Optimistic UI updates make the interface feel responsive while keeping data integrity intact through automatic rollback on failure.
+
+
+
+## ✅ Day 26 – Advanced Search & Filters
+
+**Objective:** Build a real-world filtering system with debounced search, URL-synced filter state, active filter chips, and a unified filter architecture.
+
+---
+
+### 🧠 Concepts Learned
+
+**Query Parameters**
+All filter state is encoded into the URL using `useSearchParams` from React Router:
+```
+/app/browse-jobs?keyword=react&location=remote&experience=mid&salary=50k-100k
+```
+This means filtered results are shareable via URL, the browser back button works correctly, and page refresh preserves the active filters — exactly like real-world job portals.
+
+**Controlled Filter States**
+All six filter values (keyword, location, experience, salary, jobType, workMode) are managed in a single unified state object inside `useJobFilters`. This replaces the previous scattered approach and makes reset, URL sync, and chip tracking trivial.
+
+**Debouncing Search**
+A custom `useDebounce` hook prevents excessive filtering on every keystroke. Keyword and location text inputs wait 400ms after the user stops typing before triggering the filter — reducing unnecessary computation and improving performance significantly.
+
+**Filter UI Patterns**
+Implemented two complementary filter patterns working together:
+- **Sidebar filters** — checkboxes, dropdowns, and text inputs in a left panel
+- **Active filter chips** — visual tags above results showing what's active with individual remove (×) buttons and a Clear All option
+
+---
+
+### 🛠 Practical Implementation
+
+**`hooks/useDebounce.js` — New Custom Hook**
+- Accepts a value and delay (default 400ms)
+- Returns a debounced version of the value
+- Uses `useEffect` cleanup to cancel pending timers on every new keystroke
+- Prevents filter from running until user stops typing
+
+**`hooks/useJobFilters.js` — New Unified Filter Hook**
+- Initializes filter state from URL params on mount
+- Syncs all filter changes back to URL using `useSearchParams`
+- Uses `useDebounce` for keyword and location inputs
+- Computes `filteredJobs` using `useMemo` — only recalculates when filters or jobs change
+- Computes `activeFilters` array for chip display
+- Exposes `updateFilter`, `toggleArrayFilter`, `resetFilters`, `removeFilter` functions
+- Handles all six filter types: keyword, location, experience, salary, jobType, workMode
+
+**`FilterPanel.jsx` — Refactored**
+- Removed internal `useState` — now fully props-driven
+- Removed "Apply Filters" button — filters apply instantly on change
+- Receives `filters`, `onFilterChange`, `onToggleArray`, `onReset` as props
+- Zero UI changes — same layout, same design
+
+**`BrowseJobs.jsx` — Updated**
+- Replaced scattered filter logic with single `useJobFilters` hook
+- Search input now updates `filters.keyword` via `updateFilter`
+- Active filter chips displayed below search bar
+- Each chip has × button to remove that specific filter
+- Clear All button resets everything
+- Sort applied on top of filtered results via `sortedJobs`
+
+---
+
+### 📁 Files Created / Modified
+
+```
+src/
+├── hooks/
+│   ├── useDebounce.js           ← NEW: debounce custom hook
+│   └── useJobFilters.js         ← NEW: unified filter state + URL sync
+├── components/Jobs/
+│   └── FilterPanel.jsx          ← UPDATED: props-driven, instant filters
+├── pages/candidate/
+│   └── BrowseJobs.jsx           ← UPDATED: useJobFilters integration
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ Debounced keyword search — filters after 400ms pause
+- ✅ Location filter — debounced text input
+- ✅ Experience filter — single select via checkboxes
+- ✅ Salary range filter — dropdown with four ranges
+- ✅ Job type filter — multi-select checkboxes
+- ✅ Work mode filter — multi-select checkboxes
+- ✅ URL query params — all filters encoded and restored on refresh
+- ✅ Active filter chips — visual display with individual remove
+- ✅ Clear All — resets all filters at once
+- ✅ Sort works on top of filtered results
+- ✅ Performance optimized with useMemo and useDebounce
+
+---
+
+### 🔑 Key Takeaway
+
+> Debouncing and URL-synced filter state are the two things that separate a toy filter from a production filter. Debouncing keeps the UI fast, and URL params make the experience shareable and resumable — both are expected in any real-world job portal.
