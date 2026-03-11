@@ -8,6 +8,7 @@ import FilterPanel from "../../components/Jobs/FilterPanel";
 import SidebarJobs from "../../components/Dashboard/SideBarJobs";
 import { applyJob } from "../../services/JobService.js";
 import useJobFilters from "../../hooks/useJobFilters.js";
+import usePagination from "../../hooks/usePagination.js";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
@@ -17,7 +18,6 @@ const BrowseJobs = () => {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const { showToast } = useToast();
 
-  // All filter logic handled by useJobFilters hook
   const {
     filters,
     filteredJobs,
@@ -27,6 +27,36 @@ const BrowseJobs = () => {
     resetFilters,
     removeFilter,
   } = useJobFilters(jobs);
+
+  // Sort filtered jobs
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    switch (sortBy) {
+      case "latest":
+        return new Date(b.postedDate) - new Date(a.postedDate);
+      case "oldest":
+        return new Date(a.postedDate) - new Date(b.postedDate);
+      case "salary-high":
+        return parseInt(b.salary?.split("-")[1] || 0) - parseInt(a.salary?.split("-")[1] || 0);
+      case "salary-low":
+        return parseInt(a.salary?.split("-")[0] || 0) - parseInt(b.salary?.split("-")[0] || 0);
+      default:
+        return 0;
+    }
+  });
+
+  // Pagination — receives sortedJobs so it always paginates the correct list
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    pageNumbers,
+    itemsPerPage,
+    setItemsPerPage,
+    goToPage,
+    goToNext,
+    goToPrev,
+    summaryText,
+  } = usePagination(sortedJobs, 10);
 
   useEffect(() => {
     loadJobs();
@@ -92,26 +122,6 @@ const BrowseJobs = () => {
     showToast(`${job?.title} saved to your list`, "success");
   };
 
-  const handleSort = (value) => {
-    setSortBy(value);
-  };
-
-  // Sort filtered jobs
-  const sortedJobs = [...filteredJobs].sort((a, b) => {
-    switch (sortBy) {
-      case "latest":
-        return new Date(b.postedDate) - new Date(a.postedDate);
-      case "oldest":
-        return new Date(a.postedDate) - new Date(b.postedDate);
-      case "salary-high":
-        return parseInt(b.salary?.split("-")[1] || 0) - parseInt(a.salary?.split("-")[1] || 0);
-      case "salary-low":
-        return parseInt(a.salary?.split("-")[0] || 0) - parseInt(b.salary?.split("-")[0] || 0);
-      default:
-        return 0;
-    }
-  });
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -132,7 +142,7 @@ const BrowseJobs = () => {
         </p>
       </div>
 
-      {/* Search and Sort Bar — UNCHANGED UI, wired to useJobFilters */}
+      {/* Search and Sort Bar — UNCHANGED */}
       <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
@@ -157,7 +167,7 @@ const BrowseJobs = () => {
           <div className="w-full md:w-48">
             <select
               value={sortBy}
-              onChange={(e) => handleSort(e.target.value)}
+              onChange={(e) => setSortBy(e.target.value)}
               className={`w-full px-4 py-3 ${theme.border} border rounded-lg ${theme.focus} ${theme.textPrimary} ${theme.cardBg} text-sm outline-none`}
             >
               <option value="latest">Latest First</option>
@@ -168,13 +178,27 @@ const BrowseJobs = () => {
           </div>
         </div>
 
-        {/* Results Count — UNCHANGED */}
-        <div className={`mt-4 text-sm ${theme.textSecondary}`}>
-          Showing <span className="font-semibold">{sortedJobs.length}</span> of{" "}
-          <span className="font-semibold">{jobs.length}</span> jobs
+        {/* Results Count + Page Size — UPDATED */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+          <div className={`text-sm ${theme.textSecondary}`}>
+            {summaryText}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm ${theme.textMuted}`}>Per page:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className={`px-2 py-1 ${theme.border} border rounded-lg ${theme.textPrimary} ${theme.cardBg} text-sm outline-none`}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
         </div>
 
-        {/* Active Filter Chips — NEW */}
+        {/* Active Filter Chips — UNCHANGED */}
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {activeFilters.map((filter, index) => (
@@ -201,7 +225,7 @@ const BrowseJobs = () => {
         )}
       </div>
 
-      {/* Main Content — UNCHANGED UI */}
+      {/* Main Content — UNCHANGED layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
           <FilterPanel
@@ -213,8 +237,10 @@ const BrowseJobs = () => {
         </div>
 
         <div className="lg:col-span-3">
+
+          {/* Job List — now uses paginatedItems */}
           <div className="space-y-4">
-            {sortedJobs.map((job) => (
+            {paginatedItems.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -225,14 +251,22 @@ const BrowseJobs = () => {
             ))}
           </div>
 
+          {/* Improved Empty State — UPDATED */}
           {sortedJobs.length === 0 && (
             <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
-              <p className={`${theme.textMuted} text-lg mb-2`}>
-                No jobs found matching your criteria
+              <div className="text-5xl mb-4">🔍</div>
+              <h3 className={`text-lg font-semibold ${theme.textPrimary} mb-2`}>
+                No jobs found
+              </h3>
+              <p className={`${theme.textMuted} text-sm mb-2`}>
+                No results for your current filters. Try:
               </p>
-              <p className={`${theme.textMuted} text-sm mb-4`}>
-                Try adjusting your filters or search terms
-              </p>
+              <ul className={`text-sm ${theme.textMuted} mb-6 space-y-1`}>
+                <li>• Using fewer or broader keywords</li>
+                <li>• Removing the location filter</li>
+                <li>• Selecting a different experience level</li>
+                <li>• Expanding the salary range</li>
+              </ul>
               <button
                 onClick={resetFilters}
                 className={`px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium`}
@@ -241,6 +275,83 @@ const BrowseJobs = () => {
               </button>
             </div>
           )}
+
+          {/* Pagination Controls — NEW */}
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+
+              {/* Prev button */}
+              <button
+                onClick={goToPrev}
+                disabled={currentPage === 1}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover} disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                ← Prev
+              </button>
+
+              {/* First page + ellipsis */}
+              {pageNumbers[0] > 1 && (
+                <>
+                  <button
+                    onClick={() => goToPage(1)}
+                    className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}
+                  >
+                    1
+                  </button>
+                  {pageNumbers[0] > 2 && (
+                    <span className={`px-1 ${theme.textMuted}`}>...</span>
+                  )}
+                </>
+              )}
+
+              {/* Page numbers */}
+              {pageNumbers.map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                    page === currentPage
+                      ? `${theme.primary} text-white`
+                      : `${theme.border} border ${theme.textPrimary} ${theme.hover}`
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Last page + ellipsis */}
+              {pageNumbers[pageNumbers.length - 1] < totalPages && (
+                <>
+                  {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
+                    <span className={`px-1 ${theme.textMuted}`}>...</span>
+                  )}
+                  <button
+                    onClick={() => goToPage(totalPages)}
+                    className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+
+              {/* Next button */}
+              <button
+                onClick={goToNext}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover} disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
+          {/* Page indicator */}
+          {totalPages > 1 && (
+            <p className={`text-center text-sm ${theme.textMuted} mt-3`}>
+              Page {currentPage} of {totalPages}
+            </p>
+          )}
+
         </div>
       </div>
     </div>
