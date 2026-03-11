@@ -1421,6 +1421,104 @@ src/
 │   └── api.js              ← UPDATED: Centralized endpoint constants
 ```
 
+
+## ✅ Day 22 – Authentication Integration
+
+**Objective:** Implement a real, production-grade authentication workflow with proper token handling, session persistence, and protected routes.
+
+---
+
+### 🧠 Concepts Learned
+
+**Login & Signup API Integration**
+Connected the Login and Register forms to the `authService` layer built on Day 21. Forms no longer use `setTimeout` simulation — auth calls go through the proper async service functions that are ready for real backend integration with zero restructuring.
+
+**Token Storage Strategy**
+Used `localStorage` for JWT token persistence with a structured key system:
+- `token` — the JWT token
+- `userName` — display name
+- `userEmail` — user email
+- `userRole` — role-based access (candidate / employer)
+
+Implemented graceful handling for corrupted or incomplete storage — if any required key is missing, storage is cleared and the user is redirected to login cleanly.
+
+**Auth Context / Provider**
+Upgraded `AuthProvider` with:
+- Async `login` and `register` functions through the service layer
+- `authLoading` state that starts as `true` and resolves after session restore
+- `authError` state exposed via context for consuming components
+- Proper `try/catch/finally` pattern for every auth operation
+
+**Protected Routes**
+Upgraded `PrivateRoute` to be aware of the `authLoading` state:
+- Shows a loader while session is being restored from localStorage
+- Redirects unauthenticated users to `/login`
+- Handles wrong role redirection to the correct dashboard
+
+**Session Persistence**
+Implemented a `restoreSession` function inside a `useEffect` in `AuthProvider` that runs on every app load:
+- Reads token and user data from localStorage
+- Restores user state before any route rendering occurs
+- Wrapped in `try/catch` to handle corrupted data gracefully
+
+---
+
+### 🛠 Practical Implementation
+
+**Complete Auth Flow:**
+```
+1. User fills Login form
+2. Frontend validation runs (email format, password length)
+3. authService.loginUser() is called
+4. Token + user data saved to localStorage
+5. User state updated in AuthContext
+6. Success toast shown
+7. User redirected to /app dashboard
+8. On refresh — session restored from localStorage automatically
+9. On logout — localStorage cleared, redirected to /login
+```
+
+**7 Tests Passed:**
+- ✅ Login error UI — invalid credentials shows error toast + inline message
+- ✅ Login success — correct credentials redirect to dashboard with toast
+- ✅ Session persistence — tab close and reopen stays logged in
+- ✅ Route protection — logged out user cannot access /app/* routes
+- ✅ Logout flow — modal confirmation → toast → redirect to /login
+- ✅ Corrupted storage — missing keys cleared gracefully, redirected to login
+- ✅ No login flash — page refresh shows loader, stays on current route
+
+---
+
+### 📁 Files Modified / Created
+
+```
+src/
+├── context/
+│   └── AuthProvider.jsx     ← UPDATED: async auth, session restore, authLoading
+├── route/
+│   └── PrivateRoute.jsx     ← UPDATED: authLoading guard, no login flash
+├── pages/
+│   ├── Login.jsx            ← UPDATED: handleSubmit uses authService
+│   └── Register.jsx         ← UPDATED: handleSubmit uses authService
+└── utils/
+    └── auth.js              ← NEW: session helper utilities
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ Working auth system connected to service layer
+- ✅ Protected routes with loading state awareness
+- ✅ Persistent login across tab close and page refresh
+- ✅ Secure token handling with corrupted storage protection
+- ✅ Role-based redirection after login and register
+- ✅ Full UX feedback — toasts and inline errors on all auth actions
+- ✅ Logout confirmation modal with toast feedback
+- ✅ App ready for real backend — just uncomment 2 lines in authService.js
+
+---
+
 ## ✅ Day 23 – Job Module API Integration
 
 **Objective:** Connect core job portal features with backend services using proper CRUD operations, optimistic UI updates, and consistent error handling.
@@ -1548,99 +1646,301 @@ src/
 - ✅ Loader and error UI integrated into Jobs page
 
 
-## ✅ Day 22 – Authentication Integration
 
-**Objective:** Implement a real, production-grade authentication workflow with proper token handling, session persistence, and protected routes.
+## ✅ Day 24 – Employer Dashboard Data Integration
+
+**Objective:** Connect both employer and candidate dashboards with dynamic data from a service layer, replacing all hardcoded static values with properly structured API-ready functions.
 
 ---
 
 ### 🧠 Concepts Learned
 
-**Login & Signup API Integration**
-Connected the Login and Register forms to the `authService` layer built on Day 21. Forms no longer use `setTimeout` simulation — auth calls go through the proper async service functions that are ready for real backend integration with zero restructuring.
+**Dashboard API Design**
+Designed a dedicated `dashboardService.js` with six separate API functions — three for the employer dashboard and three for the candidate dashboard. Each function is structured to match real backend endpoints with commented-out real API calls ready to activate.
 
-**Token Storage Strategy**
-Used `localStorage` for JWT token persistence with a structured key system:
-- `token` — the JWT token
-- `userName` — display name
-- `userEmail` — user email
-- `userRole` — role-based access (candidate / employer)
+**Data Transformation**
+Dashboard data is fetched, stored in state, and mapped directly to existing UI components like `StatCard`, application tables, activity feeds, and recommended job cards — with no UI changes required.
 
-Implemented graceful handling for corrupted or incomplete storage — if any required key is missing, storage is cleared and the user is redirected to login cleanly.
-
-**Auth Context / Provider**
-Upgraded `AuthProvider` with:
-- Async `login` and `register` functions through the service layer
-- `authLoading` state that starts as `true` and resolves after session restore
-- `authError` state exposed via context for consuming components
-- Proper `try/catch/finally` pattern for every auth operation
-
-**Protected Routes**
-Upgraded `PrivateRoute` to be aware of the `authLoading` state:
-- Shows a loader while session is being restored from localStorage
-- Redirects unauthenticated users to `/login`
-- Handles wrong role redirection to the correct dashboard
-
-**Session Persistence**
-Implemented a `restoreSession` function inside a `useEffect` in `AuthProvider` that runs on every app load:
-- Reads token and user data from localStorage
-- Restores user state before any route rendering occurs
-- Wrapped in `try/catch` to handle corrupted data gracefully
+**Charts-Ready Data**
+All statistics are returned as structured objects with `title`, `value`, `icon`, `trend`, `trendValue`, and `colorType` — ready to be passed into chart libraries like Recharts or Chart.js when needed in future tasks.
 
 ---
 
 ### 🛠 Practical Implementation
 
-**Complete Auth Flow:**
+**`services/dashboardService.js` — New Service File**
+
+Six functions created:
 ```
-1. User fills Login form
-2. Frontend validation runs (email format, password length)
-3. authService.loginUser() is called
-4. Token + user data saved to localStorage
-5. User state updated in AuthContext
-6. Success toast shown
-7. User redirected to /app dashboard
-8. On refresh — session restored from localStorage automatically
-9. On logout — localStorage cleared, redirected to /login
+fetchEmployerStats()          — GET /employer/stats
+fetchRecentApplications()     — GET /employer/applications/recent
+fetchEmployerActivity()       — GET /employer/activity
+fetchCandidateStats()         — GET /candidate/stats
+fetchCandidateApplications()  — GET /candidate/applications
+fetchRecommendedJobs()        — GET /candidate/recommended-jobs
 ```
 
-**7 Tests Passed:**
-- ✅ Login error UI — invalid credentials shows error toast + inline message
-- ✅ Login success — correct credentials redirect to dashboard with toast
-- ✅ Session persistence — tab close and reopen stays logged in
-- ✅ Route protection — logged out user cannot access /app/* routes
-- ✅ Logout flow — modal confirmation → toast → redirect to /login
-- ✅ Corrupted storage — missing keys cleared gracefully, redirected to login
-- ✅ No login flash — page refresh shows loader, stays on current route
+All functions follow the same simulated Promise pattern established in Days 21-23. Ready for real backend with just two line changes per function.
+
+**`EmployerDashboard.jsx` — Updated**
+- Replaced hardcoded `stats` and `recentApplications` arrays with state
+- Three independent `loadStats`, `loadApplications`, `loadActivity` functions
+- All three called in parallel via `useEffect`
+- Each section has its own loading and error state
+- New Activity Feed section added showing recent employer actions
+- `ApiError` component with retry on stats and applications sections
+
+**`CandidateDashboard.jsx` — Updated**
+- Replaced hardcoded `stats`, `recentApplications`, `recommendedJobs` arrays with state
+- Three independent load functions called in parallel
+- Each section has its own `Loader` while fetching
+- `ApiError` component with retry on stats and applications sections
+
+**`App.jsx` — Updated**
+- Two new lazy-loaded routes registered:
+  - `/app/employer-dashboard`
+  - `/app/candidate-dashboard`
+
+**`Topbar.jsx` — Updated**
+- Role-based dashboard links added to profile dropdown:
+  - Candidate sees `📊 My Dashboard` → `/app/candidate-dashboard`
+  - Employer sees `📊 My Dashboard` → `/app/employer-dashboard`
 
 ---
 
-### 📁 Files Modified / Created
+### 📁 Files Created / Modified
 
 ```
 src/
-├── context/
-│   └── AuthProvider.jsx     ← UPDATED: async auth, session restore, authLoading
-├── route/
-│   └── PrivateRoute.jsx     ← UPDATED: authLoading guard, no login flash
+├── App.jsx                           ← UPDATED: 2 new dashboard routes
+├── services/
+│   └── dashboardService.js           ← NEW: 6 dashboard API functions
+├── components/Dashboard/
+│   └── Topbar.jsx                    ← UPDATED: dashboard links in dropdown
 ├── pages/
-│   ├── Login.jsx            ← UPDATED: handleSubmit uses authService
-│   └── Register.jsx         ← UPDATED: handleSubmit uses authService
-└── utils/
-    └── auth.js              ← NEW: session helper utilities
+│   ├── employer/
+│   │   └── EmployerDashboard.jsx     ← UPDATED: dynamic data + activity feed
+│   └── candidate/
+│       └── CandidateDashboard.jsx    ← UPDATED: dynamic data + loaders
 ```
 
 ---
 
 ### ✅ Deliverables Completed
 
-- ✅ Working auth system connected to service layer
-- ✅ Protected routes with loading state awareness
-- ✅ Persistent login across tab close and page refresh
-- ✅ Secure token handling with corrupted storage protection
-- ✅ Role-based redirection after login and register
-- ✅ Full UX feedback — toasts and inline errors on all auth actions
-- ✅ Logout confirmation modal with toast feedback
-- ✅ App ready for real backend — just uncomment 2 lines in authService.js
+- ✅ Dynamic dashboard stat cards loaded from service layer
+- ✅ Activity feed connected to service (employer)
+- ✅ Applications data table connected to service (both roles)
+- ✅ Recommended jobs connected to service (candidate)
+- ✅ All sections load in parallel for performance
+- ✅ Independent loading state per section
+- ✅ Error states with retry functionality
+- ✅ Dashboard pages registered as routes and linked from Topbar
+- ✅ Backend-ready — uncomment 2 lines per function to go live
 
 ---
+
+### 🔑 Key Takeaway
+
+> Loading dashboard sections in parallel instead of sequentially means the page feels significantly faster — if one section takes longer, the others still appear immediately. Independent error states ensure one failing API call never breaks the entire dashboard.
+
+
+## ✅ Day 25 – ATS (Application Tracking System) UI Integration
+
+**Objective:** Build a complete application management interface for employers with status management, badge systems, and shortlist/reject actions.
+
+---
+
+### 🧠 Concepts Learned
+
+**Table UI Patterns**
+Built a responsive application listing that adapts cleanly across mobile, tablet, and desktop — using card-based layout on mobile and structured rows on desktop with consistent spacing and alignment.
+
+**Status Management**
+Implemented a complete status lifecycle for applications:
+```
+Under Review → Shortlisted → Interview Scheduled
+Under Review → Rejected
+```
+Status updates use optimistic UI — the badge changes instantly before the API responds, and reverts automatically if the call fails.
+
+**Badge Systems**
+Status badges are color-coded consistently using the existing theme system:
+- 🟡 Under Review — warning colors
+- 🟢 Shortlisted — success colors
+- 🔵 Interview Scheduled — info colors
+- 🔴 Rejected — danger colors
+
+**Actions (Shortlist / Reject)**
+Action buttons are context-aware:
+- Disabled when application already has that status
+- Shows loading indicator during API call
+- Card dims slightly during update (`opacity-70`)
+- Success or error toast shown after every action
+
+---
+
+### 🛠 Practical Implementation
+
+**`dashboardService.js` — 3 New ATS Functions Added**
+
+```
+fetchAllApplications()        — GET /employer/applications
+updateApplicationStatus()     — PUT /applications/:id/status
+fetchEmployerJobs()           — GET /employer/jobs
+```
+
+**`Applications.jsx` — Full ATS Implementation**
+- Data loaded from `fetchAllApplications` service with loading and error states
+- Search bar filters by candidate name, position, or email in real time
+- Filter buttons show live counts that update as statuses change
+- `handleStatusUpdate` uses optimistic UI with revert on failure
+- `updatingId` state tracks which card is currently being updated
+- Shortlist and Reject buttons disabled when already in that status
+- `ApiError` component with retry on load failure
+
+**`MyJobs.jsx` — Dynamic Data + Close Job**
+- Replaced hardcoded static array with `fetchEmployerJobs` service
+- `handleCloseJob` uses optimistic UI to instantly show "Closed" status
+- Close button disabled when job is already closed
+- Loading and error states added
+
+---
+
+### 📁 Files Modified
+
+```
+src/
+├── services/
+│   └── dashboardService.js      ← UPDATED: fetchAllApplications,
+│                                            updateApplicationStatus,
+│                                            fetchEmployerJobs
+├── pages/employer/
+│   ├── Applications.jsx         ← UPDATED: full ATS with search,
+│                                            filter, status actions
+│   └── MyJobs.jsx               ← UPDATED: dynamic data, close job
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ ATS dashboard built and connected to service layer
+- ✅ Application listing with loading and error states
+- ✅ Status badges color-coded using theme system
+- ✅ Shortlist action — optimistic UI + toast + disabled state
+- ✅ Reject action — optimistic UI + toast + disabled state
+- ✅ Search by name, position, or email
+- ✅ Filter by status with live dynamic counts
+- ✅ MyJobs page connected to service with close job action
+- ✅ All actions backend-ready — uncomment 2 lines to go live
+
+---
+
+### 📌 Note on Data Persistence
+
+Status updates persist during the current session but reset on page reload. This is expected behavior since the app currently uses simulated API responses without a real database. When the backend is connected, `updateApplicationStatus()` will save changes permanently and reloads will reflect the updated status.
+
+---
+
+### 🔑 Key Takeaway
+
+> A well-designed ATS reduces recruiter workload by making status management instant and visual. Optimistic UI updates make the interface feel responsive while keeping data integrity intact through automatic rollback on failure.
+
+
+
+## ✅ Day 26 – Advanced Search & Filters
+
+**Objective:** Build a real-world filtering system with debounced search, URL-synced filter state, active filter chips, and a unified filter architecture.
+
+---
+
+### 🧠 Concepts Learned
+
+**Query Parameters**
+All filter state is encoded into the URL using `useSearchParams` from React Router:
+```
+/app/browse-jobs?keyword=react&location=remote&experience=mid&salary=50k-100k
+```
+This means filtered results are shareable via URL, the browser back button works correctly, and page refresh preserves the active filters — exactly like real-world job portals.
+
+**Controlled Filter States**
+All six filter values (keyword, location, experience, salary, jobType, workMode) are managed in a single unified state object inside `useJobFilters`. This replaces the previous scattered approach and makes reset, URL sync, and chip tracking trivial.
+
+**Debouncing Search**
+A custom `useDebounce` hook prevents excessive filtering on every keystroke. Keyword and location text inputs wait 400ms after the user stops typing before triggering the filter — reducing unnecessary computation and improving performance significantly.
+
+**Filter UI Patterns**
+Implemented two complementary filter patterns working together:
+- **Sidebar filters** — checkboxes, dropdowns, and text inputs in a left panel
+- **Active filter chips** — visual tags above results showing what's active with individual remove (×) buttons and a Clear All option
+
+---
+
+### 🛠 Practical Implementation
+
+**`hooks/useDebounce.js` — New Custom Hook**
+- Accepts a value and delay (default 400ms)
+- Returns a debounced version of the value
+- Uses `useEffect` cleanup to cancel pending timers on every new keystroke
+- Prevents filter from running until user stops typing
+
+**`hooks/useJobFilters.js` — New Unified Filter Hook**
+- Initializes filter state from URL params on mount
+- Syncs all filter changes back to URL using `useSearchParams`
+- Uses `useDebounce` for keyword and location inputs
+- Computes `filteredJobs` using `useMemo` — only recalculates when filters or jobs change
+- Computes `activeFilters` array for chip display
+- Exposes `updateFilter`, `toggleArrayFilter`, `resetFilters`, `removeFilter` functions
+- Handles all six filter types: keyword, location, experience, salary, jobType, workMode
+
+**`FilterPanel.jsx` — Refactored**
+- Removed internal `useState` — now fully props-driven
+- Removed "Apply Filters" button — filters apply instantly on change
+- Receives `filters`, `onFilterChange`, `onToggleArray`, `onReset` as props
+- Zero UI changes — same layout, same design
+
+**`BrowseJobs.jsx` — Updated**
+- Replaced scattered filter logic with single `useJobFilters` hook
+- Search input now updates `filters.keyword` via `updateFilter`
+- Active filter chips displayed below search bar
+- Each chip has × button to remove that specific filter
+- Clear All button resets everything
+- Sort applied on top of filtered results via `sortedJobs`
+
+---
+
+### 📁 Files Created / Modified
+
+```
+src/
+├── hooks/
+│   ├── useDebounce.js           ← NEW: debounce custom hook
+│   └── useJobFilters.js         ← NEW: unified filter state + URL sync
+├── components/Jobs/
+│   └── FilterPanel.jsx          ← UPDATED: props-driven, instant filters
+├── pages/candidate/
+│   └── BrowseJobs.jsx           ← UPDATED: useJobFilters integration
+```
+
+---
+
+### ✅ Deliverables Completed
+
+- ✅ Debounced keyword search — filters after 400ms pause
+- ✅ Location filter — debounced text input
+- ✅ Experience filter — single select via checkboxes
+- ✅ Salary range filter — dropdown with four ranges
+- ✅ Job type filter — multi-select checkboxes
+- ✅ Work mode filter — multi-select checkboxes
+- ✅ URL query params — all filters encoded and restored on refresh
+- ✅ Active filter chips — visual display with individual remove
+- ✅ Clear All — resets all filters at once
+- ✅ Sort works on top of filtered results
+- ✅ Performance optimized with useMemo and useDebounce
+
+---
+
+### 🔑 Key Takeaway
+
+> Debouncing and URL-synced filter state are the two things that separate a toy filter from a production filter. Debouncing keeps the UI fast, and URL params make the experience shareable and resumable — both are expected in any real-world job portal.
