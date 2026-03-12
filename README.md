@@ -1939,6 +1939,10 @@ src/
 - ✅ Sort works on top of filtered results
 - ✅ Performance optimized with useMemo and useDebounce
 
+### 🔑 Key Takeaway
+
+> Debouncing and URL-synced filter state are the two things that separate a toy filter from a production filter. Debouncing keeps the UI fast, and URL params make the experience shareable and resumable — both are expected in any real-world job portal.
+
 
 ## ✅ Day 27 – Pagination & User Experience
  
@@ -2026,6 +2030,3 @@ src/
  
 > Pagination is not just a UI pattern — it is a performance optimization. Rendering 10 jobs instead of 100 means fewer DOM nodes, faster paint, and a smoother scroll experience. Combined with skeleton loaders that show layout before data, and empty states that guide users instead of leaving them stuck, Day 27 transforms job browsing from functional to genuinely pleasant.
  
-### 🔑 Key Takeaway
-
-> Debouncing and URL-synced filter state are the two things that separate a toy filter from a production filter. Debouncing keeps the UI fast, and URL params make the experience shareable and resumable — both are expected in any real-world job portal.
