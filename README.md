@@ -1939,8 +1939,93 @@ src/
 - ✅ Sort works on top of filtered results
 - ✅ Performance optimized with useMemo and useDebounce
 
----
 
+## ✅ Day 27 – Pagination & User Experience
+ 
+**Objective:** Optimize the job browsing experience for large datasets with pagination, skeleton loaders, and improved empty states.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Pagination Patterns**
+Implemented traditional numbered pagination — the most appropriate pattern for a job portal where users need to navigate to specific pages, share results, and return to a known position. Each page renders only the current slice of jobs, reducing DOM nodes and improving performance significantly compared to rendering all jobs at once.
+ 
+**Skeleton Loaders**
+The existing `Loader.jsx` was already built as a skeleton loader matching the exact shape of `JobCard` — grey pulsing placeholders for the logo, title, description, tags, and action buttons. This pattern feels significantly faster than a spinner because users see the page layout before data arrives, which is the same approach used by LinkedIn and YouTube.
+ 
+**Empty States**
+Upgraded the empty state from a single line of text to a fully helpful UI with an icon, a clear heading, a bulleted list of actionable suggestions (broaden keywords, remove location, change experience level, expand salary range), and a Clear All Filters button — reducing user frustration and bounce rate.
+ 
+**Infinite Scrolling vs Pagination**
+Evaluated both approaches and chose pagination for the job portal context. Pagination is better here because users want to navigate to specific pages, bookmark positions, and share filtered results — use cases that infinite scroll cannot support.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`hooks/usePagination.js` — New Custom Hook**
+ 
+Accepts any array and a default page size, and returns everything needed to paginate it:
+ 
+```
+paginatedItems    — the current page's slice of items
+currentPage       — active page number
+totalPages        — total number of pages
+pageNumbers       — smart array of visible page buttons (max 5)
+itemsPerPage      — current page size
+setItemsPerPage   — change page size (resets to page 1)
+goToPage()        — navigate to specific page + scroll to top
+goToNext()        — next page
+goToPrev()        — previous page
+summaryText       — "Showing 11–20 of 87 jobs"
+```
+ 
+Key behaviors:
+- `useEffect` resets to page 1 automatically when `items.length` or `itemsPerPage` changes — filter changes always bring users back to page 1
+- `window.scrollTo({ top: 0, behavior: "smooth" })` on every page change
+- Smart ellipsis logic — shows first/last page with `...` for large page counts
+- `useMemo` for `paginatedItems` and `pageNumbers` — no recalculation unless dependencies change
+ 
+**`BrowseJobs.jsx` — Updated**
+- `usePagination` receives `sortedJobs` — pagination always operates on the correctly filtered and sorted list
+- Job list now renders `paginatedItems` instead of `sortedJobs`
+- Page size selector added (5 / 10 / 20 / 50) next to results count
+- Summary text replaced static count: "Showing 1–10 of 87 jobs"
+- Pagination controls added below job list with Prev/Next, numbered pages, ellipsis, and Page X of Y indicator
+- Improved empty state with icon, heading, suggestions list, and Clear All button
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── hooks/
+│   └── usePagination.js       ← NEW: reusable pagination hook
+├── pages/candidate/
+│   └── BrowseJobs.jsx         ← UPDATED: pagination + improved empty state
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Pagination with numbered pages, Prev/Next, ellipsis
+- ✅ Page size selector — 5 / 10 / 20 / 50 jobs per page
+- ✅ Smooth scroll to top on every page change
+- ✅ Auto reset to page 1 on filter or sort change
+- ✅ Summary text — "Showing X–Y of Z jobs"
+- ✅ Skeleton loader on initial load (Loader.jsx)
+- ✅ Improved empty state with actionable suggestions
+- ✅ usePagination hook reusable on any future page
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> Pagination is not just a UI pattern — it is a performance optimization. Rendering 10 jobs instead of 100 means fewer DOM nodes, faster paint, and a smoother scroll experience. Combined with skeleton loaders that show layout before data, and empty states that guide users instead of leaving them stuck, Day 27 transforms job browsing from functional to genuinely pleasant.
+ 
 ### 🔑 Key Takeaway
 
 > Debouncing and URL-synced filter state are the two things that separate a toy filter from a production filter. Debouncing keeps the UI fast, and URL params make the experience shareable and resumable — both are expected in any real-world job portal.
