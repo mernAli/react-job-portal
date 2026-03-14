@@ -9,6 +9,8 @@ import SidebarJobs from "../../components/Dashboard/SideBarJobs";
 import { applyJob } from "../../services/JobService.js";
 import useJobFilters from "../../hooks/useJobFilters.js";
 import usePagination from "../../hooks/usePagination.js";
+import useNotifications from "../../context/useNotifications.js";
+import { NOTIF_TYPES } from "../../context/NotificationContext.jsx";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
@@ -17,6 +19,7 @@ const BrowseJobs = () => {
   const [sortBy, setSortBy] = useState("latest");
   const [appliedJobs, setAppliedJobs] = useState([]);
   const { showToast } = useToast();
+  const { addNotification } = useNotifications();
 
   const {
     filters,
@@ -36,9 +39,15 @@ const BrowseJobs = () => {
       case "oldest":
         return new Date(a.postedDate) - new Date(b.postedDate);
       case "salary-high":
-        return parseInt(b.salary?.split("-")[1] || 0) - parseInt(a.salary?.split("-")[1] || 0);
+        return (
+          parseInt(b.salary?.split("-")[1] || 0) -
+          parseInt(a.salary?.split("-")[1] || 0)
+        );
       case "salary-low":
-        return parseInt(a.salary?.split("-")[0] || 0) - parseInt(b.salary?.split("-")[0] || 0);
+        return (
+          parseInt(a.salary?.split("-")[0] || 0) -
+          parseInt(b.salary?.split("-")[0] || 0)
+        );
       default:
         return 0;
     }
@@ -97,21 +106,35 @@ const BrowseJobs = () => {
   };
 
   const handleApply = async (jobId) => {
+    // ✅ Look up job before try block so it's always in scope
     const job = jobs.find((j) => j.id === jobId);
+
     if (appliedJobs.includes(jobId)) {
       showToast("You have already applied to this job!", "info");
       return;
     }
+
     try {
+      // Optimistic UI
       setAppliedJobs((prev) => [...prev, jobId]);
+
       const result = await applyJob(jobId, {
         jobId,
         jobTitle: job?.title,
         company: job?.company,
         appliedAt: new Date().toISOString(),
       });
+
       showToast(result.message, "success");
+
+      // ✅ Create notification after successful apply
+      addNotification(
+        NOTIF_TYPES.JOB_APPLIED,
+        "Application Submitted",
+        `You successfully applied for ${job?.title} at ${job?.company}.`,
+      );
     } catch (error) {
+      // Revert optimistic update on failure
       setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
       showToast(error.message || "Failed to apply.", "error");
     }
@@ -135,15 +158,21 @@ const BrowseJobs = () => {
       <SidebarJobs />
 
       {/* Header — UNCHANGED */}
-      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Browse Jobs</h1>
+      <div
+        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
+      >
+        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
+          Browse Jobs
+        </h1>
         <p className={`${theme.textSecondary} mt-2`}>
           Discover {sortedJobs.length} opportunities that match your skills
         </p>
       </div>
 
       {/* Search and Sort Bar — UNCHANGED */}
-      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
+      <div
+        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
+      >
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -160,7 +189,12 @@ const BrowseJobs = () => {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
           </div>
@@ -180,9 +214,7 @@ const BrowseJobs = () => {
 
         {/* Results Count + Page Size — UPDATED */}
         <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-          <div className={`text-sm ${theme.textSecondary}`}>
-            {summaryText}
-          </div>
+          <div className={`text-sm ${theme.textSecondary}`}>{summaryText}</div>
           <div className="flex items-center gap-2">
             <span className={`text-sm ${theme.textMuted}`}>Per page:</span>
             <select
@@ -237,7 +269,6 @@ const BrowseJobs = () => {
         </div>
 
         <div className="lg:col-span-3">
-
           {/* Job List — now uses paginatedItems */}
           <div className="space-y-4">
             {paginatedItems.map((job) => (
@@ -253,7 +284,9 @@ const BrowseJobs = () => {
 
           {/* Improved Empty State — UPDATED */}
           {sortedJobs.length === 0 && (
-            <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
+            <div
+              className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}
+            >
               <div className="text-5xl mb-4">🔍</div>
               <h3 className={`text-lg font-semibold ${theme.textPrimary} mb-2`}>
                 No jobs found
@@ -279,7 +312,6 @@ const BrowseJobs = () => {
           {/* Pagination Controls — NEW */}
           {totalPages > 1 && (
             <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
-
               {/* Prev button */}
               <button
                 onClick={goToPrev}
@@ -351,7 +383,6 @@ const BrowseJobs = () => {
               Page {currentPage} of {totalPages}
             </p>
           )}
-
         </div>
       </div>
     </div>

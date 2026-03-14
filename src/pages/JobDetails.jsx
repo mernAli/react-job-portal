@@ -5,6 +5,8 @@ import { useToast } from "../ui/toast/useToast";
 import SidebarJobs from "../components/Dashboard/SideBarJobs";
 import { fetchJobs } from "../services/JobService";
 import { applyJob } from "../services/JobService";
+import useNotifications from "../context/useNotifications";
+import { NOTIF_TYPES } from "../context/NotificationContext";
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -17,6 +19,8 @@ const JobDetails = () => {
 
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+
+  const { addNotification } = useNotifications()
 
   useEffect(() => {
     loadJobDetails();
@@ -103,6 +107,12 @@ const JobDetails = () => {
       });
 
       showToast(result.message, "success");
+
+      addNotification(
+        NOTIF_TYPES.JOB_APPLIED,
+        "Application Submitted",
+        `You have successfully applied to ${job.title} at ${job.company}.`,
+      )
     } catch (error) {
       // Revert optimistic update on failure
       setApplied(false);
