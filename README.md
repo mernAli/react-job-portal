@@ -2029,4 +2029,131 @@ src/
 ### 🔑 Key Takeaway
  
 > Pagination is not just a UI pattern — it is a performance optimization. Rendering 10 jobs instead of 100 means fewer DOM nodes, faster paint, and a smoother scroll experience. Combined with skeleton loaders that show layout before data, and empty states that guide users instead of leaving them stuck, Day 27 transforms job browsing from functional to genuinely pleasant.
+
+
+ ## ✅ Day 28 – Notifications System UI
  
+**Objective:** Build a complete notification system providing real-time feedback and system alerts across the entire job portal application.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Toast Notifications**
+The existing toast system (ToastProvider, ToastContext, useToast) was verified and extended across all critical user actions — job apply, status updates, errors, and success alerts. All four toast types are used consistently: success (green), error (red), info (blue), and warning (yellow).
+ 
+**Notification Center UI**
+Built a bell icon dropdown in the Topbar showing the five most recent notifications with unread count badge, mark-as-read on click, individual remove button, and a "View all →" link to the full notifications page. The dropdown closes automatically when clicking outside using a `useRef` and `document.addEventListener` pattern.
+ 
+**Status Updates**
+Every ATS status change (shortlisted, rejected, interview scheduled) now generates both a toast for immediate feedback and a persistent notification in the notification center — giving employers a complete action history without leaving the current page.
+ 
+**Event-Based Alerts**
+Notifications are generated automatically by user events — not manually. Applying for a job from `BrowseJobs`, applying from `JobDetails`, and changing application status in `Applications` all trigger `addNotification()` through the shared `NotificationContext`, making the system a true event-driven notification bus.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`context/NotificationContext.jsx` — New Context**
+- `NotificationProvider` manages global notification state
+- Five notification types defined: `JOB_APPLIED`, `STATUS_UPDATE`, `ERROR`, `SUCCESS`, `INFO`
+- `getNotifStyle()` maps each type to an icon and color type
+- Four context functions: `addNotification`, `markAsRead`, `markAllAsRead`, `removeNotification`
+- `unreadCount` computed from unread notifications
+- Three seed notifications on first load for demo purposes
+- All functions wrapped in `useCallback` for performance
+ 
+**`context/useNotifications.js` — New Hook**
+- Clean single-line hook wrapping `useContext(NotificationContext)`
+- Used in Topbar, Notification page, BrowseJobs, Applications, and JobDetails
+ 
+**`Topbar.jsx` — Updated**
+- Bell icon added with red unread count badge (shows "9+" for counts above 9)
+- Notification dropdown with scrollable list of last 5 notifications
+- Unread items highlighted with `infoBg` background and blue dot indicator
+- Mark all as read button in dropdown header
+- Individual × remove button per notification
+- `useRef` + `useEffect` closes dropdown on outside click
+- Opening bell closes profile and theme menus automatically
+ 
+**`Notification.jsx` — Updated**
+- Replaced hardcoded static array with live `useNotifications` context
+- Unread count displayed in desktop header with "Mark all as read" button
+- Color-coded left border on unread cards (green/red/yellow/blue by type)
+- Blue unread dot indicator in notification title
+- Individual × remove button per card
+- `getTimeAgo()` helper formats timestamps to "2m ago", "5h ago", "3d ago"
+ 
+**`BrowseJobs.jsx` — Updated**
+- `addNotification` called after successful `applyJob()`
+- Notification title: "Application Submitted"
+- Notification message includes job title and company name
+ 
+**`JobDetails.jsx` — Updated**
+- Same `addNotification` pattern added to `handleApply`
+- Works from both the job listing and direct job detail page
+ 
+**`Applications.jsx` — Updated**
+- `addNotification` called after successful `updateApplicationStatus()`
+- Fixed bug: `application` object now looked up from state before the try block using `applications.find()` — this resolved the "Failed to update status" error
+ 
+**`main.jsx` — Updated**
+- `NotificationProvider` wrapped around the app inside `ToastProvider`
+ 
+---
+ 
+### 🐛 Bugs Fixed
+ 
+**Bug 1 — ATS Status Update Failing**
+`handleStatusUpdate` was referencing `application.candidateName` inside the try block, but `application` was never defined in that scope — only `applicationId` was passed as a parameter. Fixed by adding `const application = applications.find((app) => app.id === applicationId)` before the try block.
+ 
+**Bug 2 — JobDetails Apply Not Creating Notification**
+`JobDetails.jsx` had its own independent `handleApply` function that was not connected to the notification system. Fixed by adding `useNotifications` hook and `addNotification` call to match the pattern in `BrowseJobs.jsx`.
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── context/
+│   ├── NotificationContext.jsx    ← NEW: provider, types, getNotifStyle
+│   └── useNotifications.js        ← NEW: clean context hook
+├── main.jsx                       ← UPDATED: NotificationProvider added
+├── components/Dashboard/
+│   └── Topbar.jsx                 ← UPDATED: bell icon + dropdown
+├── pages/
+│   ├── Notification.jsx           ← UPDATED: wired to context
+│   └── JobDetails.jsx             ← UPDATED: addNotification on apply
+├── pages/candidate/
+│   └── BrowseJobs.jsx             ← UPDATED: addNotification on apply
+├── pages/employer/
+│   └── Applications.jsx           ← UPDATED: addNotification on status change + bug fix
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Toast system verified across all four types
+- ✅ NotificationContext with event-based addNotification
+- ✅ Bell icon with live unread count badge in Topbar
+- ✅ Notification dropdown with last 5 notifications
+- ✅ Mark as read on click — badge decreases
+- ✅ Mark all as read — badge clears
+- ✅ Individual notification remove (×)
+- ✅ Full notification history on Notifications page
+- ✅ Color-coded unread indicators (border + dot)
+- ✅ Job apply → notification (BrowseJobs + JobDetails)
+- ✅ ATS status change → notification (Applications)
+- ✅ Dropdown closes on outside click
+- ✅ Two bugs identified and fixed
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> A notification system is only valuable if it is event-driven — not manually triggered. By centralizing notification state in a React context and calling `addNotification()` from every critical user action, the system automatically stays in sync with the application state without any extra wiring. The bell badge, dropdown, and full page all read from the same source of truth.
+ 
+---
