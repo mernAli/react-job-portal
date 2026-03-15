@@ -8,10 +8,13 @@ import {
   updateApplicationStatus,
 } from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
+import useNotifications from "../../context/useNotifications.js";
+import { NOTIF_TYPES } from "../../context/NotificationContext.jsx";
 
 const Applications = () => {
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { addNotification } = useNotifications();
 
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,27 +42,42 @@ const Applications = () => {
 
   // ── Status Update (Shortlist / Reject / Interview) ──
   const handleStatusUpdate = async (applicationId, newStatus) => {
+
+    // ✅ Look up the full application object from state first
+    const application = applications.find((app) => app.id === applicationId);
+
+
     try {
       setUpdatingId(applicationId);
 
       // Optimistic UI — update immediately
       setApplications((prev) =>
         prev.map((app) =>
-          app.id === applicationId ? { ...app, status: newStatus } : app
-        )
+          app.id === applicationId ? { ...app, status: newStatus } : app,
+        ),
       );
 
       await updateApplicationStatus(applicationId, newStatus);
-      showToast(`Application ${newStatus.toLowerCase()} successfully!`, "success");
-
+      showToast(
+        `Application ${newStatus.toLowerCase()} successfully!`,
+        "success",
+      );
+      addNotification(
+        NOTIF_TYPES.STATUS_UPDATE,
+        "Application Status Updated",
+        `${application?.candidateName}'s application was ${newStatus.toLowerCase()}.`,
+      );
     } catch (err) {
       // Revert on failure
       setApplications((prev) =>
         prev.map((app) =>
-          app.id === applicationId ? { ...app, status: "Under Review" } : app
-        )
+          app.id === applicationId ? { ...app, status: "Under Review" } : app,
+        ),
       );
-      showToast("Failed to update status. Please try again.", err.message || "error");
+      showToast(
+        "Failed to update status. Please try again.",
+        err.message || "error",
+      );
     } finally {
       setUpdatingId(null);
     }
@@ -83,9 +101,11 @@ const Applications = () => {
   // ── Status counts for filter buttons ──
   const counts = {
     all: applications.length,
-    "under review": applications.filter((a) => a.status === "Under Review").length,
+    "under review": applications.filter((a) => a.status === "Under Review")
+      .length,
     shortlisted: applications.filter((a) => a.status === "Shortlisted").length,
-    interview: applications.filter((a) => a.status === "Interview Scheduled").length,
+    interview: applications.filter((a) => a.status === "Interview Scheduled")
+      .length,
     rejected: applications.filter((a) => a.status === "Rejected").length,
   };
 
@@ -106,7 +126,9 @@ const Applications = () => {
       <Sidebar />
       {/* Header — UNCHANGED */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Applications</h1>
+        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
+          Applications
+        </h1>
         <p className={`${theme.textSecondary} mt-2`}>
           Review and manage candidate applications
         </p>
@@ -159,7 +181,9 @@ const Applications = () => {
                 : `${theme.bg} ${theme.textPrimary} ${theme.hover}`
             }`}
           >
-            <span className="hidden sm:inline">Under Review ({counts["under review"]})</span>
+            <span className="hidden sm:inline">
+              Under Review ({counts["under review"]})
+            </span>
             <span className="sm:hidden">Review ({counts["under review"]})</span>
           </button>
           <button
@@ -180,7 +204,9 @@ const Applications = () => {
                 : `${theme.bg} ${theme.textPrimary} ${theme.hover}`
             }`}
           >
-            <span className="hidden sm:inline">Interview ({counts.interview})</span>
+            <span className="hidden sm:inline">
+              Interview ({counts.interview})
+            </span>
             <span className="sm:hidden">Int. ({counts.interview})</span>
           </button>
           <button
@@ -198,8 +224,10 @@ const Applications = () => {
 
       {/* Results count */}
       <p className={`text-sm ${theme.textMuted}`}>
-        Showing <span className="font-semibold">{filteredApplications.length}</span> of{" "}
-        <span className="font-semibold">{applications.length}</span> applications
+        Showing{" "}
+        <span className="font-semibold">{filteredApplications.length}</span> of{" "}
+        <span className="font-semibold">{applications.length}</span>{" "}
+        applications
       </p>
 
       {/* Applications List — SAME UI, wired to state */}
@@ -214,13 +242,17 @@ const Applications = () => {
             <div className="flex flex-col gap-4">
               {/* Header Section — UNCHANGED */}
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 ${theme.infoBg} rounded-full flex items-center justify-center ${theme.infoText} font-semibold text-lg flex-shrink-0`}>
+                <div
+                  className={`w-12 h-12 ${theme.infoBg} rounded-full flex items-center justify-center ${theme.infoText} font-semibold text-lg flex-shrink-0`}
+                >
                   {application.candidateName.charAt(0)}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className={`text-base lg:text-lg font-semibold ${theme.textPrimary} truncate`}>
+                    <h3
+                      className={`text-base lg:text-lg font-semibold ${theme.textPrimary} truncate`}
+                    >
                       {application.candidateName}
                     </h3>
                     {/* Status Badge - Mobile */}
@@ -229,21 +261,26 @@ const Applications = () => {
                         application.status === "Shortlisted"
                           ? `${theme.successBg} ${theme.successText}`
                           : application.status === "Interview Scheduled"
-                          ? `${theme.infoBg} ${theme.infoText}`
-                          : application.status === "Rejected"
-                          ? `${theme.dangerBg} ${theme.dangerText}`
-                          : `${theme.warningBg} ${theme.warningText}`
+                            ? `${theme.infoBg} ${theme.infoText}`
+                            : application.status === "Rejected"
+                              ? `${theme.dangerBg} ${theme.dangerText}`
+                              : `${theme.warningBg} ${theme.warningText}`
                       }`}
                     >
-                      {application.status === "Interview Scheduled" ? "Interview" : application.status}
+                      {application.status === "Interview Scheduled"
+                        ? "Interview"
+                        : application.status}
                     </span>
                   </div>
 
                   <p className={`text-sm ${theme.textSecondary} mb-2`}>
-                    Applied for: <span className="font-medium">{application.position}</span>
+                    Applied for:{" "}
+                    <span className="font-medium">{application.position}</span>
                   </p>
 
-                  <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs lg:text-sm ${theme.textMuted}`}>
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs lg:text-sm ${theme.textMuted}`}
+                  >
                     <span className="flex items-center gap-1 truncate">
                       <span>📧</span>
                       <span className="truncate">{application.email}</span>
@@ -272,10 +309,10 @@ const Applications = () => {
                     application.status === "Shortlisted"
                       ? `${theme.successBg} ${theme.successText}`
                       : application.status === "Interview Scheduled"
-                      ? `${theme.infoBg} ${theme.infoText}`
-                      : application.status === "Rejected"
-                      ? `${theme.dangerBg} ${theme.dangerText}`
-                      : `${theme.warningBg} ${theme.warningText}`
+                        ? `${theme.infoBg} ${theme.infoText}`
+                        : application.status === "Rejected"
+                          ? `${theme.dangerBg} ${theme.dangerText}`
+                          : `${theme.warningBg} ${theme.warningText}`
                   }`}
                 >
                   {application.status}
@@ -289,15 +326,25 @@ const Applications = () => {
                     View Resume
                   </button>
                   <button
-                    onClick={() => handleStatusUpdate(application.id, "Shortlisted")}
-                    disabled={updatingId === application.id || application.status === "Shortlisted"}
+                    onClick={() =>
+                      handleStatusUpdate(application.id, "Shortlisted")
+                    }
+                    disabled={
+                      updatingId === application.id ||
+                      application.status === "Shortlisted"
+                    }
                     className={`flex-1 sm:flex-none px-3 py-2 text-xs lg:text-sm ${theme.successText} ${theme.border} border rounded-lg ${theme.hover} font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {updatingId === application.id ? "..." : "Shortlist"}
                   </button>
                   <button
-                    onClick={() => handleStatusUpdate(application.id, "Rejected")}
-                    disabled={updatingId === application.id || application.status === "Rejected"}
+                    onClick={() =>
+                      handleStatusUpdate(application.id, "Rejected")
+                    }
+                    disabled={
+                      updatingId === application.id ||
+                      application.status === "Rejected"
+                    }
                     className={`flex-1 sm:flex-none px-3 py-2 text-xs lg:text-sm ${theme.dangerText} ${theme.border} border rounded-lg ${theme.hover} font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {updatingId === application.id ? "..." : "Reject"}
@@ -311,8 +358,12 @@ const Applications = () => {
 
       {/* Empty State — UNCHANGED */}
       {filteredApplications.length === 0 && (
-        <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
-          <p className={theme.textMuted}>No applications found for this filter.</p>
+        <div
+          className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}
+        >
+          <p className={theme.textMuted}>
+            No applications found for this filter.
+          </p>
         </div>
       )}
     </div>
