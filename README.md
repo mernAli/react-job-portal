@@ -2157,3 +2157,138 @@ src/
 > A notification system is only valuable if it is event-driven — not manually triggered. By centralizing notification state in a React context and calling `addNotification()` from every critical user action, the system automatically stays in sync with the application state without any extra wiring. The bell badge, dropdown, and full page all read from the same source of truth.
  
 ---
+
+
+## ✅ Day 29 – Payment & Monetization UI
+ 
+**Objective:** Introduce SaaS-style payment flows with pricing pages, checkout form, and payment confirmation screens for both employer and candidate roles.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Pricing UI Design**
+Built role-specific pricing pages following industry-standard SaaS design patterns — three-tier plans (Free / Pro / Enterprise for employers, Free / Pro / Premium for candidates), a Most Popular badge on the recommended plan, feature comparison lists with ✓ / ✗ indicators, a monthly/yearly billing toggle with 20% yearly discount, and a locked features section encouraging upgrades. Each pricing card uses consistent theme variables with no hardcoded colors.
+ 
+**Checkout Flow**
+Implemented a complete three-step payment flow:
+```
+Pricing Page → Checkout Form → Payment Success
+```
+Plan data is passed between pages using React Router's `location.state` — no global state or URL params needed. The checkout page guards against direct access by redirecting to pricing if no plan is in state.
+ 
+**Payment States**
+Four states handled in the checkout form:
+- `idle` — form ready, Pay button active
+- `loading` — 2-second simulated processing, spinner shown, button disabled
+- `error` — declined card message shown with red alert box
+- `success` — navigates to PaymentSuccess page with `replace: true` to prevent back navigation
+ 
+**Access Control UI**
+Free plan CTA button navigates to nothing (no checkout). Enterprise plan is marked as "Contact Sales". Locked features section on both pricing pages shows exactly what users gain by upgrading, with a direct "Upgrade to Pro →" shortcut button.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`services/paymentService.js` — New Service File**
+ 
+Three backend-ready functions:
+```
+processPayment()         — POST /payments/checkout
+fetchEmployerPlans()     — GET /payments/plans/employer
+fetchCandidatePlans()    — GET /payments/plans/candidate
+```
+ 
+`processPayment` simulates real Stripe behavior — card `4242 4242 4242 4242` succeeds, card `4000 0000 0000 0002` is declined with a proper error message. Returns `transactionId`, `receipt`, `amount`, `plan`, and `paidAt` on success.
+ 
+**`pages/employer/EmployerPricing.jsx` — New Page**
+- Loads plans from `fetchEmployerPlans` with loading and error states
+- Monthly/Yearly billing toggle updates all prices instantly
+- `handleSelectPlan` navigates to checkout with plan + billing data in `location.state`
+- Free plan button does nothing, Enterprise shows "Contact Sales"
+ 
+**`pages/candidate/CandidatePricing.jsx` — New Page**
+- Same architecture as EmployerPricing using `fetchCandidatePlans`
+- Candidate-specific plan names and features
+ 
+**`pages/Checkout.jsx` — New Page**
+- Three form sections: Personal Info, Card Details, Billing Address
+- Card number auto-formats to `4242 4242 4242 4242` pattern
+- Expiry auto-formats to `MM/YY` pattern
+- CVV limited to 3 digits
+- `validate()` runs before submission — shows inline field errors
+- `processPayment` called on submit with 2-second loading state
+- Order summary sidebar with plan features, subtotal, tax, and total
+- `replace: true` on success navigation prevents back to checkout
+- Notification created on successful payment via `addNotification`
+ 
+**`pages/PaymentSuccess.jsx` — New Page**
+- Displays full receipt: transaction ID, receipt number, plan, amount, billing, date
+- Shows all unlocked features from the selected plan
+- "Go to Dashboard" button is role-aware — employer → employer dashboard, candidate → candidate dashboard
+- Redirect guard if accessed directly without payment state
+ 
+**`BottomNav.jsx` — Updated**
+- Added 👑 Premium button as 5th nav item
+- Role-aware: employer → `/app/employer-pricing`, candidate → `/app/candidate-pricing`
+ 
+**`Topbar.jsx` — Updated**
+- Notification dropdown made fully responsive: `w-screen max-w-sm sm:w-80` with `calc(100vw - 1rem)` max-width
+- 👑 Upgrade Plan link added to both employer and candidate profile dropdowns
+ 
+**`App.jsx` — Updated**
+- 4 new lazy-loaded routes registered:
+  - `/app/employer-pricing`
+  - `/app/candidate-pricing`
+  - `/app/checkout`
+  - `/app/payment-success`
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── services/
+│   └── paymentService.js              ← NEW
+├── pages/
+│   ├── Checkout.jsx                   ← NEW
+│   ├── PaymentSuccess.jsx             ← NEW
+│   ├── employer/
+│   │   └── EmployerPricing.jsx        ← NEW (renamed from PricingPage.jsx)
+│   └── candidate/
+│       └── CandidatePricing.jsx       ← NEW (renamed from PricingPage.jsx)
+├── App.jsx                            ← UPDATED: 4 new routes
+└── components/Dashboard/
+    ├── BottomNav.jsx                  ← UPDATED: Premium button added
+    └── Topbar.jsx                     ← UPDATED: Upgrade Plan links + responsive dropdown
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Employer pricing page with 3 plans and feature comparison
+- ✅ Candidate pricing page with 3 plans and feature comparison
+- ✅ Monthly/Yearly billing toggle with 20% discount
+- ✅ Most Popular badge on recommended plan
+- ✅ Locked features section with upgrade prompt
+- ✅ Checkout form with validation and auto-formatting
+- ✅ Four payment states: idle, loading, error, success
+- ✅ Test card simulation (success + decline)
+- ✅ Payment success page with full receipt
+- ✅ Unlocked features display on success
+- ✅ Role-aware dashboard redirect after payment
+- ✅ Mobile access via BottomNav Premium button
+- ✅ Desktop access via Topbar Upgrade Plan link
+- ✅ Notification created on payment success
+- ✅ Responsive notification dropdown fixed
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> The most important detail in a payment flow is state handling — users must never be able to submit twice, must always know when processing is happening, and must never be able to reach a success page without completing payment. Using `replace: true` on success navigation and redirect guards on the success page ensures the flow is always in a valid state, regardless of how the user navigates.
+ 
+---
