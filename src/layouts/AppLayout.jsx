@@ -10,15 +10,15 @@ const AppLayout = () => {
   return (
     <div className={`flex min-h-screen ${theme.bg}`}>
       {/* Sidebar - Desktop Only */}
-      {/* <Sidebar /> */}
+      <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:ml-64 flex flex-col">
+      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         {/* Topbar */}
         <Topbar />
 
         {/* Page Content */}
-        <main className="flex-1 mt-16 mb-16 lg:mb-0 p-4 lg:p-6 overflow-y-auto">
+        <main className="flex-1 mt-16 mb-16 lg:mb-0 overflow-y-auto">
           <Outlet />
         </main>
 

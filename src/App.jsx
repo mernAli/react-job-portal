@@ -37,6 +37,12 @@ import AppLayout from "./layouts/AppLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import PrivateRoute from "./route/PrivateRoute";
 
+//payment pages
+const EmployerPricing = lazy(() => import("./pages/employer/EmployerPricing"));
+const CandidatePricing = lazy(() => import("./pages/candidate/CandidatePricing"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+
 // Loading fallback component
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -93,6 +99,12 @@ function App() {
                     <Route path="employer-dashboard" element={<EmployerDashboard />} />
                     <Route path="candidate-dashboard" element={<CandidateDashboard />} />
 
+
+                    {/* Payment pages */}
+                    <Route path="employer-pricing"  element={<EmployerPricing/>}/> 
+                    <Route path="candidate-pricing" element={<CandidatePricing/>}/>
+                    <Route path="checkout" element={<Checkout />} />
+                    <Route path="payment-success" element={<PaymentSuccess />} />
                   </Route>
 
                   {/* 404 */}

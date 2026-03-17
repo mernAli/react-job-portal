@@ -63,9 +63,10 @@ const Topbar = () => {
 
   return (
     <>
-      <header className={`h-16 bg-blue-950 ${theme.border} border-b fixed top-0 right-0 left-0 lg:left-64 z-10`}>
+      <header
+        className={`h-16 bg-blue-950 ${theme.border} border-b fixed top-0 right-0 left-0 lg:left-64 z-10`}
+      >
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
-
           {/* Left: Logo (Mobile only) — UNCHANGED */}
           <div className="lg:hidden">
             <h1 className={`text-xl font-bold text-white`}>ZECPATH</h1>
@@ -79,15 +80,24 @@ const Topbar = () => {
                 placeholder="Search"
                 className={`w-full px-4 py-2 pl-10 bg-white ${theme.border} border rounded-lg ${theme.focus} text-gray-700 text-sm outline-none`}
               />
-              <svg className={`w-5 h-5 ${theme.textMuted} absolute left-3 top-2.5`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className={`w-5 h-5 ${theme.textMuted} absolute left-3 top-2.5`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
           </div>
 
           {/* Right: Navigation + Actions — UNCHANGED except bell added */}
           <div className="flex items-center gap-2 lg:gap-6 ml-4">
-
             {/* Desktop Navigation — UNCHANGED */}
             <nav className="hidden lg:flex items-center gap-0.5 bg-white h-12 rounded-lg ml-3">
               {navItems.map((item) => (
@@ -110,14 +120,22 @@ const Topbar = () => {
             <div className={`hidden lg:block h-8 w-px ${theme.border}`}></div>
 
             {/* For Business — UNCHANGED */}
-            <button className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}>
+            <button
+              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}
+            >
               <span className="text-lg">🏢</span>
               <span>For Business</span>
               <span className="text-xs">▼</span>
             </button>
 
             {/* Try Premium — UNCHANGED */}
-            <button className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}>
+            <button
+              onClick={() => {
+                setShowProfileMenu(false);
+                navigate("/app/candidate-pricing");
+              }}
+              className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg bg-white text-black hover:text-white hover:bg-[#898eac] ${theme.secondaryText} text-sm`}
+            >
               <span className="text-lg">👑</span>
               <span>Try Premium</span>
             </button>
@@ -133,7 +151,11 @@ const Topbar = () => {
                 className={`relative p-2 text-white hover:bg-white/10 rounded-lg transition-colors`}
                 title="Notifications"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                 </svg>
                 {/* Unread badge */}
@@ -146,10 +168,14 @@ const Topbar = () => {
 
               {/* Notification Dropdown */}
               {showNotifDropdown && (
-                <div className={`absolute right-0 mt-2 w-80 ${theme.cardBg} ${theme.border} border rounded-xl ${theme.shadowMd} overflow-hidden`}>
-
+                <div
+                  className={`absolute mt-3 sm:mt-2 w-screen max-w-sm sm:w-80 ${theme.cardBg} ${theme.border} border rounded-xl ${theme.shadowMd} overflow-hidden`}
+                  style={{ maxWidth: "calc(100vw - 5rem)", right: -110 }}
+                >
                   {/* Dropdown Header */}
-                  <div className={`px-4 py-3 flex items-center justify-between border-b ${theme.border}`}>
+                  <div
+                    className={`px-4 py-3 flex items-center justify-between border-b ${theme.border}`}
+                  >
                     <h3 className={`font-semibold ${theme.textPrimary}`}>
                       Notifications
                       {unreadCount > 0 && (
@@ -173,7 +199,9 @@ const Topbar = () => {
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center">
                         <div className="text-3xl mb-2">🔔</div>
-                        <p className={`text-sm ${theme.textMuted}`}>No notifications yet</p>
+                        <p className={`text-sm ${theme.textMuted}`}>
+                          No notifications yet
+                        </p>
                       </div>
                     ) : (
                       notifications.slice(0, 5).map((notif) => {
@@ -187,19 +215,26 @@ const Topbar = () => {
                             }`}
                           >
                             {/* Icon */}
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              colorType === "success" ? theme.successBg :
-                              colorType === "danger" ? theme.dangerBg :
-                              colorType === "warning" ? theme.warningBg :
-                              theme.infoBg
-                            }`}>
+                            <div
+                              className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                colorType === "success"
+                                  ? theme.successBg
+                                  : colorType === "danger"
+                                    ? theme.dangerBg
+                                    : colorType === "warning"
+                                      ? theme.warningBg
+                                      : theme.infoBg
+                              }`}
+                            >
                               <span className="text-sm">{icon}</span>
                             </div>
 
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
-                                <p className={`text-sm font-medium ${theme.textPrimary} truncate`}>
+                                <p
+                                  className={`text-sm font-medium ${theme.textPrimary} truncate`}
+                                >
                                   {notif.title}
                                 </p>
                                 <button
@@ -212,7 +247,9 @@ const Topbar = () => {
                                   ×
                                 </button>
                               </div>
-                              <p className={`text-xs ${theme.textSecondary} mt-0.5 line-clamp-2`}>
+                              <p
+                                className={`text-xs ${theme.textSecondary} mt-0.5 line-clamp-2`}
+                              >
                                 {notif.message}
                               </p>
                               <p className={`text-xs ${theme.textMuted} mt-1`}>
@@ -254,15 +291,45 @@ const Topbar = () => {
                 className={`p-2 ${theme.textSecondary} ${theme.hover} rounded-lg transition-colors`}
                 title="Change theme"
               >
-                {currentTheme === "light" && <span className="text-xl">☀️</span>}
+                {currentTheme === "light" && (
+                  <span className="text-xl">☀️</span>
+                )}
                 {currentTheme === "dark" && <span className="text-xl">🌙</span>}
-                {currentTheme === "darker" && <span className="text-xl">🌑</span>}
+                {currentTheme === "darker" && (
+                  <span className="text-xl">🌑</span>
+                )}
               </button>
               {showThemeMenu && (
-                <div className={`absolute right-0 mt-2 w-40 ${theme.cardBg} ${theme.border} border rounded-lg ${theme.shadowMd} py-2`}>
-                  <button onClick={() => { changeTheme("light"); setShowThemeMenu(false); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}>☀️ Light</button>
-                  <button onClick={() => { changeTheme("dark"); setShowThemeMenu(false); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}>🌙 Dark</button>
-                  <button onClick={() => { changeTheme("darker"); setShowThemeMenu(false); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}>🌑 Darker</button>
+                <div
+                  className={`absolute right-0 mt-2 w-40 ${theme.cardBg} ${theme.border} border rounded-lg ${theme.shadowMd} py-2`}
+                >
+                  <button
+                    onClick={() => {
+                      changeTheme("light");
+                      setShowThemeMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}
+                  >
+                    ☀️ Light
+                  </button>
+                  <button
+                    onClick={() => {
+                      changeTheme("dark");
+                      setShowThemeMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}
+                  >
+                    🌙 Dark
+                  </button>
+                  <button
+                    onClick={() => {
+                      changeTheme("darker");
+                      setShowThemeMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover} flex items-center gap-2`}
+                  >
+                    🌑 Darker
+                  </button>
                 </div>
               )}
             </div>
@@ -276,35 +343,117 @@ const Topbar = () => {
                 }}
                 className={`flex items-center gap-2 p-1 ${theme.hover} rounded-lg`}
               >
-                <div className={`w-8 h-8 ${theme.primary} rounded-full flex items-center justify-center text-white font-semibold text-sm`}>
+                <div
+                  className={`w-8 h-8 ${theme.primary} rounded-full flex items-center justify-center text-white font-semibold text-sm`}
+                >
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
-                <span className="hidden lg:block text-xs">{showProfileMenu ? "▲" : "▼"}</span>
+                <span className="hidden lg:block text-xs">
+                  {showProfileMenu ? "▲" : "▼"}
+                </span>
               </button>
               {showProfileMenu && (
-                <div className={`absolute right-0 mt-2 w-48 ${theme.cardBg} ${theme.border} border rounded-lg ${theme.shadowMd} py-2`}>
+                <div
+                  className={`absolute right-0 mt-2 w-48 ${theme.cardBg} ${theme.border} border rounded-lg ${theme.shadowMd} py-2`}
+                >
                   <div className={`px-4 py-2 ${theme.border} border-b`}>
-                    <p className={`text-sm font-semibold ${theme.textPrimary}`}>{user?.name}</p>
-                    <p className={`text-xs ${theme.textMuted} capitalize`}>{user?.role}</p>
+                    <p className={`text-sm font-semibold ${theme.textPrimary}`}>
+                      {user?.name}
+                    </p>
+                    <p className={`text-xs ${theme.textMuted} capitalize`}>
+                      {user?.role}
+                    </p>
                   </div>
-                  <button onClick={() => { setShowProfileMenu(false); navigate("/app/profile"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>👤 View Profile</button>
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      navigate("/app/profile");
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                  >
+                    👤 View Profile
+                  </button>
                   {user?.role === "candidate" && (
                     <>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/candidate-dashboard"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>📊 My Dashboard</button>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/browse-jobs"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>🔍 Browse Jobs</button>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/my-applications"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>📋 My Applications</button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/candidate-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📊 My Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/browse-jobs");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        🔍 Browse Jobs
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/my-applications");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📋 My Applications
+                      </button>
                     </>
                   )}
                   {user?.role === "employer" && (
                     <>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/employer-dashboard"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>📊 My Dashboard</button>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/post-job"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>➕ Post a Job</button>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/my-jobs"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>💼 My Jobs</button>
-                      <button onClick={() => { setShowProfileMenu(false); navigate("/app/applications"); }} className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}>📄 Applications</button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/employer-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📊 My Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/post-job");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        ➕ Post a Job
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/my-jobs");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        💼 My Jobs
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/applications");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📄 Applications
+                      </button>
                     </>
                   )}
                   <div className={`border-t ${theme.border} my-2`}></div>
-                  <button onClick={() => { setShowProfileMenu(false); setShowLogoutModal(true); }} className={`w-full text-left px-4 py-2 text-sm ${theme.dangerText} ${theme.hover}`}>🚪 Logout</button>
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setShowLogoutModal(true);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm ${theme.dangerText} ${theme.hover}`}
+                  >
+                    🚪 Logout
+                  </button>
                 </div>
               )}
             </div>
@@ -313,11 +462,27 @@ const Topbar = () => {
       </header>
 
       {/* Logout Modal — UNCHANGED */}
-      <Modal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} title="Confirm Logout">
-        <p className={`${theme.textSecondary} mb-6`}>Are you sure you want to logout?</p>
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Confirm Logout"
+      >
+        <p className={`${theme.textSecondary} mb-6`}>
+          Are you sure you want to logout?
+        </p>
         <div className="flex gap-3 justify-end">
-          <button onClick={() => setShowLogoutModal(false)} className={`px-4 py-2 ${theme.border} border rounded-lg ${theme.hover} text-sm text-white`}>Cancel</button>
-          <button onClick={handleLogout} className={`px-4 py-2 ${theme.danger} text-white rounded-lg hover:bg-red-600`}>Logout</button>
+          <button
+            onClick={() => setShowLogoutModal(false)}
+            className={`px-4 py-2 ${theme.border} border rounded-lg ${theme.hover} text-sm text-white`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleLogout}
+            className={`px-4 py-2 ${theme.danger} text-white rounded-lg hover:bg-red-600`}
+          >
+            Logout
+          </button>
         </div>
       </Modal>
     </>

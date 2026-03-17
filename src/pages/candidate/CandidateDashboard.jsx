@@ -24,6 +24,7 @@ const CandidateDashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Error states
   const [statsError, setStatsError] = useState(null);
@@ -38,6 +39,7 @@ const CandidateDashboard = () => {
 
   const loadStats = async () => {
     try {
+      setLoading(true)
       setStatsLoading(true);
       setStatsError(null);
       const data = await fetchCandidateStats();
@@ -46,11 +48,13 @@ const CandidateDashboard = () => {
       setStatsError(error.message || "Failed to load statistics");
     } finally {
       setStatsLoading(false);
+      setLoading(false)
     }
   };
 
   const loadApplications = async () => {
     try {
+      setLoading(true)
       setApplicationsLoading(true);
       setApplicationsError(null);
       const data = await fetchCandidateApplications();
@@ -59,11 +63,13 @@ const CandidateDashboard = () => {
       setApplicationsError(error.message || "Failed to load applications");
     } finally {
       setApplicationsLoading(false);
+      setLoading(false)
     }
   };
 
   const loadRecommendedJobs = async () => {
     try {
+      setLoading(true)
       setJobsLoading(true);
       const data = await fetchRecommendedJobs();
       setRecommendedJobs(data);
@@ -71,8 +77,17 @@ const CandidateDashboard = () => {
       console.error("Failed to load recommended jobs:", error);
     } finally {
       setJobsLoading(false);
+      setLoading(false)
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-end mt-75 justify-end h-screen">
+        <Loader size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
