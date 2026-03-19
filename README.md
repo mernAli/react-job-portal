@@ -2292,3 +2292,126 @@ src/
 > The most important detail in a payment flow is state handling — users must never be able to submit twice, must always know when processing is happening, and must never be able to reach a success page without completing payment. Using `replace: true` on success navigation and redirect guards on the success page ensures the flow is always in a valid state, regardless of how the user navigates.
  
 ---
+
+## ✅ Day 30 – File Upload & Media Handling
+ 
+**Objective:** Enable document and image uploads with progress tracking, file preview, drag and drop support, and localStorage persistence across page navigation.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**File Input Handling**
+Built custom styled file inputs by hiding the native browser input and triggering it programmatically via `useRef`. File validation runs before any upload — checking both file type (MIME type) and file size against configurable limits. Invalid files show inline error messages without triggering any upload.
+ 
+**FormData**
+The `uploadService.js` service layer uses the `FormData` API to prepare files for multipart upload — the correct format for sending binary file data to a backend. All upload functions are backend-ready with commented-out real API calls using `Content-Type: multipart/form-data`.
+ 
+**Upload Progress**
+Simulated upload progress using `setInterval` with random increments, matching the real Axios `onUploadProgress` pattern. Progress state drives a custom `UploadProgress` component that animates from 0 to 100, turns green on completion, and shows filename and percentage.
+ 
+**File Preview**
+Profile images use `URL.createObjectURL()` to generate an instant local preview before the upload completes — the image appears immediately on file selection. A lazy `useState` initializer loads saved profile data from `localStorage` on mount, and `handleSave` persists all profile data back to localStorage — keeping the profile intact across page navigation.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`services/uploadService.js` — New Service File**
+ 
+Three backend-ready functions:
+```
+uploadResume(file, onProgress)        — POST /upload/resume
+uploadProfileImage(file, onProgress)  — POST /upload/profile-image
+deleteResume()                        — DELETE /upload/resume
+```
+ 
+Each upload function accepts an `onProgress` callback that fires with a percentage value from 0 to 100 as the simulated upload proceeds, matching the exact signature of Axios `onUploadProgress`.
+ 
+**`hooks/useFileUpload.js` — New Reusable Hook**
+ 
+A single hook that handles the complete file upload lifecycle:
+- File type and size validation before upload
+- `URL.createObjectURL` preview generation for images
+- Progress state (0–100) via the `onProgress` callback
+- Drag and drop event handlers (`handleDrop`, `handleDragOver`, `handleDragLeave`)
+- `isDragging` state for visual drop zone feedback
+- `uploading`, `uploaded`, and `error` states
+- `clearFile()` resets all state including the file input ref
+- `openFilePicker()` triggers the hidden file input programmatically
+ 
+**`ui/UploadProgress.jsx` — New UI Component**
+ 
+A reusable animated progress bar that:
+- Renders nothing when not uploading or uploaded
+- Shows filename, percentage, and animated bar during upload
+- Turns green with ✓ Done on completion
+- Uses theme variables exclusively — no hardcoded colors
+ 
+**`pages/candidate/Profile.jsx` — Updated**
+ 
+- `resumeUpload` hook wired to resume section — replaces old `handleResumeUpload`
+- `imageUpload` hook wired to profile picture — replaces old `handleProfilePictureUpload`
+- Live image preview via `imageUpload.preview` shown instantly on file select
+- Drag and drop zone on resume section with `isDragging` visual highlight
+- `UploadProgress` bar shown below resume drop zone and below profile picture
+- Both `ref` assignments removed from profile picture inputs — fixed "Cannot access refs during render" error
+- `handleEditToggle` calls `clearFile()` on both hooks when cancelling
+- `handleSave` calls `clearFile()` on both hooks after saving
+- **localStorage persistence** — lazy `useState` initializer reads saved data on mount
+- `handleSave` serializes profile to `localStorage` after every save
+- `File` objects excluded from serialization (not JSON-serializable) — only `name` and `size` stored
+ 
+---
+ 
+### 🐛 Bugs Fixed
+ 
+**Bug 1 — Cannot access refs during render**
+Both mobile and desktop profile picture inputs were assigned the same `imageUpload.fileRef`. React disallows multiple elements sharing one ref. Fixed by removing `ref` from both profile picture inputs — the `label htmlFor` pattern handles clicks correctly without needing a ref.
+ 
+**Bug 2 — Profile data resets on page navigation**
+All profile state was in local `useState` which resets on component unmount. Fixed with two changes: a lazy `useState` initializer that reads from `localStorage` on mount, and a `localStorage.setItem` call in `handleSave` that persists all profile data after every save.
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── services/
+│   └── uploadService.js           ← NEW
+├── hooks/
+│   └── useFileUpload.js           ← NEW
+├── ui/
+│   └── UploadProgress.jsx         ← NEW
+└── pages/candidate/
+    └── Profile.jsx                ← UPDATED: upload hooks + localStorage
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Resume upload with progress bar (0 → 100%)
+- ✅ Resume drag and drop with visual highlight on dragover
+- ✅ Resume file type validation (PDF, DOC, DOCX only)
+- ✅ Resume file size validation (max 5MB)
+- ✅ Inline error messages for invalid files
+- ✅ Profile image upload with progress bar
+- ✅ Live image preview before save
+- ✅ Profile image size validation (max 2MB)
+- ✅ UploadProgress component — reusable across app
+- ✅ useFileUpload hook — reusable for any file type
+- ✅ uploadService.js — backend-ready with FormData
+- ✅ localStorage persistence — profile survives page navigation
+- ✅ Notification created on resume upload
+- ✅ Notification created on profile picture update
+- ✅ Two bugs identified and fixed
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> File uploads have more edge cases than any other UI interaction — wrong type, too large, network failure, partial upload, preview before save, and persistence after navigation. The `useFileUpload` hook encapsulates all of these concerns in one place, making it reusable across any future upload feature in the app with zero repeated logic.
+ 
+---
