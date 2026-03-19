@@ -3,64 +3,93 @@ import { useAuth } from "../../context/useAuth";
 import { useTheme } from "../../context/ThemeContext";
 import { useToast } from "../../ui/toast/useToast";
 import Input from "../../ui/Input";
-import SidebarJobs from "../../components/Dashboard/SideBarJobs";
 import Sidebar from "../../components/Dashboard/Sidebar";
+import useFileUpload from "../../hooks/useFileUpload";
+import UploadProgress from "../../ui/uploadProgress";
+import {
+  uploadResume,
+  uploadProfileImage,
+  deleteResume,
+} from "../../services/uploadService";
+import useNotifications from "../../context/useNotifications";
+import { NOTIF_TYPES } from "../../context/NotificationContext";
 
 const Profile = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
 
+  const { addNotification } = useNotifications();
+
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Profile Data State
-  const [profileData, setProfileData] = useState({
-    name: user?.name || "Azlan Muhammed",
-    title: user?.role === "employer" ? "Hiring Manager" : "UI/UX Designer",
-    location: "Kerala",
-    email: user?.email || "azlan@example.com",
-    phone: "+91 9876543210",
-    linkedin: "https://linkedin.com/in/azlan",
-    github: "https://github.com/azlan",
-    portfolio: "https://azlan.design",
-    profilePicture: null,
-    followers: 120,
-    following: 45,
-    followingPages: 8,
-    viewers: 234,
-    about: "Passionate UI/UX Designer with 3+ years of experience creating user-centered digital experiences. Skilled in Figma, Adobe XD, and user research methodologies. Love solving complex problems through simple and elegant design solutions.",
-    experience: [
-      {
-        id: 1,
-        title: "Senior UI/UX Designer",
-        company: "Tech Solutions Inc",
-        location: "Remote",
-        duration: "2022 - Present",
-        description: "Lead designer for web and mobile applications, conducting user research and creating high-fidelity prototypes.",
-      },
-      {
-        id: 2,
-        title: "Junior Designer",
-        company: "Creative Agency",
-        location: "Kochi, Kerala",
-        duration: "2020 - 2022",
-        description: "Designed user interfaces and conducted user research for various client projects.",
-      },
-    ],
-    education: [
-      {
-        id: 1,
-        institution: "St. Aloysius College Mangalore",
-        degree: "B.Tech in Computer Engineering",
-        fieldOfStudy: "Computer Science",
-        years: "2021 - 2025",
-        grade: "8.5 CGPA",
-      },
-    ],
-    skills: ["Figma", "Adobe XD", "UI Design", "UX Research", "Prototyping", "Wireframing", "User Testing"],
-    resume: null,
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zecpath_profile");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to load profile from storage", e);
+    }
+    return {
+      name: user?.name || "Azlan Muhammed",
+      title: user?.role === "employer" ? "Hiring Manager" : "UI/UX Designer",
+      location: "Kerala",
+      email: user?.email || "azlan@example.com",
+      phone: "+91 9876543210",
+      linkedin: "https://linkedin.com/in/azlan",
+      github: "https://github.com/azlan",
+      portfolio: "https://azlan.design",
+      profilePicture: null,
+      followers: 120,
+      following: 45,
+      followingPages: 8,
+      viewers: 234,
+      about:
+        "Passionate UI/UX Designer with 3+ years of experience creating user-centered digital experiences. Skilled in Figma, Adobe XD, and user research methodologies. Love solving complex problems through simple and elegant design solutions.",
+      experience: [
+        {
+          id: 1,
+          title: "Senior UI/UX Designer",
+          company: "Tech Solutions Inc",
+          location: "Remote",
+          duration: "2022 - Present",
+          description:
+            "Lead designer for web and mobile applications, conducting user research and creating high-fidelity prototypes.",
+        },
+        {
+          id: 2,
+          title: "Junior Designer",
+          company: "Creative Agency",
+          location: "Kochi, Kerala",
+          duration: "2020 - 2022",
+          description:
+            "Designed user interfaces and conducted user research for various client projects.",
+        },
+      ],
+      education: [
+        {
+          id: 1,
+          institution: "St. Aloysius College Mangalore",
+          degree: "B.Tech in Computer Engineering",
+          fieldOfStudy: "Computer Science",
+          years: "2021 - 2025",
+          grade: "8.5 CGPA",
+        },
+      ],
+      skills: [
+        "Figma",
+        "Adobe XD",
+        "UI Design",
+        "UX Research",
+        "Prototyping",
+        "Wireframing",
+        "User Testing",
+      ],
+      resume: null,
+    };
   });
 
   // Temporary edit state
@@ -105,6 +134,44 @@ const Profile = () => {
   const displayedMessages = showAllMessages ? messages : messages.slice(0, 3);
   const displayedNews = showAllNews ? news : news.slice(0, 3);
 
+  // ── Resume Upload Hook ──
+  const resumeUpload = useFileUpload({
+    accept: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    maxSizeMB: 5,
+    uploadFn: uploadResume,
+    onSuccess: (file, result) => {
+      setEditData((prev) => ({ ...prev, resume: file }));
+      showToast("Resume uploaded successfully!", "success");
+      addNotification(
+        NOTIF_TYPES.SUCCESS,
+        "Resume Uploaded",
+        `${file.name} uploaded successfully.`,
+      );
+    },
+    onError: (msg) => showToast(msg, "error"),
+  });
+
+  // ── Profile Image Upload Hook ──
+  const imageUpload = useFileUpload({
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    maxSizeMB: 2,
+    uploadFn: uploadProfileImage,
+    onSuccess: (file, result) => {
+      setEditData((prev) => ({ ...prev, profilePicture: result.fileUrl }));
+      showToast("Profile picture updated!", "success");
+      addNotification(
+        NOTIF_TYPES.SUCCESS,
+        "Profile Picture Updated",
+        "Your profile picture was updated successfully.",
+      );
+    },
+    onError: (msg) => showToast(msg, "error"),
+  });
+
   // === HANDLERS ===
 
   const handleEditToggle = () => {
@@ -121,17 +188,46 @@ const Profile = () => {
   const handleSave = () => {
     setLoading(true);
     setTimeout(() => {
-      setProfileData({ ...editData });
+      const updatedProfile = { ...editData };
+      setProfileData(updatedProfile);
+
+      // ✅ ADD THIS — persist to localStorage
+      try {
+        // Store everything except the File object (resume)
+        // because File objects cannot be JSON serialized
+        const toStore = {
+          ...updatedProfile,
+          resume: updatedProfile.resume
+            ? {
+                name: updatedProfile.resume.name,
+                size: updatedProfile.resume.size,
+              }
+            : null,
+        };
+        localStorage.setItem("zecpath_profile", JSON.stringify(toStore));
+      } catch (e) {
+        console.error("Failed to save profile to storage", e);
+      }
+
       setIsEditing(false);
       setEditingExperience(null);
       setEditingEducation(null);
+      resumeUpload.clearFile();
+      imageUpload.clearFile();
       setLoading(false);
       showToast("Profile updated successfully!", "success");
     }, 2000);
   };
-
+  
   const handleChange = (field, value) => {
     setEditData({ ...editData, [field]: value });
+  };
+
+  const handleRemoveResume = async () => {
+    resumeUpload.clearFile();
+    setEditData((prev) => ({ ...prev, resume: null }));
+    await deleteResume();
+    showToast("Resume removed", "success");
   };
 
   // Skills
@@ -172,7 +268,7 @@ const Profile = () => {
     }
 
     const existingIndex = editData.experience.findIndex(
-      (exp) => exp.id === editingExperience.id
+      (exp) => exp.id === editingExperience.id,
     );
 
     if (existingIndex >= 0) {
@@ -222,7 +318,7 @@ const Profile = () => {
     }
 
     const existingIndex = editData.education.findIndex(
-      (edu) => edu.id === editingEducation.id
+      (edu) => edu.id === editingEducation.id,
     );
 
     if (existingIndex >= 0) {
@@ -252,58 +348,6 @@ const Profile = () => {
     showToast("Education removed", "success");
   };
 
-  // Resume Upload
-  const handleResumeUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const validTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-    if (!validTypes.includes(file.type)) {
-      showToast("Please upload PDF or Word document only", "error");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("File size must be less than 5MB", "error");
-      return;
-    }
-
-    setEditData({ ...editData, resume: file });
-    showToast("Resume uploaded successfully!", "success");
-  };
-
-  const handleRemoveResume = () => {
-    setEditData({ ...editData, resume: null });
-    showToast("Resume removed", "success");
-  };
-
-  // Profile Picture Upload
-  const handleProfilePictureUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      showToast("Please upload an image file", "error");
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Image size must be less than 2MB", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setEditData({ ...editData, profilePicture: reader.result });
-      showToast("Profile picture updated!", "success");
-    };
-    reader.readAsDataURL(file);
-  };
-
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
       <Sidebar />
@@ -313,13 +357,22 @@ const Profile = () => {
           {/* Profile Header Card */}
           <div className={`overflow-hidden`}>
             {/* Desktop: Profile Header Background */}
-            <div className={`hidden lg:block ${theme.cardBg} h-32 rounded-t-xl`}></div>
+            <div
+              className={`hidden lg:block ${theme.cardBg} h-32 rounded-t-xl`}
+            ></div>
 
             {/* Mobile: Profile Section */}
             <div className={`lg:hidden`}>
-              <div className={`${theme.cardBg} pt-16 pb-6 px-6 relative h-34 mb-40`}>
+              <div
+                className={`${theme.cardBg} pt-16 pb-6 px-6 relative h-34 mb-40`}
+              >
                 <button className="absolute top-4 left-4 text-white">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -334,7 +387,10 @@ const Profile = () => {
                     <div className="w-24 h-24 rounded-full bg-white border-4 border-white flex items-center justify-center overflow-hidden">
                       <img
                         src={
-                          (isEditing ? editData.profilePicture : profileData.profilePicture) ||
+                          imageUpload.preview ||
+                          (isEditing
+                            ? editData.profilePicture
+                            : profileData.profilePicture) ||
                           `https://ui-avatars.com/api/?name=${profileData.name}&background=E8F4F8&color=1B365D&size=128`
                         }
                         alt="Profile"
@@ -369,7 +425,7 @@ const Profile = () => {
                           id="profile-pic-mobile"
                           type="file"
                           accept="image/*"
-                          onChange={handleProfilePictureUpload}
+                          onChange={imageUpload.handleFileChange}
                           className="hidden"
                         />
                       </label>
@@ -386,11 +442,25 @@ const Profile = () => {
                   </div>
                 </div>
 
+                {/* Mobile image upload progress */}
+                {(imageUpload.uploading || imageUpload.uploaded) && (
+                  <div className="mb-3">
+                    <UploadProgress
+                      progress={imageUpload.progress}
+                      uploading={imageUpload.uploading}
+                      uploaded={imageUpload.uploaded}
+                      fileName={imageUpload.file?.name}
+                    />
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   <button
                     onClick={handleEditToggle}
                     className={`flex-1 py-3 ${
-                      isEditing ? `${theme.border} border ${theme.textPrimary}` : `${theme.primary} text-white`
+                      isEditing
+                        ? `${theme.border} border ${theme.textPrimary}`
+                        : `${theme.primary} text-white`
                     } rounded-lg ${theme.primaryHover} hover:text-white font-medium text-sm`}
                   >
                     {isEditing ? "Cancel" : "Edit Profile"}
@@ -415,14 +485,19 @@ const Profile = () => {
             </div>
 
             {/* Desktop: Profile Info */}
-            <div className={`hidden lg:block relative px-6 -mt-16 pb-6 ${theme.cardBg} rounded-xl`}>
+            <div
+              className={`hidden lg:block relative px-6 -mt-16 pb-6 ${theme.cardBg} rounded-xl`}
+            >
               <div className="flex items-end justify-between">
                 <div className="flex items-end gap-4">
                   <div className="relative">
                     <div className="w-32 h-32 rounded-full bg-white border-4 border-white flex items-center justify-center overflow-hidden">
                       <img
                         src={
-                          (isEditing ? editData.profilePicture : profileData.profilePicture) ||
+                          imageUpload.preview ||
+                          (isEditing
+                            ? editData.profilePicture
+                            : profileData.profilePicture) ||
                           `https://ui-avatars.com/api/?name=${profileData.name}&background=E8F4F8&color=1B365D&size=256`
                         }
                         alt="Profile"
@@ -457,18 +532,35 @@ const Profile = () => {
                           id="profile-pic-desktop"
                           type="file"
                           accept="image/*"
-                          onChange={handleProfilePictureUpload}
+                          onChange={imageUpload.handleFileChange}
                           className="hidden"
                         />
                       </label>
                     )}
+
+                    {/* Desktop image upload progress */}
+                    {(imageUpload.uploading || imageUpload.uploaded) && (
+                      <div className="absolute -bottom-20 left-0 w-52">
+                        <UploadProgress
+                          progress={imageUpload.progress}
+                          uploading={imageUpload.uploading}
+                          uploaded={imageUpload.uploaded}
+                          fileName={imageUpload.file?.name}
+                        />
+                      </div>
+                    )}
                   </div>
+
                   <div className="pb-2">
                     <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
                       {profileData.name}
                     </h1>
-                    <p className={`text-sm ${theme.textSecondary} mt-1`}>{profileData.title}</p>
-                    <p className={`text-xs ${theme.textMuted} mt-1`}>{profileData.location}</p>
+                    <p className={`text-sm ${theme.textSecondary} mt-1`}>
+                      {profileData.title}
+                    </p>
+                    <p className={`text-xs ${theme.textMuted} mt-1`}>
+                      {profileData.location}
+                    </p>
                   </div>
                 </div>
 
@@ -476,7 +568,9 @@ const Profile = () => {
                   <button
                     onClick={handleEditToggle}
                     className={`px-6 py-2 ${
-                      isEditing ? `${theme.border} border ${theme.textPrimary}` : `${theme.primary} text-white`
+                      isEditing
+                        ? `${theme.border} border ${theme.textPrimary}`
+                        : `${theme.primary} text-white`
                     } rounded-lg ${theme.hover} font-medium text-sm`}
                   >
                     {isEditing ? "Cancel" : "Edit Profile"}
@@ -499,23 +593,39 @@ const Profile = () => {
               className={`lg:hidden ${theme.cardBg} mx-4 mt-4 mb-4 rounded-xl ${theme.shadow} overflow-hidden`}
             >
               <div className="grid grid-cols-2">
-                <div className={`text-center py-6 border-r border-b ${theme.border}`}>
-                  <p className={`text-3xl font-bold text-purple-500 mb-1`}>{profileData.followers}</p>
-                  <p className={`text-sm ${theme.textPrimary} font-medium`}>Followers</p>
+                <div
+                  className={`text-center py-6 border-r border-b ${theme.border}`}
+                >
+                  <p className={`text-3xl font-bold text-purple-500 mb-1`}>
+                    {profileData.followers}
+                  </p>
+                  <p className={`text-sm ${theme.textPrimary} font-medium`}>
+                    Followers
+                  </p>
                 </div>
                 <div className={`text-center py-6 border-b ${theme.border}`}>
-                  <p className={`text-3xl font-bold text-green-500 mb-1`}>{profileData.following}</p>
-                  <p className={`text-sm ${theme.textPrimary} font-medium`}>Following</p>
+                  <p className={`text-3xl font-bold text-green-500 mb-1`}>
+                    {profileData.following}
+                  </p>
+                  <p className={`text-sm ${theme.textPrimary} font-medium`}>
+                    Following
+                  </p>
                 </div>
                 <div className={`text-center py-6 border-r ${theme.border}`}>
                   <p className={`text-3xl font-bold text-blue-500 mb-1`}>
                     {profileData.followingPages}
                   </p>
-                  <p className={`text-sm ${theme.textPrimary} font-medium`}>Following pages</p>
+                  <p className={`text-sm ${theme.textPrimary} font-medium`}>
+                    Following pages
+                  </p>
                 </div>
                 <div className={`text-center py-6`}>
-                  <p className={`text-3xl font-bold ${theme.accentText} mb-1`}>{profileData.viewers}</p>
-                  <p className={`text-sm ${theme.textPrimary} font-medium`}>Viewers</p>
+                  <p className={`text-3xl font-bold ${theme.accentText} mb-1`}>
+                    {profileData.viewers}
+                  </p>
+                  <p className={`text-sm ${theme.textPrimary} font-medium`}>
+                    Viewers
+                  </p>
                 </div>
               </div>
             </div>
@@ -527,22 +637,34 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div className="flex gap-28">
                   <div className="text-center">
-                    <p className={`text-xs ${theme.textMuted} mb-1`}>Followers</p>
-                    <p className={`text-lg font-semibold text-violet-500`}>{profileData.followers}</p>
+                    <p className={`text-xs ${theme.textMuted} mb-1`}>
+                      Followers
+                    </p>
+                    <p className={`text-lg font-semibold text-violet-500`}>
+                      {profileData.followers}
+                    </p>
                   </div>
                   <div className="text-center">
-                    <p className={`text-xs ${theme.textMuted} mb-1`}>Following</p>
-                    <p className={`text-lg font-semibold text-green-500`}>{profileData.following}</p>
+                    <p className={`text-xs ${theme.textMuted} mb-1`}>
+                      Following
+                    </p>
+                    <p className={`text-lg font-semibold text-green-500`}>
+                      {profileData.following}
+                    </p>
                   </div>
                   <div className="text-center">
-                    <p className={`text-xs ${theme.textMuted} mb-1`}>Following pages</p>
+                    <p className={`text-xs ${theme.textMuted} mb-1`}>
+                      Following pages
+                    </p>
                     <p className={`text-lg font-semibold text-blue-500`}>
                       {profileData.followingPages}
                     </p>
                   </div>
                   <div className="text-center">
                     <p className={`text-xs ${theme.textMuted} mb-1`}>Viewers</p>
-                    <p className={`text-lg font-semibold ${theme.accentText}`}>{profileData.viewers}</p>
+                    <p className={`text-lg font-semibold ${theme.accentText}`}>
+                      {profileData.viewers}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -551,7 +673,9 @@ const Profile = () => {
 
           {/* Contact Information - EDIT MODE */}
           {isEditing && (
-            <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
+            <div
+              className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+            >
               <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
                 Contact Information
               </h2>
@@ -583,8 +707,12 @@ const Profile = () => {
 
           {/* Social Links - EDIT MODE */}
           {isEditing && (
-            <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
-              <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>Social Links</h2>
+            <div
+              className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+            >
+              <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
+                Social Links
+              </h2>
               <div className="space-y-4">
                 <Input
                   label="LinkedIn"
@@ -609,8 +737,12 @@ const Profile = () => {
           )}
 
           {/* About Section */}
-          <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
-            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-3`}>About</h2>
+          <div
+            className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+          >
+            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-3`}>
+              About
+            </h2>
             {isEditing ? (
               <textarea
                 value={editData.about}
@@ -620,14 +752,19 @@ const Profile = () => {
                 className={`w-full px-4 py-3 rounded-lg ${theme.border} border ${theme.textPrimary} ${theme.focus} ${theme.cardBg} text-sm resize-none outline-none`}
               />
             ) : (
-              <p className={`text-sm ${theme.textSecondary}`}>{profileData.about}</p>
+              <p className={`text-sm ${theme.textSecondary}`}>
+                {profileData.about}
+              </p>
             )}
           </div>
 
           {/* Skills Section */}
-          <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
-            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>Skills</h2>
-
+          <div
+            className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+          >
+            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
+              Skills
+            </h2>
             {isEditing && (
               <div className="flex gap-2 mb-4">
                 <input
@@ -646,28 +783,36 @@ const Profile = () => {
                 </button>
               </div>
             )}
-
             <div className="flex flex-wrap gap-2">
-              {(isEditing ? editData.skills : profileData.skills).map((skill, index) => (
-                <span
-                  key={index}
-                  className={`px-4 py-2 ${theme.infoBg} ${theme.infoText} rounded-full text-sm font-medium flex items-center gap-2`}
-                >
-                  {skill}
-                  {isEditing && (
-                    <button onClick={() => handleRemoveSkill(skill)} className="hover:text-red-500">
-                      ×
-                    </button>
-                  )}
-                </span>
-              ))}
+              {(isEditing ? editData.skills : profileData.skills).map(
+                (skill, index) => (
+                  <span
+                    key={index}
+                    className={`px-4 py-2 ${theme.infoBg} ${theme.infoText} rounded-full text-sm font-medium flex items-center gap-2`}
+                  >
+                    {skill}
+                    {isEditing && (
+                      <button
+                        onClick={() => handleRemoveSkill(skill)}
+                        className="hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </span>
+                ),
+              )}
             </div>
           </div>
 
           {/* Experience Section */}
-          <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
+          <div
+            className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>Experience</h2>
+              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
+                Experience
+              </h2>
               {isEditing && !editingExperience && (
                 <button
                   onClick={handleAddExperience}
@@ -678,14 +823,16 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Experience Form (Edit/Add) */}
             {editingExperience && (
               <div className={`p-4 ${theme.bg} rounded-lg mb-4 space-y-3`}>
                 <Input
                   label="Job Title *"
                   value={editingExperience.title}
                   onChange={(e) =>
-                    setEditingExperience({ ...editingExperience, title: e.target.value })
+                    setEditingExperience({
+                      ...editingExperience,
+                      title: e.target.value,
+                    })
                   }
                   placeholder="e.g. Senior UI/UX Designer"
                 />
@@ -693,7 +840,10 @@ const Profile = () => {
                   label="Company *"
                   value={editingExperience.company}
                   onChange={(e) =>
-                    setEditingExperience({ ...editingExperience, company: e.target.value })
+                    setEditingExperience({
+                      ...editingExperience,
+                      company: e.target.value,
+                    })
                   }
                   placeholder="e.g. Tech Solutions Inc"
                 />
@@ -701,7 +851,10 @@ const Profile = () => {
                   label="Location"
                   value={editingExperience.location}
                   onChange={(e) =>
-                    setEditingExperience({ ...editingExperience, location: e.target.value })
+                    setEditingExperience({
+                      ...editingExperience,
+                      location: e.target.value,
+                    })
                   }
                   placeholder="e.g. Remote or Kochi, Kerala"
                 />
@@ -709,18 +862,26 @@ const Profile = () => {
                   label="Duration"
                   value={editingExperience.duration}
                   onChange={(e) =>
-                    setEditingExperience({ ...editingExperience, duration: e.target.value })
+                    setEditingExperience({
+                      ...editingExperience,
+                      duration: e.target.value,
+                    })
                   }
                   placeholder="e.g. 2022 - Present"
                 />
                 <div>
-                  <label className={`block text-xs font-medium mb-2 ${theme.textSecondary}`}>
+                  <label
+                    className={`block text-xs font-medium mb-2 ${theme.textSecondary}`}
+                  >
                     Description
                   </label>
                   <textarea
                     value={editingExperience.description}
                     onChange={(e) =>
-                      setEditingExperience({ ...editingExperience, description: e.target.value })
+                      setEditingExperience({
+                        ...editingExperience,
+                        description: e.target.value,
+                      })
                     }
                     rows={3}
                     placeholder="Describe your role and responsibilities..."
@@ -744,46 +905,64 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Experience List */}
             <div className="space-y-4">
-              {(isEditing ? editData.experience : profileData.experience).map((exp) => (
-                <div key={exp.id} className={`pb-4 border-b ${theme.border} last:border-0`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${theme.textPrimary}`}>{exp.title}</h3>
-                      <p className={`text-sm ${theme.textSecondary} mt-1`}>{exp.company}</p>
-                      {exp.location && (
-                        <p className={`text-xs ${theme.textMuted} mt-1`}>{exp.location}</p>
-                      )}
-                      <p className={`text-xs ${theme.textMuted} mt-1`}>{exp.duration}</p>
-                      <p className={`text-sm ${theme.textSecondary} mt-2`}>{exp.description}</p>
-                    </div>
-                    {isEditing && !editingExperience && (
-                      <div className="flex gap-2 ml-4">
-                        <button
-                          onClick={() => handleEditExperience(exp)}
-                          className={`${theme.primaryText} text-sm hover:underline`}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExperience(exp.id)}
-                          className={`${theme.dangerText} text-sm hover:underline`}
-                        >
-                          Delete
-                        </button>
+              {(isEditing ? editData.experience : profileData.experience).map(
+                (exp) => (
+                  <div
+                    key={exp.id}
+                    className={`pb-4 border-b ${theme.border} last:border-0`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className={`font-semibold ${theme.textPrimary}`}>
+                          {exp.title}
+                        </h3>
+                        <p className={`text-sm ${theme.textSecondary} mt-1`}>
+                          {exp.company}
+                        </p>
+                        {exp.location && (
+                          <p className={`text-xs ${theme.textMuted} mt-1`}>
+                            {exp.location}
+                          </p>
+                        )}
+                        <p className={`text-xs ${theme.textMuted} mt-1`}>
+                          {exp.duration}
+                        </p>
+                        <p className={`text-sm ${theme.textSecondary} mt-2`}>
+                          {exp.description}
+                        </p>
                       </div>
-                    )}
+                      {isEditing && !editingExperience && (
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => handleEditExperience(exp)}
+                            className={`${theme.primaryText} text-sm hover:underline`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExperience(exp.id)}
+                            className={`${theme.dangerText} text-sm hover:underline`}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
 
           {/* Education Section */}
-          <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
+          <div
+            className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>Education</h2>
+              <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
+                Education
+              </h2>
               {isEditing && !editingEducation && (
                 <button
                   onClick={handleAddEducation}
@@ -794,14 +973,16 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Education Form (Edit/Add) */}
             {editingEducation && (
               <div className={`p-4 ${theme.bg} rounded-lg mb-4 space-y-3`}>
                 <Input
                   label="Institution *"
                   value={editingEducation.institution}
                   onChange={(e) =>
-                    setEditingEducation({ ...editingEducation, institution: e.target.value })
+                    setEditingEducation({
+                      ...editingEducation,
+                      institution: e.target.value,
+                    })
                   }
                   placeholder="e.g. St. Aloysius College"
                 />
@@ -809,7 +990,10 @@ const Profile = () => {
                   label="Degree *"
                   value={editingEducation.degree}
                   onChange={(e) =>
-                    setEditingEducation({ ...editingEducation, degree: e.target.value })
+                    setEditingEducation({
+                      ...editingEducation,
+                      degree: e.target.value,
+                    })
                   }
                   placeholder="e.g. B.Tech in Computer Engineering"
                 />
@@ -817,7 +1001,10 @@ const Profile = () => {
                   label="Field of Study"
                   value={editingEducation.fieldOfStudy}
                   onChange={(e) =>
-                    setEditingEducation({ ...editingEducation, fieldOfStudy: e.target.value })
+                    setEditingEducation({
+                      ...editingEducation,
+                      fieldOfStudy: e.target.value,
+                    })
                   }
                   placeholder="e.g. Computer Science"
                 />
@@ -825,7 +1012,10 @@ const Profile = () => {
                   label="Years"
                   value={editingEducation.years}
                   onChange={(e) =>
-                    setEditingEducation({ ...editingEducation, years: e.target.value })
+                    setEditingEducation({
+                      ...editingEducation,
+                      years: e.target.value,
+                    })
                   }
                   placeholder="e.g. 2021 - 2025"
                 />
@@ -833,7 +1023,10 @@ const Profile = () => {
                   label="Grade/CGPA"
                   value={editingEducation.grade}
                   onChange={(e) =>
-                    setEditingEducation({ ...editingEducation, grade: e.target.value })
+                    setEditingEducation({
+                      ...editingEducation,
+                      grade: e.target.value,
+                    })
                   }
                   placeholder="e.g. 8.5 CGPA"
                 />
@@ -854,51 +1047,73 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Education List */}
             <div className="space-y-4">
-              {(isEditing ? editData.education : profileData.education).map((edu) => (
-                <div key={edu.id} className={`pb-4 border-b ${theme.border} last:border-0`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className={`font-semibold ${theme.textPrimary} text-sm`}>
-                        {edu.institution}
-                      </h3>
-                      <p className={`text-sm ${theme.textSecondary} mt-1`}>{edu.degree}</p>
-                      {edu.fieldOfStudy && (
-                        <p className={`text-xs ${theme.textMuted} mt-1`}>{edu.fieldOfStudy}</p>
-                      )}
-                      <p className={`text-xs ${theme.textMuted} mt-1`}>{edu.years}</p>
-                      {edu.grade && (
-                        <p className={`text-xs ${theme.textMuted} mt-1`}>Grade: {edu.grade}</p>
+              {(isEditing ? editData.education : profileData.education).map(
+                (edu) => (
+                  <div
+                    key={edu.id}
+                    className={`pb-4 border-b ${theme.border} last:border-0`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3
+                          className={`font-semibold ${theme.textPrimary} text-sm`}
+                        >
+                          {edu.institution}
+                        </h3>
+                        <p className={`text-sm ${theme.textSecondary} mt-1`}>
+                          {edu.degree}
+                        </p>
+                        {edu.fieldOfStudy && (
+                          <p className={`text-xs ${theme.textMuted} mt-1`}>
+                            {edu.fieldOfStudy}
+                          </p>
+                        )}
+                        <p className={`text-xs ${theme.textMuted} mt-1`}>
+                          {edu.years}
+                        </p>
+                        {edu.grade && (
+                          <p className={`text-xs ${theme.textMuted} mt-1`}>
+                            Grade: {edu.grade}
+                          </p>
+                        )}
+                      </div>
+                      {isEditing && !editingEducation && (
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => handleEditEducation(edu)}
+                            className={`${theme.primaryText} text-sm hover:underline`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEducation(edu.id)}
+                            className={`${theme.dangerText} text-sm hover:underline`}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       )}
                     </div>
-                    {isEditing && !editingEducation && (
-                      <div className="flex gap-2 ml-4">
-                        <button
-                          onClick={() => handleEditEducation(edu)}
-                          className={`${theme.primaryText} text-sm hover:underline`}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEducation(edu.id)}
-                          className={`${theme.dangerText} text-sm hover:underline`}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
 
           {/* Resume Upload Section */}
-          <div className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}>
-            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>Resume</h2>
-            {(isEditing ? editData.resume : profileData.resume) ? (
-              <div className={`flex items-center justify-between p-4 ${theme.bg} rounded-lg`}>
+          <div
+            className={`${theme.cardBg} rounded-xl ${theme.shadow} p-6 mx-4 lg:mx-0`}
+          >
+            <h2 className={`text-lg font-semibold ${theme.textPrimary} mb-4`}>
+              Resume
+            </h2>
+
+            {(isEditing ? editData.resume : profileData.resume) &&
+            !resumeUpload.uploading ? (
+              <div
+                className={`flex items-center justify-between p-4 ${theme.bg} rounded-lg`}
+              >
                 <div className="flex items-center gap-3">
                   <svg
                     className={`w-8 h-8 ${theme.primaryText}`}
@@ -913,12 +1128,14 @@ const Profile = () => {
                   </svg>
                   <div>
                     <p className={`text-sm font-medium ${theme.textPrimary}`}>
-                      {(isEditing ? editData.resume : profileData.resume)?.name || "resume.pdf"}
+                      {(isEditing ? editData.resume : profileData.resume)
+                        ?.name || "resume.pdf"}
                     </p>
                     <p className={`text-xs ${theme.textMuted}`}>
-                      {((isEditing ? editData.resume : profileData.resume)?.size / 1024).toFixed(
-                        0
-                      )}{" "}
+                      {(
+                        ((isEditing ? editData.resume : profileData.resume)
+                          ?.size || 0) / 1024
+                      ).toFixed(0)}{" "}
                       KB
                     </p>
                   </div>
@@ -933,15 +1150,26 @@ const Profile = () => {
                 )}
               </div>
             ) : isEditing ? (
-              <div className={`border-2 border-dashed ${theme.border} rounded-lg p-8 text-center`}>
-                <input
-                  type="file"
-                  id="resume-upload"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleResumeUpload}
-                  className="hidden"
-                />
-                <label htmlFor="resume-upload" className="cursor-pointer">
+              <div>
+                {/* Drag and Drop Zone */}
+                <div
+                  onDrop={resumeUpload.handleDrop}
+                  onDragOver={resumeUpload.handleDragOver}
+                  onDragLeave={resumeUpload.handleDragLeave}
+                  onClick={resumeUpload.openFilePicker}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                    resumeUpload.isDragging
+                      ? `border-blue-500 ${theme.infoBg}`
+                      : `${theme.border} ${theme.hover}`
+                  }`}
+                >
+                  <input
+                    ref={resumeUpload.fileRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={resumeUpload.handleFileChange}
+                    className="hidden"
+                  />
                   <svg
                     className={`w-12 h-12 mx-auto ${theme.textMuted} mb-3`}
                     fill="none"
@@ -955,14 +1183,37 @@ const Profile = () => {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <p className={`text-sm ${theme.textPrimary} font-medium mb-1`}>
-                    Click to upload or drag and drop
+                  <p
+                    className={`text-sm ${theme.textPrimary} font-medium mb-1`}
+                  >
+                    {resumeUpload.isDragging
+                      ? "Drop your resume here!"
+                      : "Click to upload or drag and drop"}
                   </p>
-                  <p className={`text-xs ${theme.textMuted}`}>PDF or Word (MAX. 5MB)</p>
-                </label>
+                  <p className={`text-xs ${theme.textMuted}`}>
+                    PDF or Word (MAX. 5MB)
+                  </p>
+                </div>
+
+                {/* Error message */}
+                {resumeUpload.error && (
+                  <p className={`text-xs ${theme.dangerText} mt-2`}>
+                    ❌ {resumeUpload.error}
+                  </p>
+                )}
+
+                {/* Progress bar */}
+                <UploadProgress
+                  progress={resumeUpload.progress}
+                  uploading={resumeUpload.uploading}
+                  uploaded={resumeUpload.uploaded}
+                  fileName={resumeUpload.file?.name}
+                />
               </div>
             ) : (
-              <p className={`text-sm ${theme.textMuted}`}>No resume uploaded yet</p>
+              <p className={`text-sm ${theme.textMuted}`}>
+                No resume uploaded yet
+              </p>
             )}
           </div>
         </div>
@@ -970,10 +1221,16 @@ const Profile = () => {
         {/* Right Sidebar - Desktop Only */}
         <div className="hidden lg:block w-80 flex-shrink-0 space-y-4">
           {/* Messages Section */}
-          <div className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}>
+          <div
+            className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}
+          >
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-700">
-                <svg className={`w-5 h-5`} fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className={`w-5 h-5`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
@@ -983,7 +1240,6 @@ const Profile = () => {
                 <h2 className={`font-semibold`}>Messages</h2>
               </div>
             </div>
-
             <div className={`border-t ${theme.border}`}>
               {displayedMessages.map((message) => (
                 <button
@@ -1002,11 +1258,12 @@ const Profile = () => {
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     )}
                   </div>
-                  <p className={`text-sm text-black text-left`}>{message.name}</p>
+                  <p className={`text-sm text-black text-left`}>
+                    {message.name}
+                  </p>
                 </button>
               ))}
             </div>
-
             <button
               onClick={() => setShowAllMessages(!showAllMessages)}
               className={`w-full py-3 text-center text-sm ${theme.primaryText} font-medium hover:bg-gray-300 border-t ${theme.border}`}
@@ -1016,25 +1273,28 @@ const Profile = () => {
           </div>
 
           {/* News Section */}
-          <div className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}> <div className="p-4">
+          <div
+            className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}
+          >
+            <div className="p-4">
               <h2 className={`font-semibold text-gray-700 mb-1`}>News</h2>
               <p className={`text-xs ${theme.textMuted}`}>Top stories</p>
             </div>
-
             <div className={`border-t ${theme.border}`}>
               {displayedNews.map((item) => (
                 <button
                   key={item.id}
                   className={`w-full px-4 py-3 text-left hover:bg-gray-300 transition-colors`}
                 >
-                  <h3 className={`text-sm font-medium text-black mb-1`}>{item.title}</h3>
+                  <h3 className={`text-sm font-medium text-black mb-1`}>
+                    {item.title}
+                  </h3>
                   <p className={`text-xs ${theme.textMuted}`}>
                     {item.time} • {item.readers} readers
                   </p>
                 </button>
               ))}
             </div>
-
             <button
               onClick={() => setShowAllNews(!showAllNews)}
               className={`w-full py-3 text-center hover:bg-gray-300 text-sm ${theme.primaryText} font-medium border-t ${theme.border}`}
