@@ -5,7 +5,8 @@ import Loader from "../../ui/Loader";
 import ApiError from "../../ui/ApiError";
 import { fetchEmployerPlans } from "../../services/paymentService";
 
-const EmployerPricing = () => {
+const EmployerPricing
+ = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
