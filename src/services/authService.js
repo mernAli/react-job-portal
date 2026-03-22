@@ -6,10 +6,29 @@ export const loginUser = async (email, password) => {
   // const response = await api.post("/auth/login", { email, password });
   // return response.data;
 
-  // For now — simulate API call with a delay
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (email && password.length >= 6) {
+
+        // Admin test account
+        if (email === "admin@zecpath.com") {
+          resolve({
+            token: "jwt-admin-token-123",
+            user: { name: "Admin", email, role: "admin" },
+          });
+          return;
+        }
+
+        // Employer test account
+        if (email.includes("employer")) {
+          resolve({
+            token: "jwt-employer-token-123",
+            user: { name: email.split("@")[0], email, role: "employer" },
+          });
+          return;
+        }
+
+        // Default → candidate
         resolve({
           token: "jwt-demo-token-123",
           user: { name: email.split("@")[0], email, role: "candidate" },

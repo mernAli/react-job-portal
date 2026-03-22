@@ -5,6 +5,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import ToastProvider from "./ui/toast/ToastProvider";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loader from "./ui/Loader";
+import RoleRoute from "./route/RoleRoute";
 
 // Lazy load pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -31,6 +32,9 @@ const MyJobs = lazy(() => import("./pages/employer/MyJobs"));
 const Applications = lazy(() => import("./pages/employer/Applications"));
 const EmployerDashboard = lazy(() => import("./pages/employer/EmployerDashboard"));
 
+
+//Admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"))
 
 // Layouts (don't lazy load these)
 import AppLayout from "./layouts/AppLayout";
@@ -87,22 +91,94 @@ function App() {
                     <Route path="ui-demo" element={<UIDemo />} />
 
                     {/* Candidate specific */}
-                    <Route path="browse-jobs" element={<BrowseJobs />} />
-                    <Route path="my-applications" element={<MyApplications />} />
+                    <Route 
+                      path="browse-jobs" 
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin", "employer"]}>
+                          <BrowseJobs />
+                        </RoleRoute>
+                      }
+                     />
+                    <Route 
+                      path="my-applications" 
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin"]}>
+                          <MyApplications />
+                        </RoleRoute>
+                      }
+                    />
 
                     {/* Employer specific */}
-                    <Route path="post-job" element={<PostJob />} />
-                    <Route path="my-jobs" element={<MyJobs />} />
-                    <Route path="applications" element={<Applications />} />
+                    <Route 
+                      path="post-job" 
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <PostJob />
+                        </RoleRoute>
+                      } 
+                    />
+                    <Route 
+                      path="my-jobs" 
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <MyJobs />
+                        </RoleRoute>
+                      } 
+                    />
+                    <Route 
+                      path="applications" 
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <Applications />
+                        </RoleRoute>
+                      } />
 
                     {/* Dashboard pages */}
-                    <Route path="employer-dashboard" element={<EmployerDashboard />} />
-                    <Route path="candidate-dashboard" element={<CandidateDashboard />} />
+                    <Route 
+                      path="employer-dashboard" 
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <EmployerDashboard />
+                        </RoleRoute>
+                       
+                    } 
+                    />
+                    <Route 
+                      path="candidate-dashboard" 
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin"]}>
+                          <CandidateDashboard />
+                        </RoleRoute>
+                      } 
+                    />
 
+                    {/* Admin only */}
+                    <Route
+                      path="admin-dashboard"
+                      element={
+                        <RoleRoute allowedRoles={["admin"]}>
+                          <AdminDashboard />
+                        </RoleRoute>
+                      }
+                    />
 
                     {/* Payment pages */}
-                    <Route path="employer-pricing"  element={<EmployerPricing/>}/> 
-                    <Route path="candidate-pricing" element={<CandidatePricing/>}/>
+                    <Route 
+                      path="employer-pricing"  
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <EmployerPricing/>
+                        </RoleRoute>
+                      }
+                    /> 
+                    <Route 
+                      path="candidate-pricing" 
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin"]}>
+                          <CandidatePricing/>
+                        </RoleRoute>
+                      }
+                    />
                     <Route path="checkout" element={<Checkout />} />
                     <Route path="payment-success" element={<PaymentSuccess />} />
                   </Route>

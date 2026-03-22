@@ -360,8 +360,20 @@ const Topbar = () => {
                     <p className={`text-sm font-semibold ${theme.textPrimary}`}>
                       {user?.name}
                     </p>
-                    <p className={`text-xs ${theme.textMuted} capitalize`}>
+                    {/* <p className={`text-xs ${theme.textMuted} capitalize`}>
                       {user?.role}
+                    </p> */}
+                    <p
+                      className={`text-xs font-semibold capitalize ${
+                        user?.role === "admin"
+                          ? theme.dangerText
+                          : user?.role === "employer"
+                            ? theme.warningText
+                            : theme.textMuted
+                      }`}
+                    >
+                      {user?.role}
+                      {user?.role === "admin" && " 🛡️"}
                     </p>
                   </div>
                   <button
@@ -441,6 +453,46 @@ const Topbar = () => {
                         className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
                       >
                         📄 Applications
+                      </button>
+                    </>
+                  )}
+                  {user?.role === "admin" && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/admin-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        🛡️ Admin Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/jobs");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        💼 All Jobs
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/employer-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        📊 Employer View
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/candidate-dashboard");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        🎓 Candidate View
                       </button>
                     </>
                   )}
