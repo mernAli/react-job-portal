@@ -3,10 +3,10 @@ import { useAuth } from "../context/useAuth";
 import Loader from "../ui/Loader";
 import { getDashboardPath } from "../utils/permissions";
 
-const PrivateRoute = ({ children, requiredRole }) => {
+// RoleRoute — only allows specific roles, redirects others to their dashboard
+const RoleRoute = ({ children, allowedRoles = [] }) => {
   const { user, authLoading } = useAuth();
 
-  // Still checking localStorage — show loader, not login page
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -15,17 +15,16 @@ const PrivateRoute = ({ children, requiredRole }) => {
     );
   }
 
-  // Not logged in — redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Wrong role — redirect to correct dashboard
-  if (requiredRole && user.role !== requiredRole) {
+  // If role not allowed → redirect to their own dashboard
+  if (!allowedRoles.includes(user.role)) {
     return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
   return children;
 };
 
-export default PrivateRoute;
+export default RoleRoute;
