@@ -2415,3 +2415,125 @@ src/
 > File uploads have more edge cases than any other UI interaction — wrong type, too large, network failure, partial upload, preview before save, and persistence after navigation. The `useFileUpload` hook encapsulates all of these concerns in one place, making it reusable across any future upload feature in the app with zero repeated logic.
  
 ---
+
+
+## ✅ Day 31 – Multi-Role Dashboard System
+ 
+**Objective:** Implement a complete role-based user experience with centralized permission logic, role-enforced route guards, and a full admin dashboard with user management capabilities.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Role-Based Routing**
+Built a `RoleRoute` component that accepts an `allowedRoles` array and redirects unauthorized users to their own dashboard instead of showing an error. This is more user-friendly than a 403 page — a candidate visiting `/app/post-job` is silently redirected to their candidate dashboard without any confusion.
+ 
+**Conditional UI Rendering**
+The Topbar profile dropdown renders completely different menu items based on the user's role — candidates see Browse Jobs and My Applications, employers see Post Job and ATS, and admins see all dashboards plus platform management tools. Role badges are color-coded: red for admin, yellow for employer, and muted for candidate.
+ 
+**Permission Logic**
+Centralized all role checks in `utils/permissions.js` — a single file that exports `ROLES`, `getDashboardPath`, and `getPermissions`. Instead of scattered `user?.role === "employer"` checks throughout the codebase, every component can import `getPermissions(user)` and check `permissions.canPostJob` or `permissions.canViewATS` — making the permission system easy to extend when new roles are added.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`utils/permissions.js` — New Utility File**
+- `ROLES` object: `{ ADMIN, EMPLOYER, CANDIDATE }`
+- `getDashboardPath(role)` — maps role to correct dashboard URL
+- `getPermissions(user)` — returns object of boolean permission flags covering jobs, dashboards, admin, profile, and pricing
+- Used by both `PrivateRoute` and `RoleRoute` for redirect logic
+ 
+**`route/RoleRoute.jsx` — New Route Guard**
+- Accepts `allowedRoles` array (e.g. `["employer", "admin"]`)
+- Shows loader during `authLoading`
+- Redirects to `/login` if no user
+- Redirects to `getDashboardPath(user.role)` if role not in `allowedRoles`
+- More flexible than `PrivateRoute` — supports multi-role access
+ 
+**`route/PrivateRoute.jsx` — Updated**
+- Now uses `getDashboardPath(user.role)` for redirect instead of hardcoded `/app`
+- Ensures wrong-role redirects always go to the correct dashboard
+ 
+**`services/authService.js` — Updated**
+- Three test accounts added:
+  - `admin@zecpath.com` → admin role
+  - Any email containing "employer" → employer role
+  - Any other email → candidate role
+- Backend-ready — uncomment two lines to use real API
+ 
+**`services/adminService.js` — New Service File**
+Four backend-ready functions:
+```
+fetchAdminStats()          — GET /admin/stats (8 platform metrics)
+fetchRecentUsers()         — GET /admin/recent-users
+fetchPlatformActivity()    — GET /admin/platform-activity
+updateUserStatus()         — PUT /admin/users/:id/status
+```
+ 
+**`pages/admin/AdminDashboard.jsx` — New Page**
+- ADMIN badge in header with danger color
+- 8 stat cards: Total Users, Active Jobs, Applications, Revenue, Employers, Candidates, Pro Subscribers, Support Tickets
+- Recent users table — mobile card layout + desktop table
+- Suspend / Activate user with optimistic UI and revert on failure
+- Platform activity feed with icons
+- Three quick action cards: Manage Users, Review Payments, Job Listings
+- Independent loading and error states per section
+ 
+**`App.jsx` — Updated**
+- Admin lazy import and route added
+- `RoleRoute` wrapping added to employer routes (`["employer", "admin"]`)
+- `RoleRoute` wrapping added to candidate routes (`["candidate", "admin"]`)
+- Admin route protected with `RoleRoute allowedRoles={["admin"]}`
+ 
+**`Topbar.jsx` — Updated**
+- Admin profile menu: 🛡️ Admin Dashboard, 💼 All Jobs, 📊 Employer View, 🎓 Candidate View
+- Role badge color-coded: `dangerText` for admin, `warningText` for employer
+- 🛡️ emoji appended to admin role label
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── utils/
+│   └── permissions.js              ← NEW
+├── route/
+│   ├── PrivateRoute.jsx            ← UPDATED: getDashboardPath
+│   └── RoleRoute.jsx               ← NEW: multi-role guard
+├── services/
+│   ├── authService.js              ← UPDATED: admin test login
+│   └── adminService.js             ← NEW: 4 admin API functions
+├── pages/admin/
+│   └── AdminDashboard.jsx          ← NEW: full admin dashboard
+├── App.jsx                         ← UPDATED: RoleRoute + admin route
+└── components/Dashboard/
+    └── Topbar.jsx                  ← UPDATED: admin menu + role badges
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Centralized permission system with `getPermissions` and `getDashboardPath`
+- ✅ `RoleRoute` — flexible multi-role route guard
+- ✅ Admin dashboard with 8 stat cards
+- ✅ Recent users table with Suspend / Activate actions
+- ✅ Optimistic UI on user status updates
+- ✅ Platform activity feed
+- ✅ Admin quick action cards
+- ✅ Role-specific Topbar navigation for all three roles
+- ✅ Color-coded role badges in profile dropdown
+- ✅ Employer routes blocked from candidates
+- ✅ Candidate routes blocked from employers
+- ✅ Admin can access all dashboards
+- ✅ Three test accounts for all roles
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> Role-based access control works best when permission logic lives in one place. Scattering `user?.role === "employer"` checks throughout the codebase creates a maintenance nightmare — adding a new role means hunting down every check. A centralized `getPermissions(user)` function means adding a new role requires changing exactly one file.
+ 
+---
