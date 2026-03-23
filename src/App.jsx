@@ -35,6 +35,10 @@ const EmployerDashboard = lazy(() => import("./pages/employer/EmployerDashboard"
 
 //Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"))
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"))
+const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+
 
 // Layouts (don't lazy load these)
 import AppLayout from "./layouts/AppLayout";
@@ -158,6 +162,30 @@ function App() {
                       element={
                         <RoleRoute allowedRoles={["admin"]}>
                           <AdminDashboard />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="admin/users"
+                      element={
+                        <RoleRoute allowedRoles={["admin"]}>
+                          <AdminUsers />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="admin/jobs"
+                      element={
+                        <RoleRoute allowedRoles={["admin"]}>
+                          <AdminJobs />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="admin/analytics"
+                      element={
+                        <RoleRoute allowedRoles={["admin"]}>
+                          <AdminAnalytics />
                         </RoleRoute>
                       }
                     />
