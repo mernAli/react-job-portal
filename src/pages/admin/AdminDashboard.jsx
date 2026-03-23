@@ -146,7 +146,7 @@ const AdminDashboard = () => {
             </p>
           </div>
           <button
-            onClick={() => navigate("/app/home")}
+            onClick={() => navigate("/app/admin/users")}
             className={`text-xs ${theme.primaryText} font-medium`}
           >
             View all →
@@ -308,8 +308,20 @@ const AdminDashboard = () => {
         <div className={`${theme.primary} rounded-xl p-5 text-white`}>
           <h3 className="font-semibold mb-1">Manage Users</h3>
           <p className="text-white/80 text-xs mb-3">View and manage all platform users</p>
-          <button className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
+          <button
+            onClick={() => navigate("/app/admin/users")} 
+            className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
             View Users
+          </button>
+        </div>
+        <div className={`${theme.primary} rounded-xl p-5 text-white`}>
+          <h3 className="font-semibold mb-1">Manage Analytics</h3>
+          <p className="text-white/80 text-xs mb-3">View and manage platform analytics</p>
+          <button
+            onClick={() => navigate("/app/admin/analytics")}
+            className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
+          >
+            View Analytics
           </button>
         </div>
         <div className={`${theme.info} rounded-xl p-5 text-white`}>
@@ -326,7 +338,7 @@ const AdminDashboard = () => {
           <h3 className="font-semibold mb-1">Job Listings</h3>
           <p className="text-white/80 text-xs mb-3">Review and moderate all job postings</p>
           <button
-            onClick={() => navigate("/app/jobs")}
+            onClick={() => navigate("/app/admin/jobs")}
             className="bg-white text-green-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
           >
             View Jobs
