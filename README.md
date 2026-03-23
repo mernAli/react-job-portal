@@ -2537,3 +2537,120 @@ src/
 > Role-based access control works best when permission logic lives in one place. Scattering `user?.role === "employer"` checks throughout the codebase creates a maintenance nightmare — adding a new role means hunting down every check. A centralized `getPermissions(user)` function means adding a new role requires changing exactly one file.
  
 ---
+
+## ✅ Day 32 – Admin Panel UI Integration
+ 
+**Objective:** Build a full SaaS-style admin management interface with dedicated pages for user management, job moderation, and platform analytics.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Admin UX Patterns**
+Real SaaS admin panels prioritize information density and minimal clicks. Each admin page follows the same structure: a header with stats summary, a search and filter bar, a data table with per-row action menus, and pagination. This consistent pattern means admins can navigate any section of the panel without relearning the UI.
+ 
+**Table Actions**
+Implemented the ⋮ dropdown action menu pattern — clicking the three-dot button on any row reveals contextual actions. The actions are context-aware: a job already marked "Active" does not show an "Activate" option, and a "Closed" job does not show "Close Job". This prevents invalid state transitions and reduces admin errors. Dropdowns close automatically on outside click using `useRef` and `document.addEventListener`.
+ 
+**Analytics Widgets**
+Built analytics visualizations using pure CSS and div elements — no external chart library needed. Sparkline bar charts use percentage-height divs to show trends over time, distribution bars show role/plan/job-type breakdowns as percentage-width progress bars, and a top locations ranking combines rank numbers, city names, and inline bars in a clean layout. Growth percentages are calculated dynamically from the data.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`adminService.js` — 5 New Functions Added**
+ 
+```
+fetchAllUsers()        — GET /admin/users (10 users with full profile data)
+deleteUser()           — DELETE /admin/users/:id
+fetchAllAdminJobs()    — GET /admin/jobs (8 jobs with Active/Closed/Flagged status)
+updateJobStatus()      — PUT /admin/jobs/:id/status
+fetchAnalytics()       — GET /admin/analytics (growth, revenue, distributions)
+```
+ 
+**`pages/admin/AdminUsers.jsx` — New Page**
+- Debounced search filtering by name, email, and location
+- Role filter (All / Candidate / Employer / Admin)
+- Status filter (All / Active / Inactive)
+- ⋮ action dropdown per row: Suspend/Activate and Delete
+- Optimistic UI on status toggle and delete with revert on failure
+- `usePagination` hook (5 per page) with full pagination controls
+- Mobile card layout + desktop table
+- `useDebounce` from Day 26 reused for search input
+- Outside-click handler closes action menu via `useRef`
+ 
+**`pages/admin/AdminJobs.jsx` — New Page**
+- Debounced search by title, company, and location
+- Status filter (Active / Closed / Flagged) and type filter (Full Time / Contract / Part Time)
+- Three quick stat cards showing Active, Closed, and Flagged counts
+- ⋮ action dropdown with context-aware options — only shows actions that are valid for the current status
+- Optimistic UI with revert on API failure
+- `usePagination` hook (5 per page)
+- Mobile card layout + desktop table
+- Flagged status uses warning colors for visual prominence
+ 
+**`pages/admin/AdminAnalytics.jsx` — New Page**
+- `SparkBar` component — pure CSS sparkline chart using percentage-height divs
+- `DistBar` component — labeled distribution bar with percentage calculation
+- User growth chart over 6 months with growth percentage badge
+- Revenue chart over 6 months with growth percentage badge
+- Daily applications chart over 14 days with average per day
+- Role distribution: Candidates vs Employers
+- Plan distribution: Free / Pro / Enterprise
+- Job type distribution: Full Time / Contract / Part Time / Internship
+- Top 5 locations ranking with inline progress bars
+- All values calculated dynamically from API data
+ 
+**`pages/admin/AdminDashboard.jsx` — Updated**
+- "View Users" button wired to `/app/admin/users`
+- "View Analytics" button wired to `/app/admin/analytics`
+- "View Jobs" button wired to `/app/admin/jobs`
+- "View all →" link in recent users section wired to `/app/admin/users`
+ 
+**`App.jsx` — Updated**
+- Three new lazy imports for AdminUsers, AdminJobs, AdminAnalytics
+- Three new `RoleRoute allowedRoles={["admin"]}` protected routes:
+  - `/app/admin/users`
+  - `/app/admin/jobs`
+  - `/app/admin/analytics`
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── services/
+│   └── adminService.js              ← UPDATED: 5 new functions
+├── pages/admin/
+│   ├── AdminDashboard.jsx           ← UPDATED: navigation links fixed
+│   ├── AdminUsers.jsx               ← NEW
+│   ├── AdminJobs.jsx                ← NEW
+│   └── AdminAnalytics.jsx           ← NEW
+└── App.jsx                          ← UPDATED: 3 new routes
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ AdminUsers — search, filter, ⋮ action menu, Suspend/Activate/Delete
+- ✅ AdminJobs — search, filter, ⋮ action menu, Activate/Close/Flag
+- ✅ AdminAnalytics — sparkline charts, distribution bars, top locations
+- ✅ Optimistic UI with revert on all status actions
+- ✅ Context-aware action menus — only valid actions shown
+- ✅ Outside-click closes action dropdown
+- ✅ Reused useDebounce and usePagination hooks from previous days
+- ✅ Mobile card + desktop table layout on all pages
+- ✅ All quick action buttons in AdminDashboard navigate correctly
+- ✅ All three pages protected with RoleRoute allowedRoles={["admin"]}
+- ✅ Backend-ready service functions with commented real API calls
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> The ⋮ action dropdown pattern is superior to inline buttons in admin tables because it keeps rows clean regardless of how many actions are available. Context-aware menus — showing only valid transitions — prevent admin errors and communicate system state visually without any extra explanation needed.
+ 
+---
