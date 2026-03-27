@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { fetchJobs } from "../../services/JobService";
 import { useTheme } from "../../context/ThemeContext";
 import Loader from "../../ui/Loader";
@@ -31,27 +31,29 @@ const BrowseJobs = () => {
     removeFilter,
   } = useJobFilters(jobs);
 
-  // Sort filtered jobs
-  const sortedJobs = [...filteredJobs].sort((a, b) => {
-    switch (sortBy) {
-      case "latest":
-        return new Date(b.postedDate) - new Date(a.postedDate);
-      case "oldest":
-        return new Date(a.postedDate) - new Date(b.postedDate);
-      case "salary-high":
-        return (
-          parseInt(b.salary?.split("-")[1] || 0) -
-          parseInt(a.salary?.split("-")[1] || 0)
-        );
-      case "salary-low":
-        return (
-          parseInt(a.salary?.split("-")[0] || 0) -
-          parseInt(b.salary?.split("-")[0] || 0)
-        );
-      default:
-        return 0;
-    }
-  });
+  // ✅ useMemo — sortedJobs only recalculated when filteredJobs or sortBy changes
+  const sortedJobs = useMemo(() => {
+    return [...filteredJobs].sort((a, b) => {
+      switch (sortBy) {
+        case "latest":
+          return new Date(b.postedDate) - new Date(a.postedDate);
+        case "oldest":
+          return new Date(a.postedDate) - new Date(b.postedDate);
+        case "salary-high":
+          return (
+            parseInt(b.salary?.split("-")[1] || 0) -
+            parseInt(a.salary?.split("-")[1] || 0)
+          );
+        case "salary-low":
+          return (
+            parseInt(a.salary?.split("-")[0] || 0) -
+            parseInt(b.salary?.split("-")[0] || 0)
+          );
+        default:
+          return 0;
+      }
+    });
+  }, [filteredJobs, sortBy]);
 
   // Pagination — receives sortedJobs so it always paginates the correct list
   const {
@@ -105,45 +107,44 @@ const BrowseJobs = () => {
     }
   };
 
-  const handleApply = async (jobId) => {
-    // ✅ Look up job before try block so it's always in scope
-    const job = jobs.find((j) => j.id === jobId);
+  // ✅ useCallback — stable reference, JobCard memo works correctly
+const handleApply = useCallback(async (jobId) => {
+  const job = jobs.find((j) => j.id === jobId);
+  if (appliedJobs.includes(jobId)) {
+    showToast("You have already applied to this job!", "info");
+    return;
+  }
+  try {
+    setAppliedJobs((prev) => [...prev, jobId]);
+    const result = await applyJob(jobId, {
+      jobId,
+      jobTitle: job?.title,
+      company: job?.company,
+      appliedAt: new Date().toISOString(),
+    });
+    showToast(result.message, "success");
+    addNotification(
+      NOTIF_TYPES.JOB_APPLIED,
+      "Application Submitted",
+      `You successfully applied for ${job?.title} at ${job?.company}.`
+    );
+  } catch (error) {
+    setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
+    showToast(error.message || "Failed to apply.", "error");
+  }
+}, [jobs, appliedJobs, showToast, addNotification]);
 
-    if (appliedJobs.includes(jobId)) {
-      showToast("You have already applied to this job!", "info");
-      return;
-    }
+// ✅ useCallback — stable reference
+const handleSave = useCallback((jobId) => {
+  const job = jobs.find((j) => j.id === jobId);
+  showToast(`${job?.title} saved to your list`, "success");
+}, [jobs, showToast]);
 
-    try {
-      // Optimistic UI
-      setAppliedJobs((prev) => [...prev, jobId]);
+// ✅ useCallback — stable reference
+const handleSort = useCallback((value) => {
+  setSortBy(value);
+}, []);
 
-      const result = await applyJob(jobId, {
-        jobId,
-        jobTitle: job?.title,
-        company: job?.company,
-        appliedAt: new Date().toISOString(),
-      });
-
-      showToast(result.message, "success");
-
-      // ✅ Create notification after successful apply
-      addNotification(
-        NOTIF_TYPES.JOB_APPLIED,
-        "Application Submitted",
-        `You successfully applied for ${job?.title} at ${job?.company}.`,
-      );
-    } catch (error) {
-      // Revert optimistic update on failure
-      setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
-      showToast(error.message || "Failed to apply.", "error");
-    }
-  };
-
-  const handleSave = (jobId) => {
-    const job = jobs.find((j) => j.id === jobId);
-    showToast(`${job?.title} saved to your list`, "success");
-  };
 
   if (loading) {
     return (
