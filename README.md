@@ -2654,3 +2654,105 @@ src/
 > The ⋮ action dropdown pattern is superior to inline buttons in admin tables because it keeps rows clean regardless of how many actions are available. Context-aware menus — showing only valid transitions — prevent admin errors and communicate system state visually without any extra explanation needed.
  
 ---
+
+## ✅ Day 33 – Performance Optimization
+ 
+**Objective:** Improve the speed and efficiency of the application through React.memo, useCallback, useMemo, static data extraction, and bundle optimization verification.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Lazy Loading**
+All routes in `App.jsx` were already lazy-loaded using `React.lazy()` and `Suspense` — each page is a separate JavaScript chunk that only loads when the user navigates to that route. Admin pages load only when an admin logs in, payment pages load only when the user visits checkout, and the main bundle stays small regardless of how many pages the app has.
+ 
+**React.memo**
+`React.memo` prevents a component from re-rendering when its parent re-renders but its own props have not changed. Applied to `StatCard`, `JobCard`, `FilterPanel`, `FilterSection`, and `Checkbox` — the most frequently rendered components in the app. With memo on `JobCard`, applying to one job only re-renders that one card rather than every card in the list.
+ 
+**Code Splitting**
+React's `lazy()` combined with `Suspense` automatically splits the bundle at the route level. Each lazy-imported page becomes its own chunk file in the production build. The project also has the React Compiler enabled — which performs automatic memoization across the entire component graph, more efficiently than manual `useCallback` alone.
+ 
+**Bundle Optimization**
+Static data arrays and lookup objects that never change were moved outside components — preventing recreation on every render. `COLOR_MAP` in `StatCard`, and `JOB_TYPES`, `WORK_MODES`, `EXPERIENCE_LEVELS`, and `SALARY_OPTIONS` in `FilterPanel` are now module-level constants. All imports use named imports for tree-shakeability, and no full library imports are used anywhere.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`StatCard.jsx` — Updated**
+- Wrapped with `React.memo` — only re-renders when stat props change
+- `colorClasses` object moved outside as `COLOR_MAP` — created once at module level
+- `displayName` added for React DevTools identification
+ 
+**`JobCard.jsx` — Updated**
+- Wrapped with `React.memo` — only re-renders when `job`, `isApplied`, or callbacks change
+- `getTimeAgo` helper moved outside component — pure function, no need to recreate per render
+- `handleSaveClick` and `handleApplyClick` wrapped with `useCallback` for stable references
+- `handleViewDetails` and `handleCardClick` left as plain functions — React Compiler detected a conflict with manual `[job.id, navigate]` dependency array since the full `job` object is passed in navigation state. Removing manual `useCallback` resolved the compiler warning and allowed automatic optimization
+- `displayName` added
+ 
+**`FilterPanel.jsx` — Updated**
+- `FilterSection` wrapped with `React.memo` — only re-renders when title or children change
+- `Checkbox` wrapped with `React.memo` — only re-renders when checked state changes
+- `FilterPanel` itself wrapped with `React.memo` — only re-renders when filter values or callbacks change
+- `JOB_TYPES`, `WORK_MODES`, `EXPERIENCE_LEVELS`, `SALARY_OPTIONS` moved outside as module-level constants
+- `displayName` added to all three memoized components
+ 
+**`BrowseJobs.jsx` — Updated**
+- `handleApply` wrapped with `useCallback` — stable reference so memoized `JobCard` works correctly
+- `handleSave` wrapped with `useCallback` — stable reference
+- `handleSort` wrapped with `useCallback` — stable reference
+- `sortedJobs` wrapped with `useMemo` — only recalculated when `filteredJobs` or `sortBy` changes
+ 
+**`utils/performance.js` — New**
+- Documents all optimization decisions across the project
+- Lists memoized components, useCallback and useMemo usage, static data moves, and lazy routes
+- Reference file for future developers joining the project
+ 
+---
+ 
+### 🐛 Compiler Warning Fixed
+ 
+**React Compiler Conflict in JobCard**
+The React Compiler (enabled in this project) detected a mismatch between the manual `[job.id, navigate]` dependency array and its inferred dependency of `[job]`. Since the full `job` object is passed as navigation state (`{ state: { job } }`), the compiler correctly identified that the entire object was needed. Fixed by removing manual `useCallback` from the two navigation handlers and letting the compiler handle optimization automatically.
+ 
+---
+ 
+### 📁 Files Modified / Created
+ 
+```
+src/
+├── components/
+│   ├── Dashboard/
+│   │   └── StatCard.jsx         ← UPDATED: memo + COLOR_MAP outside
+│   └── Jobs/
+│       ├── JobCard.jsx          ← UPDATED: memo + useCallback + getTimeAgo outside
+│       └── FilterPanel.jsx      ← UPDATED: memo on all 3 + static data outside
+├── pages/candidate/
+│   └── BrowseJobs.jsx           ← UPDATED: useCallback + useMemo
+└── utils/
+    └── performance.js           ← NEW: optimization registry
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ React.memo on StatCard, JobCard, FilterPanel, FilterSection, Checkbox
+- ✅ displayName on all memoized components
+- ✅ useCallback on handleApply, handleSave, handleSort in BrowseJobs
+- ✅ useCallback on handleSaveClick, handleApplyClick in JobCard
+- ✅ useMemo on sortedJobs in BrowseJobs
+- ✅ Static data moved outside: COLOR_MAP, JOB_TYPES, WORK_MODES, EXPERIENCE_LEVELS, SALARY_OPTIONS
+- ✅ getTimeAgo moved outside JobCard
+- ✅ React Compiler conflict identified and resolved
+- ✅ Code splitting verified via lazy routes in App.jsx
+- ✅ utils/performance.js created as optimization registry
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> When the React Compiler is enabled, it performs automatic memoization more accurately than manual `useCallback`. Conflicts between manual dependency arrays and compiler inference are a sign to trust the compiler. The right approach is: use `React.memo` for component-level optimization, let the compiler handle hook-level optimization, and move static data outside components to prevent unnecessary recreation.
+ 
+---
