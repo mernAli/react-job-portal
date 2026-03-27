@@ -1,33 +1,44 @@
+import { memo, useCallback } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 
-const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }) => {
+// ✅ Moved OUTSIDE component — pure function, no need to recreate
+const getTimeAgo = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now - date;
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  if (diffInDays === 0) return "Today";
+  if (diffInDays === 1) return "Yesterday";
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+  return `${Math.floor(diffInDays / 30)} months ago`;
+};
+
+// ✅ memo — only re-renders when job, isApplied, or callbacks change
+const JobCard = memo(({ job, onApply, onSave, showActions = true, isApplied = false }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const getTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now - date;
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return `${Math.floor(diffInDays / 30)} months ago`;
-  };
-
+  // ✅ useCallback — stable references, don't recreate on every render
   const handleViewDetails = (e) => {
-    e.stopPropagation();
-    // Pass job data through navigation state for immediate display
-    navigate(`/app/jobs/${job.id}`, { state: { job } });
-  };
+  e.stopPropagation();
+  navigate(`/app/jobs/${job.id}`, { state: { job } });
+};
 
-  const handleCardClick = () => {
-    // Pass job data through navigation state for immediate display
-    navigate(`/app/jobs/${job.id}`, { state: { job } });
-  };
+const handleCardClick = () => {
+  navigate(`/app/jobs/${job.id}`, { state: { job } });
+};
+
+  const handleSaveClick = useCallback((e) => {
+    e.stopPropagation();
+    onSave && onSave(job.id);
+  }, [job.id, onSave]);
+
+  const handleApplyClick = useCallback((e) => {
+    e.stopPropagation();
+    onApply && onApply(job.id);
+  }, [job.id, onApply]);
 
   return (
     <div
@@ -38,9 +49,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4 flex-1 min-w-0">
           {/* Company Logo */}
-          <div
-            className={`w-12 h-12 md:w-14 md:h-14 ${theme.infoBg} rounded-lg flex items-center justify-center flex-shrink-0`}
-          >
+          <div className={`w-12 h-12 md:w-14 md:h-14 ${theme.infoBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
             <span className={`text-xl font-bold ${theme.infoText}`}>
               {job.company?.charAt(0) || job.company_name?.charAt(0) || "C"}
             </span>
@@ -55,9 +64,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
               {job.company || job.company_name}
             </p>
             <div className={`flex flex-wrap items-center gap-2 mt-2 text-xs ${theme.textMuted}`}>
-              <span className="flex items-center gap-1">
-                📍 {job.location}
-              </span>
+              <span className="flex items-center gap-1">📍 {job.location}</span>
               {job.workMode && (
                 <span className={`px-2 py-0.5 ${theme.infoBg} ${theme.infoText} rounded-full`}>
                   {job.workMode}
@@ -72,15 +79,9 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
           </div>
         </div>
 
-        {/* Bookmark Icon */}
+        {/* Bookmark */}
         {showActions && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSave && onSave(job.id);
-            }}
-            className={`${theme.textMuted} ${theme.hover} transition-colors`}
-          >
+          <button onClick={handleSaveClick} className={`${theme.textMuted} ${theme.hover} transition-colors`}>
             🔖
           </button>
         )}
@@ -113,10 +114,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
       {job.skills && job.skills.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {job.skills.slice(0, 5).map((skill, index) => (
-            <span
-              key={index}
-              className={`px-3 py-1 ${theme.bg} ${theme.textSecondary} text-xs rounded-full font-medium`}
-            >
+            <span key={index} className={`px-3 py-1 ${theme.bg} ${theme.textSecondary} text-xs rounded-full font-medium`}>
               {skill}
             </span>
           ))}
@@ -139,10 +137,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
       {showActions && (
         <div className="flex gap-3 pt-4 border-t">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onApply && onApply(job.id);
-            }}
+            onClick={handleApplyClick}
             disabled={isApplied}
             className={`flex-1 sm:flex-none px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm`}
           >
@@ -158,6 +153,7 @@ const JobCard = ({ job, onApply, onSave, showActions = true, isApplied = false }
       )}
     </div>
   );
-};
+});
 
+JobCard.displayName = "JobCard";
 export default JobCard;
