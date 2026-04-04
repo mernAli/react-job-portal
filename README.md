@@ -2756,3 +2756,146 @@ src/
 > When the React Compiler is enabled, it performs automatic memoization more accurately than manual `useCallback`. Conflicts between manual dependency arrays and compiler inference are a sign to trust the compiler. The right approach is: use `React.memo` for component-level optimization, let the compiler handle hook-level optimization, and move static data outside components to prevent unnecessary recreation.
  
 ---
+
+## ✅ Day 34 – Security & Stability
+ 
+**Objective:** Make the frontend production-safe with route protection, error boundaries, session expiration handling, and secure token management.
+ 
+---
+ 
+### 🧠 Concepts Learned
+ 
+**Route Protection**
+Upgraded `RoleRoute` to redirect unauthorized users to a dedicated `/app/unauthorized` page instead of silently sending them to their dashboard. This gives users a clear explanation of why they cannot access a page — showing their current role and email — rather than a confusing silent redirect.
+ 
+**Error Boundaries**
+Enhanced the existing `ErrorBoundary` with a "Try Again" button that resets the error state without a full page reload, dev-only error details panel, and a custom fallback prop for flexible rendering. Added a new `SectionErrorBoundary` class component that isolates crashes to individual dashboard sections — if one section fails, the rest of the page continues to work normally.
+ 
+**Session Expiration**
+Implemented two layers of session expiry detection. The first is API-triggered — when the backend returns a 401, the Axios response interceptor fires a `session:expired` CustomEvent instead of directly redirecting, allowing React to handle it cleanly with a toast notification. The second is inactivity-based — `useSessionTimeout` tracks six user activity events and automatically logs out after 30 minutes of no interaction.
+ 
+**Secure Token Handling**
+Added token expiry management to `utils/auth.js` with `setTokenExpiry`, `isTokenExpired`, `getTokenTimeRemaining`, and `isSessionValid` helper functions. The Axios request interceptor now checks token expiry before every API call and fires `session:expired` if the token has passed its expiry time — preventing stale tokens from reaching the backend.
+ 
+---
+ 
+### 🛠 Practical Implementation
+ 
+**`utils/auth.js` — Updated**
+Four new token expiry helpers added:
+- `setTokenExpiry(hours)` — saves expiry timestamp to localStorage on login
+- `isTokenExpired()` — compares current time against stored expiry
+- `getTokenTimeRemaining()` — returns minutes remaining on token
+- `isSessionValid()` — combined check: token exists AND not expired
+ 
+**`services/api.js` — Updated**
+- Request interceptor checks `tokenExpiry` in localStorage before every request — fires `session:expired` CustomEvent if expired
+- Response interceptor 401 case now fires `session:expired` CustomEvent instead of directly calling `localStorage.clear()` and `window.location.href`
+- Response interceptor 403 case fires `session:forbidden` CustomEvent
+- Using CustomEvents instead of direct redirects lets React handle navigation cleanly with toast notifications
+ 
+**`context/AuthProvider.jsx` — Updated**
+- `setTokenExpiry(24)` called after successful login and register — token valid for 24 hours
+- `logout` function now clears `tokenExpiry` from localStorage alongside other auth keys
+ 
+**`hooks/useSessionTimeout.js` — New**
+- Accepts `timeoutMinutes`, `onTimeout`, and `enabled` props
+- Tracks six activity events: `mousedown`, `mousemove`, `keydown`, `scroll`, `touchstart`, `click`
+- Uses `passive: true` event listeners for performance
+- Timer resets on every activity event
+- Only active when `enabled` is true (i.e. user is logged in)
+- Full cleanup on unmount — clears timer and removes all event listeners
+- `getInactiveMinutes()` utility for debugging
+ 
+**`layouts/AppLayout.jsx` — Updated**
+- `useSessionTimeout` wired with 30-minute timeout
+- `handleSessionTimeout` defined before hook call to avoid reference issues
+- `useEffect` listens for `session:expired` and `session:forbidden` CustomEvents
+- Both events handled with toast notification before navigation
+- Event listeners cleaned up on unmount
+ 
+**`components/ErrorBoundary.jsx` — Updated**
+- Full-page boundary: "Try Again" resets state without reload, "Refresh Page" reloads
+- Dev-only `<details>` panel shows error stack in development mode
+- `fallback` prop support for custom error UI
+- New `SectionErrorBoundary` named export — renders children directly (no wrapper div) to avoid layout interference, shows red error box only when crashed
+- `handleReset` method on full boundary for state recovery
+ 
+**`pages/Unauthorized.jsx` — New**
+- Clean 403 page with lock icon
+- Shows current user's role and email
+- "Go to My Dashboard" button uses `getDashboardPath` for role-aware redirect
+- "Go Back" button uses `navigate(-1)`
+- Handles unauthenticated state (shows "Log In" button instead)
+ 
+**`route/RoleRoute.jsx` — Updated**
+- Redirects to `/app/unauthorized` instead of `getDashboardPath` when role not allowed
+- Gives users a clear 403 explanation instead of a silent redirect
+ 
+**`App.jsx` — Updated**
+- `Unauthorized` lazy import added
+- `/unauthorized` route registered
+- `browse-jobs` route fixed: removed `"employer"` from `allowedRoles` — employers were incorrectly able to access candidate-only pages
+ 
+---
+ 
+### 🐛 Bugs Fixed
+ 
+**Bug 1 — Employer could access /app/browse-jobs**
+`allowedRoles` in App.jsx incorrectly included `"employer"` for the browse-jobs route. Fixed by changing to `["candidate", "admin"]` only.
+ 
+**Bug 2 — Session timeout not firing**
+`handleSessionTimeout` was defined after `useSessionTimeout` was called in `AppLayout.jsx`. Arrow functions are not hoisted — the hook received an undefined callback. Fixed by moving `handleSessionTimeout` definition above the hook call.
+ 
+**Bug 3 — AppLayout padding broke Home and Jobs responsiveness**
+New `AppLayout.jsx` added `p-4 lg:p-6` to the `<main>` tag which conflicted with `Home.jsx` and `Jobs.jsx` internal width constraints. Fixed by removing padding from `<main>` and letting pages manage their own spacing.
+ 
+---
+ 
+### 📁 Files Created / Modified
+ 
+```
+src/
+├── utils/
+│   └── auth.js                     ← UPDATED: 4 token expiry helpers
+├── services/
+│   └── api.js                      ← UPDATED: CustomEvents + expiry check
+├── context/
+│   └── AuthProvider.jsx            ← UPDATED: setTokenExpiry on login/register
+├── hooks/
+│   └── useSessionTimeout.js        ← NEW
+├── layouts/
+│   └── AppLayout.jsx               ← UPDATED: session timeout + event listeners
+├── components/
+│   └── ErrorBoundary.jsx           ← UPDATED: enhanced + SectionErrorBoundary
+├── pages/
+│   └── Unauthorized.jsx            ← NEW
+├── route/
+│   └── RoleRoute.jsx               ← UPDATED: redirects to /unauthorized
+└── App.jsx                         ← UPDATED: Unauthorized route + browse-jobs fix
+```
+ 
+---
+ 
+### ✅ Deliverables Completed
+ 
+- ✅ Token expiry set on login, checked before every API call
+- ✅ All auth data including tokenExpiry cleared on logout
+- ✅ session:expired CustomEvent fires on 401 or expired token
+- ✅ session:forbidden CustomEvent fires on 403
+- ✅ Session expired toast shown before redirect to login
+- ✅ useSessionTimeout hook — 30 min inactivity auto logout
+- ✅ ErrorBoundary enhanced with Try Again + dev error panel
+- ✅ SectionErrorBoundary isolates section crashes
+- ✅ Dashboards wrapped with SectionErrorBoundary
+- ✅ Unauthorized page (403) with role and email display
+- ✅ RoleRoute redirects to /unauthorized
+- ✅ Employer correctly blocked from browse-jobs
+ 
+---
+ 
+### 🔑 Key Takeaway
+ 
+> Production security requires multiple layers — a token expiry check in the request interceptor catches stale tokens before they hit the backend, a 401 handler catches tokens rejected by the backend, and an inactivity timeout catches sessions where the user walked away. Using CustomEvents instead of direct `window.location.href` redirects lets React handle navigation cleanly with user-facing feedback like toast notifications.
+ 
+---
