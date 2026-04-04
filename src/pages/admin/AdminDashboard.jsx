@@ -13,6 +13,8 @@ import {
   fetchPlatformActivity,
   updateUserStatus,
 } from "../../services/adminService";
+import { SectionErrorBoundary } from "../../components/ErrorBoundary";
+
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -120,6 +122,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Grid */}
+      <SectionErrorBoundary>
       {statsLoading ? (
         <div className="flex items-center justify-center h-32">
           <Loader size="md" />
@@ -133,8 +136,10 @@ const AdminDashboard = () => {
           ))}
         </div>
       )}
+      </SectionErrorBoundary>
 
       {/* Recent Users Table */}
+      <SectionErrorBoundary>
       <div className={`${theme.cardBg} rounded-xl ${theme.border} border`}>
         <div className={`p-4 sm:p-6 border-b ${theme.border} flex items-center justify-between`}>
           <div>
@@ -270,8 +275,10 @@ const AdminDashboard = () => {
           </>
         )}
       </div>
+      </SectionErrorBoundary>
 
       {/* Platform Activity */}
+      <SectionErrorBoundary>
       <div className={`${theme.cardBg} rounded-xl ${theme.border} border`}>
         <div className={`p-4 sm:p-6 border-b ${theme.border}`}>
           <h2 className={`text-base sm:text-lg font-semibold ${theme.textPrimary}`}>
@@ -302,6 +309,7 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+      </SectionErrorBoundary>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

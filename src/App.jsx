@@ -39,6 +39,7 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"))
 const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 
 // Layouts (don't lazy load these)
 import AppLayout from "./layouts/AppLayout";
@@ -98,7 +99,7 @@ function App() {
                     <Route 
                       path="browse-jobs" 
                       element={
-                        <RoleRoute allowedRoles={["candidate", "admin", "employer"]}>
+                        <RoleRoute allowedRoles={["admin", "employer"]}>
                           <BrowseJobs />
                         </RoleRoute>
                       }
@@ -211,6 +212,8 @@ function App() {
                     <Route path="payment-success" element={<PaymentSuccess />} />
                   </Route>
 
+                  {/* Unauthorized */}
+                  <Route path="/unauthorized" element={<Unauthorized />} />
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

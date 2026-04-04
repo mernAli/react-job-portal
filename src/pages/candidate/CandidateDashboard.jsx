@@ -10,6 +10,8 @@ import {
   fetchRecommendedJobs,
 } from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
+import { SectionErrorBoundary } from "../../components/ErrorBoundary.jsx";
+
 
 const CandidateDashboard = () => {
   const { user } = useAuth();
@@ -103,6 +105,7 @@ const CandidateDashboard = () => {
       </div>
 
       {/* Statistics Cards Grid */}
+      <SectionErrorBoundary>
       {statsLoading ? (
         <div className="flex items-center justify-center h-32">
           <Loader size="md" />
@@ -116,10 +119,12 @@ const CandidateDashboard = () => {
           ))}
         </div>
       )}
+      </SectionErrorBoundary>
 
       {/* Two Column Layout — UNCHANGED STRUCTURE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Applications */}
+        <SectionErrorBoundary>
         <div className={`lg:col-span-2 ${theme.cardBg} rounded-xl ${theme.border} border`}>
           <div className={`p-6 ${theme.border} border-b`}>
             <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
@@ -175,8 +180,10 @@ const CandidateDashboard = () => {
             </button>
           </div>
         </div>
+        </SectionErrorBoundary>
 
         {/* Recommended Jobs */}
+        <SectionErrorBoundary>
         <div className={`${theme.cardBg} rounded-xl ${theme.border} border`}>
           <div className={`p-6 ${theme.border} border-b`}>
             <h2 className={`text-lg font-semibold ${theme.textPrimary}`}>
@@ -211,6 +218,7 @@ const CandidateDashboard = () => {
             </div>
           )}
         </div>
+        </SectionErrorBoundary>
       </div>
 
       {/* Profile Completion — UNCHANGED */}

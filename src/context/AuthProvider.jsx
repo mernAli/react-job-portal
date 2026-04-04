@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 import { loginUser, registerUser } from "../services/authService";
+import { clearAuth, setTokenExpiry } from "../utils/auth";
 
 export const AuthProvider = ({ children }) => {
 
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("userRole", data.user.role);
       localStorage.setItem("userName", data.user.name);
 
+      setTokenExpiry(24)
       setUser(data.user);
       return { success: true, role: data.user.role };
 
@@ -74,6 +76,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("userEmail", data.user.email);
       localStorage.setItem("userRole", data.user.role);
 
+      setTokenExpiry(24);
       setUser(data.user);
       return { success: true, role: data.user.role };
 
@@ -90,10 +93,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
+   clearAuth();
+   localStorage.removeItem("tokenExpiry")
     setUser(null);
     setAuthError(null);
   };

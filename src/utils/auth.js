@@ -10,7 +10,6 @@ export const getStoredUser = () => {
   const name = localStorage.getItem("userName");
   const email = localStorage.getItem("userEmail");
   const role = localStorage.getItem("userRole");
-
   if (!token || !email || !role) return null;
   return { name, email, role, token };
 };
@@ -26,11 +25,37 @@ export const clearAuth = () => {
 // Get role-based redirect path
 export const getRoleRedirectPath = (role) => {
   switch (role) {
-    case "employer":
-      return "/app";
-    case "candidate":
-      return "/app";
-    default:
-      return "/app";
+    case "employer":  return "/app";
+    case "candidate": return "/app";
+    default:          return "/app";
   }
+};
+
+// ── NEW: Token expiry helpers ──────────────────────────
+
+// Save token expiry time (call after login)
+// Default: 24 hours from now
+export const setTokenExpiry = (hoursFromNow = 24) => {
+  const expiry = Date.now() + hoursFromNow * 60 * 60 * 1000;
+  localStorage.setItem("tokenExpiry", expiry.toString());
+};
+
+// Check if token has expired
+export const isTokenExpired = () => {
+  const expiry = localStorage.getItem("tokenExpiry");
+  if (!expiry) return false; // No expiry set — treat as valid
+  return Date.now() > parseInt(expiry);
+};
+
+// Get time remaining on token in minutes
+export const getTokenTimeRemaining = () => {
+  const expiry = localStorage.getItem("tokenExpiry");
+  if (!expiry) return null;
+  const remaining = parseInt(expiry) - Date.now();
+  return remaining > 0 ? Math.floor(remaining / 60000) : 0;
+};
+
+// Full session validity check — token exists AND not expired
+export const isSessionValid = () => {
+  return isAuthenticated() && !isTokenExpired();
 };

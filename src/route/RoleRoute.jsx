@@ -21,7 +21,9 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
 
   // If role not allowed → redirect to their own dashboard
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={getDashboardPath(user.role)} replace />;
+      
+    // ✅ Show 403 page instead of silently redirecting
+    return <Navigate to='/unauthorized' replace />;
   }
 
   return children;
