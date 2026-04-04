@@ -166,11 +166,11 @@ const Home = () => {
         <Sidebar />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
 
         {/* MAIN FEED */}
-        <main className="flex-1 min-w-0 w-full">
-          <div className="flex flex-col gap-4">
+        <main className="flex-1 min-w-0 sm:w-100 w-70">
+          <div className="flex flex-col gap-4 ">
             {feed.map((job) => (
               <div
                 key={job.id}

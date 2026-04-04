@@ -1,19 +1,26 @@
 import axios from "axios";
 
-// 1. Create a configured axios instance
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 10000, // Cancel request if no response in 10 seconds
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 2. REQUEST INTERCEPTOR
-// Runs before every request — attaches auth token automatically
+// REQUEST INTERCEPTOR
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+
+    // ✅ Check token expiry before every request
+    const tokenExpiry = localStorage.getItem("tokenExpiry");
+    if (tokenExpiry && Date.now() > parseInt(tokenExpiry)) {
+      // Token expired — trigger session expiry
+      window.dispatchEvent(new CustomEvent("session:expired"));
+      return Promise.reject(new Error("Session expired"));
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,20 +29,20 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 3. RESPONSE INTERCEPTOR
-// Runs after every response — handles errors globally
+// RESPONSE INTERCEPTOR
 api.interceptors.response.use(
-  (response) => response, // Success — just return it
+  (response) => response,
   (error) => {
     if (error.response) {
-      // Server responded with 4xx or 5xx
       switch (error.response.status) {
         case 401:
-          // Unauthorized — clear storage and redirect to login
-          localStorage.clear();
-          window.location.href = "/login";
+          // ✅ Dispatch custom event instead of direct redirect
+          // This lets AuthProvider handle it cleanly with toast
+          window.dispatchEvent(new CustomEvent("session:expired"));
           break;
         case 403:
+          // ✅ Dispatch forbidden event
+          window.dispatchEvent(new CustomEvent("session:forbidden"));
           console.error("Access forbidden");
           break;
         case 404:
@@ -46,13 +53,10 @@ api.interceptors.response.use(
           break;
       }
     } else if (error.request) {
-      // Request was made but no response received (network error)
       console.error("Network error - no response received");
     } else {
-      // Something else happened
       console.error("Request setup error:", error.message);
     }
-
     return Promise.reject(error);
   }
 );

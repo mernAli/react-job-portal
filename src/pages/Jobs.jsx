@@ -246,7 +246,7 @@ const Jobs = () => {
 }
 
   return (
-    <div className={`min-h-screen lg:pb-0 w-90 lg:w-200 sm:w-160 ${theme.bg}`}>
+    <div className={`min-h-screen lg:pb-0 w-70 lg:w-200 sm:w-160 ${theme.bg}`}>
       {/* Desktop Sidebar */}
       <SideBarJobs onPreferencesClick={() => setIsPreferencesOpen(true)} />
       
@@ -298,8 +298,8 @@ const Jobs = () => {
           {/* Header */}
           <div className="mb-6 lg:w-200 w-80 sm:w-150">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex-1">
-                <h1 className={`text-3xl lg:text-2xl font-bold ${theme.textPrimary}`}>
+              <div className="flex-1 ">
+                <h1 className={`text-3xl  lg:text-2xl font-bold ${theme.textPrimary}`}>
                   Top job picks for you
                 </h1>
                 {userPreferences && (
