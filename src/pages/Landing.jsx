@@ -13,10 +13,7 @@ const Landing = () => {
   const featuresRef = useRef(null);
   const contactsRef = useRef(null);
 
-
-  console.log("Landing Loaded");
   
-
   return (
 
     <main className='relative bg-slate-900 text-white min-h-screen overflow-hidden'>

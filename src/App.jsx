@@ -99,7 +99,7 @@ function App() {
                     <Route 
                       path="browse-jobs" 
                       element={
-                        <RoleRoute allowedRoles={["admin", "employer"]}>
+                        <RoleRoute allowedRoles={["admin", "candidate"]}>
                           <BrowseJobs />
                         </RoleRoute>
                       }
