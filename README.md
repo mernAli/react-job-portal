@@ -6,7 +6,7 @@ A production-grade job portal web application built with React, Vite, and Tailwi
  
 ## 🚀 Live Demo
  
-**Vercel:** [your-vercel-url.vercel.app]
+**Vercel:** [https://react-job-portal-ohsk.vercel.app/]
  
 **Test Accounts:**
 | Role      | Email                  | Password     |
