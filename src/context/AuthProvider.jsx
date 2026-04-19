@@ -1,107 +1,52 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { AuthContext } from "./AuthContext";
-import { loginUser, registerUser } from "../services/authService";
-import { clearAuth, setTokenExpiry } from "../utils/auth";
+import {
+  loginThunk,
+  registerThunk,
+  logout as logoutAction,
+  restoreSession,
+  clearAuthError,
+} from "../store/authSlice";
 
 export const AuthProvider = ({ children }) => {
+  const dispatch    = useDispatch();
+  const user        = useSelector((state) => state.auth.user);
+  const token       = useSelector((state) => state.auth.token);
+  const authLoading = useSelector((state) => state.auth.authLoading);
+  const authError   = useSelector((state) => state.auth.authError);
 
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true); // true on first load
-  const [authError, setAuthError] = useState(null);
-
-  // Restore session on app load
+  // Restore session from localStorage on app load
   useEffect(() => {
-    const restoreSession = () => {
-      try {
-        const token = localStorage.getItem("token");
-        const name = localStorage.getItem("userName");
-        const email = localStorage.getItem("userEmail");
-        const role = localStorage.getItem("userRole");
+    dispatch(restoreSession());
+  }, [dispatch]);
 
-        if (token && email && role) {
-          setUser({ name, email, role, token });
-        }
-      } catch (error) {
-        // If anything goes wrong, clear corrupted storage
-        localStorage.clear();
-        console.log('Error occured : ', error);
-        
-      } finally {
-        setAuthLoading(false); // Always stop loading
-      }
-    };
-
-    restoreSession();
-  }, []);
-
+  // Login — dispatches thunk, returns { success, role } for components
   const login = async (email, password) => {
-    try {
-      setAuthLoading(true);
-      setAuthError(null);
-
-      const data = await loginUser(email, password);
-
-      // Save to localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userEmail", data.user.email);
-      localStorage.setItem("userRole", data.user.role);
-      localStorage.setItem("userName", data.user.name);
-
-      setTokenExpiry(24)
-      setUser(data.user);
-      return { success: true, role: data.user.role };
-
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        "Login failed. Please try again.";
-      setAuthError(message);
-      return { success: false, message };
-    } finally {
-      setAuthLoading(false);
+    const result = await dispatch(loginThunk({ email, password }));
+    if (loginThunk.fulfilled.match(result)) {
+      return { success: true, role: result.payload.user.role };
     }
+    return { success: false, message: result.payload };
   };
 
+  // Register — dispatches thunk
   const register = async (name, email, password, role) => {
-    try {
-      setAuthLoading(true);
-      setAuthError(null);
-
-      const data = await registerUser(name, email, password, role);
-
-      // Save to localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userName", data.user.name);
-      localStorage.setItem("userEmail", data.user.email);
-      localStorage.setItem("userRole", data.user.role);
-
-      setTokenExpiry(24);
-      setUser(data.user);
-      return { success: true, role: data.user.role };
-
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        "Registration failed. Please try again.";
-      setAuthError(message);
-      return { success: false, message };
-    } finally {
-      setAuthLoading(false);
+    const result = await dispatch(registerThunk({ name, email, password, role }));
+    if (registerThunk.fulfilled.match(result)) {
+      return { success: true, role: result.payload.user.role };
     }
+    return { success: false, message: result.payload };
   };
 
+  // Logout — dispatches action
   const logout = () => {
-   clearAuth();
-   localStorage.removeItem("tokenExpiry")
-    setUser(null);
-    setAuthError(null);
+    dispatch(logoutAction());
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, logout, authLoading, authError }}
+      value={{ user, token, login, register, logout, authLoading, authError }}
     >
       {children}
     </AuthContext.Provider>
