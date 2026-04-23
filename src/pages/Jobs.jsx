@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchJobs } from "../services/JobService";
 import { useTheme } from "../context/ThemeContext";
 import Loader from "../ui/Loader";
@@ -7,6 +7,11 @@ import { useToast } from "../ui/toast/useToast";
 import SideBarJobs from "../components/Dashboard/SideBarJobs";
 import PreferencesModal from "../components/Jobs/PreferencesModal";
 import { useNavigate } from "react-router-dom";
+import useCache from "../hooks/useCache";
+import useAutoRefresh from "../hooks/useAutoRefresh";
+
+// Cache key — shared with BrowseJobs so both pages use the same cached data
+const JOBS_CACHE_KEY = "browse-jobs";
 
 const Jobs = () => {
   const { theme } = useTheme();
@@ -18,22 +23,23 @@ const Jobs = () => {
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
   const [userPreferences, setUserPreferences] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [lastRefreshed, setLastRefreshed] = useState(null);
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
+  // Cache hook — 60 second TTL, same key as BrowseJobs
+  const { getCache, setCache, isFresh, invalidate } = useCache(60000);
 
   useEffect(() => {
     loadJobs();
     // Load saved preferences from localStorage
-    const savedPreferences = localStorage.getItem('jobPreferences');
+    const savedPreferences = localStorage.getItem("jobPreferences");
     if (savedPreferences) {
-      const parsed = JSON.parse(savedPreferences);
-      setUserPreferences(parsed);
+      setUserPreferences(JSON.parse(savedPreferences));
     }
   }, []);
 
   useEffect(() => {
-    // Apply preferences whenever they change
     if (userPreferences && jobs.length > 0) {
       applyPreferences();
     } else if (jobs.length > 0) {
@@ -41,17 +47,28 @@ const Jobs = () => {
     }
   }, [userPreferences, jobs]);
 
-  const loadJobs = async () => {
-    try {
-      setLoading(true);
+  // ── Load jobs with cache check ─────────────────────────
+  const loadJobs = useCallback(async (forceRefresh = false) => {
+    // Serve from cache if fresh and not a forced refresh
+    if (!forceRefresh && isFresh(JOBS_CACHE_KEY)) {
+      const cached = getCache(JOBS_CACHE_KEY);
+      if (cached) {
+        setJobs(cached);
+        setLoading(false);
+        return;
+      }
+    }
 
-      // Fetch and timer run in parallel
+    try {
+      // Only show full loader on first load
+      if (jobs.length === 0) setLoading(true);
+      setError(null);
+
       const [data] = await Promise.all([
         fetchJobs(),
         new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
 
-      // Transform API data
       const transformedJobs = data.map((job) => ({
         id: job.slug,
         title: job.title,
@@ -71,7 +88,7 @@ const Jobs = () => {
         salary: `${Math.floor(Math.random() * 50 + 50)}k - ${Math.floor(Math.random() * 50 + 100)}k`,
         skills: job.tags?.slice(0, 5) || [],
         applicationDeadline: new Date(
-          Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000,
+          Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000
         ).toLocaleDateString("en-US", {
           day: "numeric",
           month: "long",
@@ -79,19 +96,34 @@ const Jobs = () => {
         }),
         postedDate: new Date(job.created_at * 1000).toLocaleDateString(
           "en-US",
-          { day: "numeric", month: "long", year: "numeric" },
+          { day: "numeric", month: "long", year: "numeric" }
         ),
       }));
 
+      // Store in cache
+      setCache(JOBS_CACHE_KEY, transformedJobs);
       setJobs(transformedJobs);
-      setFilteredJobs(transformedJobs);
+      setLastRefreshed(new Date());
     } catch (error) {
       console.error("Error fetching jobs:", error);
-      showToast("Failed to load jobs", "error");
-      setError(error.message || "Failed to load jobs");
+      // Only show error on forced refresh or first load — silent on background
+      if (forceRefresh || jobs.length === 0) {
+        showToast("Failed to load jobs", "error");
+        setError(error.message || "Failed to load jobs");
+      }
     } finally {
       setLoading(false);
     }
+  }, [jobs.length, isFresh, getCache, setCache, showToast]);
+
+  // Auto-refresh every 60 seconds — silent background refresh
+  useAutoRefresh(() => loadJobs(true), 60000);
+
+  // ── Manual refresh ─────────────────────────────────────
+  const handleManualRefresh = () => {
+    invalidate(JOBS_CACHE_KEY);
+    loadJobs(true);
+    showToast("Jobs refreshed", "info");
   };
 
   const applyPreferences = () => {
@@ -102,73 +134,71 @@ const Jobs = () => {
 
     let filtered = [...jobs];
 
-    // Filter by job types
     if (userPreferences.jobTypes?.length > 0) {
-      filtered = filtered.filter(job =>
+      filtered = filtered.filter((job) =>
         userPreferences.jobTypes.includes(job.jobType)
       );
     }
 
-    // Filter by work modes
     if (userPreferences.workModes?.length > 0) {
-      filtered = filtered.filter(job =>
+      filtered = filtered.filter((job) =>
         userPreferences.workModes.includes(job.workMode)
       );
     }
 
-    // Filter by experience levels
     if (userPreferences.experienceLevels?.length > 0) {
       const experienceMap = {
         entry: "Entry Level",
         mid: "Mid Level",
         senior: "Senior Level",
       };
-      filtered = filtered.filter(job =>
+      filtered = filtered.filter((job) =>
         userPreferences.experienceLevels.some(
-          level => job.experience === experienceMap[level]
+          (level) => job.experience === experienceMap[level]
         )
       );
     }
 
-    // Filter by salary range
     if (userPreferences.salaryRange?.min || userPreferences.salaryRange?.max) {
-      filtered = filtered.filter(job => {
+      filtered = filtered.filter((job) => {
         const salaryMatch = job.salary?.match(/(\d+)k\s*-\s*(\d+)k/);
         if (!salaryMatch) return true;
-        
         const jobMin = parseInt(salaryMatch[1]) * 1000;
         const jobMax = parseInt(salaryMatch[2]) * 1000;
-        const prefMin = userPreferences.salaryRange.min ? parseInt(userPreferences.salaryRange.min) : 0;
-        const prefMax = userPreferences.salaryRange.max ? parseInt(userPreferences.salaryRange.max) : Infinity;
-        
+        const prefMin = userPreferences.salaryRange.min
+          ? parseInt(userPreferences.salaryRange.min)
+          : 0;
+        const prefMax = userPreferences.salaryRange.max
+          ? parseInt(userPreferences.salaryRange.max)
+          : Infinity;
         return jobMax >= prefMin && jobMin <= prefMax;
       });
     }
 
-    // Filter by skills
     if (userPreferences.skills?.length > 0) {
-      filtered = filtered.filter(job =>
-        userPreferences.skills.some(skill =>
-          job.skills?.some(jobSkill =>
-            jobSkill.toLowerCase().includes(skill.toLowerCase())
-          ) || job.tags?.some(tag =>
-            tag.toLowerCase().includes(skill.toLowerCase())
-          )
+      filtered = filtered.filter((job) =>
+        userPreferences.skills.some(
+          (skill) =>
+            job.skills?.some((jobSkill) =>
+              jobSkill.toLowerCase().includes(skill.toLowerCase())
+            ) ||
+            job.tags?.some((tag) =>
+              tag.toLowerCase().includes(skill.toLowerCase())
+            )
         )
       );
     }
 
-    // Filter by locations
     if (userPreferences.locations?.length > 0) {
-      filtered = filtered.filter(job =>
-        userPreferences.locations.some(location =>
+      filtered = filtered.filter((job) =>
+        userPreferences.locations.some((location) =>
           job.location?.toLowerCase().includes(location.toLowerCase())
         )
       );
     }
 
     setFilteredJobs(filtered);
-    setCurrentPage(1); // Reset to first page when preferences change
+    setCurrentPage(1);
   };
 
   const handleSearch = (e) => {
@@ -197,13 +227,13 @@ const Jobs = () => {
 
   const handleSavePreferences = (preferences) => {
     setUserPreferences(preferences);
-    localStorage.setItem('jobPreferences', JSON.stringify(preferences));
+    localStorage.setItem("jobPreferences", JSON.stringify(preferences));
     showToast("Preferences saved successfully!", "success");
   };
 
   const handleClearPreferences = () => {
     setUserPreferences(null);
-    localStorage.removeItem('jobPreferences');
+    localStorage.removeItem("jobPreferences");
     setFilteredJobs(jobs);
     setCurrentPage(1);
     showToast("Preferences cleared", "success");
@@ -213,12 +243,6 @@ const Jobs = () => {
     const job = jobs.find((j) => j.id === jobId);
     navigate(`/app/jobs/${jobId}`, { state: { job } });
   };
-
-  //  const handleCardClick = (job) => {
-  //   // Pass job data through navigation state for immediate display
-  //   navigate(`/app/jobs/${job.id}`, { state: { job } });
-  // };
-
 
   const jobsPerPage = 5;
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
@@ -235,21 +259,25 @@ const Jobs = () => {
   }
 
   if (error) {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <ApiError message={error} onRetry={() => {
-        setError(null);
-        loadJobs();
-      }} />
-    </div>
-  );
-}
+    return (
+      <div className="flex items-center justify-center h-64">
+        <ApiError
+          message={error}
+          onRetry={() => {
+            setError(null);
+            invalidate(JOBS_CACHE_KEY);
+            loadJobs(true);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen lg:pb-0 w-70 lg:w-200 sm:w-160 ${theme.bg}`}>
       {/* Desktop Sidebar */}
       <SideBarJobs onPreferencesClick={() => setIsPreferencesOpen(true)} />
-      
+
       {/* Preferences Modal */}
       <PreferencesModal
         isOpen={isPreferencesOpen}
@@ -259,10 +287,9 @@ const Jobs = () => {
       />
 
       {/* Mobile: Search Bar */}
-      <div className="lg:hidden px-4 py-4 flex items-center gap-3 lg:w-150 w-80 sm:w-170 h-25 mb-10"> 
+      <div className="lg:hidden px-4 py-4 flex items-center gap-3 lg:w-150 w-80 sm:w-170 h-25 mb-10">
         <div className="text-3xl mr-3">🔎︎</div>
         <div className="flex-1 relative">
-          
           <input
             type="text"
             placeholder="Search"
@@ -271,8 +298,7 @@ const Jobs = () => {
             className={`w-full text-center py-4 ${theme.cardBg} ${theme.textPrimary} rounded-3xl outline-none text-lg ${theme.shadow}`}
           />
         </div>
-
-        <button 
+        <button
           onClick={() => setIsPreferencesOpen(true)}
           className={`p-3 ${theme.cardBg} rounded-lg ${theme.shadow} flex-shrink-0`}
         >
@@ -295,11 +321,12 @@ const Jobs = () => {
       <div className="lg:flex lg:gap-6 lg:px-6">
         {/* Main Content */}
         <div className="flex-1 px-4 lg:px-0 lg:w-220 w-80 sm:w-150">
+
           {/* Header */}
           <div className="mb-6 lg:w-200 w-80 sm:w-150">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex-1 ">
-                <h1 className={`text-3xl  lg:text-2xl font-bold ${theme.textPrimary}`}>
+              <div className="flex-1">
+                <h1 className={`text-3xl lg:text-2xl font-bold ${theme.textPrimary}`}>
                   Top job picks for you
                 </h1>
                 {userPreferences && (
@@ -316,26 +343,45 @@ const Jobs = () => {
                   </div>
                 )}
               </div>
-              <div className={`${theme.primary} ${theme.secondaryText} px-3 lg:px-4 py-1.5 rounded-full text-xs lg:text-sm font-medium flex-shrink-0`}>
-                page {currentPage} of {totalPages}
+
+              {/* Right side — page indicator + refresh */}
+              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                <div className={`${theme.primary} ${theme.secondaryText} px-3 lg:px-4 py-1.5 rounded-full text-xs lg:text-sm font-medium`}>
+                  page {currentPage} of {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleManualRefresh}
+                    className={`px-2 py-1 text-xs ${theme.border} border rounded-lg ${theme.hover} ${theme.textSecondary} flex items-center gap-1`}
+                  >
+                    🔄 Refresh
+                  </button>
+                  {lastRefreshed && (
+                    <span className={`text-xs ${theme.textMuted}`}>
+                      {lastRefreshed.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+
             <p className={`text-xl lg:text-base ${theme.textSecondary} mt-2`}>
               Based on your profile, preference, and recent activity
             </p>
           </div>
 
-          {/* Job Cards */}
+          {/* Job Cards — unchanged */}
           <div className="space-y-4">
             {currentJobs.length > 0 ? (
               currentJobs.map((job) => (
-                
                 <div
                   key={job.id}
-                  
                   className={`${theme.cardBg} rounded-xl ${theme.shadow} p-4 lg:p-6 transition-transform hover:scale-[1.01] lg:w-200 w-80 sm:w-170`}
                 >
-                  <h3 className={`text-xl  lg:text-lg font-semibold ${theme.textPrimary} mb-3`}>
+                  <h3 className={`text-xl lg:text-lg font-semibold ${theme.textPrimary} mb-3`}>
                     {job.title}
                   </h3>
 
@@ -385,23 +431,31 @@ const Jobs = () => {
                     Posted On: {job.postedDate}
                   </p>
                 </div>
-               
               ))
             ) : (
               <div className={`${theme.cardBg} p-12 rounded-xl ${theme.shadow} text-center`}>
                 <div className="mb-4">
-                  <svg className={`w-16 h-16 ${theme.textMuted} mx-auto`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className={`w-16 h-16 ${theme.textMuted} mx-auto`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <p className={`${theme.textPrimary} text-lg font-semibold mb-2`}>
                   No jobs found
                 </p>
                 <p className={`${theme.textMuted} text-sm mb-4`}>
-                  {userPreferences 
+                  {userPreferences
                     ? "Try adjusting your preferences to see more opportunities"
-                    : "Try adjusting your search"
-                  }
+                    : "Try adjusting your search"}
                 </p>
                 {userPreferences && (
                   <button
@@ -415,7 +469,7 @@ const Jobs = () => {
             )}
           </div>
 
-          {/* Pagination */}
+          {/* Pagination — unchanged */}
           {totalPages > 1 && currentJobs.length > 0 && (
             <div className="flex justify-center items-center gap-2 mt-8 lg:w-200 w-80 sm:w-170 mb-10 overflow-x-auto px-4 lg:px-0">
               <button
@@ -456,7 +510,7 @@ const Jobs = () => {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation — unchanged */}
       <div className={`lg:hidden fixed bottom-0 left-0 right-0 ${theme.primary} border-t ${theme.border} z-50`}>
         <div className="flex items-center justify-around py-3 px-2">
           <button className="flex flex-col items-center gap-1 text-white opacity-60">
@@ -465,29 +519,23 @@ const Jobs = () => {
             </svg>
             <span className="text-[10px]">Home</span>
           </button>
-
           <button className="flex flex-col items-center gap-1 text-white opacity-60">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
             </svg>
             <span className="text-[10px]">My Network</span>
           </button>
-
           <button className="flex flex-col items-center gap-1 relative text-white opacity-60">
-            <div className="relative">
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-              </svg>
-            </div>
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+            </svg>
           </button>
-
           <button className="flex flex-col items-center gap-1 text-white opacity-60">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
             </svg>
             <span className="text-[10px]">Notification</span>
           </button>
-
           <button className="flex flex-col items-center gap-1 text-white opacity-100">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path

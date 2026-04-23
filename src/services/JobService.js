@@ -18,7 +18,6 @@ export const fetchJobById = async (jobId) => {
 
 // POST /jobs/:id/apply
 export const applyJob = async (jobId, applicantData) => {
-  // When real backend is ready, uncomment:
   // const response = await api.post(`/jobs/${jobId}/apply`, applicantData);
   // return response.data;
 
@@ -39,11 +38,84 @@ export const applyJob = async (jobId, applicantData) => {
   });
 };
 
+// GET /candidate/applications — fetch current user's applications
+export const fetchMyApplications = async () => {
+  // const response = await api.get("/candidate/applications");
+  // return response.data;
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: 1,
+          jobTitle: "Senior React Developer",
+          company: "Tech Solutions Inc.",
+          location: "Remote",
+          appliedDate: "2026-02-08",
+          status: "Under Review",
+          salary: "$80k - $120k",
+        },
+        {
+          id: 2,
+          jobTitle: "Frontend Engineer",
+          company: "StartupXYZ",
+          location: "San Francisco, CA",
+          appliedDate: "2026-02-06",
+          status: "Interview Scheduled",
+          salary: "$90k - $130k",
+        },
+        {
+          id: 3,
+          jobTitle: "Full Stack Developer",
+          company: "InnovateCorp",
+          location: "New York, NY",
+          appliedDate: "2026-02-04",
+          status: "Rejected",
+          salary: "$85k - $125k",
+        },
+        {
+          id: 4,
+          jobTitle: "UI/UX Designer",
+          company: "Creative Agency",
+          location: "Remote",
+          appliedDate: "2026-02-02",
+          status: "Under Review",
+          salary: "$70k - $100k",
+        },
+        {
+          id: 5,
+          jobTitle: "Product Manager",
+          company: "Tech Ventures",
+          location: "Boston, MA",
+          appliedDate: "2026-01-30",
+          status: "Offer Received",
+          salary: "$100k - $150k",
+        },
+      ]);
+    }, 800);
+  });
+};
+
+// DELETE /candidate/applications/:id — withdraw an application
+export const withdrawApplication = async (applicationId) => {
+  // const response = await api.delete(`/candidate/applications/${applicationId}`);
+  // return response.data;
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (applicationId) {
+        resolve({ success: true, applicationId });
+      } else {
+        reject(new Error("Invalid application ID"));
+      }
+    }, 800);
+  });
+};
+
 // ─── EMPLOYER ────────────────────────────────────────────
 
 // POST /jobs — create a new job
 export const createJob = async (jobData) => {
-  // When real backend is ready, uncomment:
   // const response = await api.post("/jobs", jobData);
   // return response.data;
 
@@ -70,7 +142,6 @@ export const createJob = async (jobData) => {
 
 // PUT /jobs/:id — update existing job
 export const updateJob = async (jobId, jobData) => {
-  // When real backend is ready, uncomment:
   // const response = await api.put(`/jobs/${jobId}`, jobData);
   // return response.data;
 
@@ -95,7 +166,6 @@ export const updateJob = async (jobId, jobData) => {
 
 // DELETE /jobs/:id
 export const deleteJob = async (jobId) => {
-  // When real backend is ready, uncomment:
   // const response = await api.delete(`/jobs/${jobId}`);
   // return response.data;
 

@@ -11,6 +11,11 @@ import useJobFilters from "../../hooks/useJobFilters.js";
 import usePagination from "../../hooks/usePagination.js";
 import useNotifications from "../../context/useNotifications.js";
 import { NOTIF_TYPES } from "../../context/NotificationContext.jsx";
+import useCache from "../../hooks/useCache.js";
+import useAutoRefresh from "../../hooks/useAutoRefresh.js";
+
+// Cache key for jobs data
+const JOBS_CACHE_KEY = "browse-jobs";
 
 const BrowseJobs = () => {
   const { theme } = useTheme();
@@ -18,8 +23,12 @@ const BrowseJobs = () => {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("latest");
   const [appliedJobs, setAppliedJobs] = useState([]);
+  const [lastRefreshed, setLastRefreshed] = useState(null);
   const { showToast } = useToast();
   const { addNotification } = useNotifications();
+
+  // Cache hook — jobs stay fresh for 60 seconds
+  const { getCache, setCache, isFresh, invalidate } = useCache(60000);
 
   const {
     filters,
@@ -31,7 +40,6 @@ const BrowseJobs = () => {
     removeFilter,
   } = useJobFilters(jobs);
 
-  // ✅ useMemo — sortedJobs only recalculated when filteredJobs or sortBy changes
   const sortedJobs = useMemo(() => {
     return [...filteredJobs].sort((a, b) => {
       switch (sortBy) {
@@ -55,7 +63,6 @@ const BrowseJobs = () => {
     });
   }, [filteredJobs, sortBy]);
 
-  // Pagination — receives sortedJobs so it always paginates the correct list
   const {
     currentPage,
     totalPages,
@@ -69,13 +76,22 @@ const BrowseJobs = () => {
     summaryText,
   } = usePagination(sortedJobs, 10);
 
-  useEffect(() => {
-    loadJobs();
-  }, []);
+  // ── Load jobs with cache check ─────────────────────────
+  const loadJobs = useCallback(async (forceRefresh = false) => {
+    // Serve from cache if fresh and not a forced refresh
+    if (!forceRefresh && isFresh(JOBS_CACHE_KEY)) {
+      const cached = getCache(JOBS_CACHE_KEY);
+      if (cached) {
+        setJobs(cached);
+        setLoading(false);
+        return;
+      }
+    }
 
-  const loadJobs = async () => {
     try {
-      setLoading(true);
+      // Only show full loader on first load — background refreshes are silent
+      if (jobs.length === 0) setLoading(true);
+
       const data = await fetchJobs();
       const transformedJobs = data.map((job) => ({
         id: job.slug,
@@ -98,53 +114,74 @@ const BrowseJobs = () => {
         skills: job.tags?.slice(0, 5) || [],
         postedDate: new Date(job.created_at * 1000).toISOString(),
       }));
+
+      // Store in cache
+      setCache(JOBS_CACHE_KEY, transformedJobs);
       setJobs(transformedJobs);
+      setLastRefreshed(new Date());
     } catch (error) {
       console.error("Error fetching jobs:", error);
-      showToast("Failed to load jobs", "error");
+      // Only show error toast on forced refresh — silent fail on background refresh
+      if (forceRefresh || jobs.length === 0) {
+        showToast("Failed to load jobs", "error");
+      }
     } finally {
       setLoading(false);
     }
+  }, [jobs.length, isFresh, getCache, setCache, showToast]);
+
+  // Initial load
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  // Auto-refresh every 60 seconds — background, silent
+  useAutoRefresh(() => loadJobs(true), 60000);
+
+  // ── Manual refresh ─────────────────────────────────────
+  const handleManualRefresh = () => {
+    invalidate(JOBS_CACHE_KEY);
+    loadJobs(true);
+    showToast("Jobs refreshed", "info");
   };
 
-  // ✅ useCallback — stable reference, JobCard memo works correctly
-const handleApply = useCallback(async (jobId) => {
-  const job = jobs.find((j) => j.id === jobId);
-  if (appliedJobs.includes(jobId)) {
-    showToast("You have already applied to this job!", "info");
-    return;
-  }
-  try {
-    setAppliedJobs((prev) => [...prev, jobId]);
-    const result = await applyJob(jobId, {
-      jobId,
-      jobTitle: job?.title,
-      company: job?.company,
-      appliedAt: new Date().toISOString(),
-    });
-    showToast(result.message, "success");
-    addNotification(
-      NOTIF_TYPES.JOB_APPLIED,
-      "Application Submitted",
-      `You successfully applied for ${job?.title} at ${job?.company}.`
-    );
-  } catch (error) {
-    setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
-    showToast(error.message || "Failed to apply.", "error");
-  }
-}, [jobs, appliedJobs, showToast, addNotification]);
+  // ── Apply ──────────────────────────────────────────────
+  const handleApply = useCallback(async (jobId) => {
+    const job = jobs.find((j) => j.id === jobId);
+    if (appliedJobs.includes(jobId)) {
+      showToast("You have already applied to this job!", "info");
+      return;
+    }
+    try {
+      // Optimistic update
+      setAppliedJobs((prev) => [...prev, jobId]);
+      const result = await applyJob(jobId, {
+        jobId,
+        jobTitle: job?.title,
+        company: job?.company,
+        appliedAt: new Date().toISOString(),
+      });
+      showToast(result.message, "success");
+      addNotification(
+        NOTIF_TYPES.JOB_APPLIED,
+        "Application Submitted",
+        `You successfully applied for ${job?.title} at ${job?.company}.`
+      );
+    } catch (error) {
+      // Revert on failure
+      setAppliedJobs((prev) => prev.filter((id) => id !== jobId));
+      showToast(error.message || "Failed to apply.", "error");
+    }
+  }, [jobs, appliedJobs, showToast, addNotification]);
 
-// ✅ useCallback — stable reference
-const handleSave = useCallback((jobId) => {
-  const job = jobs.find((j) => j.id === jobId);
-  showToast(`${job?.title} saved to your list`, "success");
-}, [jobs, showToast]);
+  const handleSave = useCallback((jobId) => {
+    const job = jobs.find((j) => j.id === jobId);
+    showToast(`${job?.title} saved to your list`, "success");
+  }, [jobs, showToast]);
 
-// ✅ useCallback — stable reference
-const handleSort = useCallback((value) => {
-  setSortBy(value);
-}, []);
-
+  const handleSort = useCallback((value) => {
+    setSortBy(value);
+  }, []);
 
   if (loading) {
     return (
@@ -158,22 +195,34 @@ const handleSort = useCallback((value) => {
     <div>
       <SidebarJobs />
 
-      {/* Header — UNCHANGED */}
-      <div
-        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
-      >
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
-          Browse Jobs
-        </h1>
-        <p className={`${theme.textSecondary} mt-2`}>
-          Discover {sortedJobs.length} opportunities that match your skills
-        </p>
+      {/* Header */}
+      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>Browse Jobs</h1>
+            <p className={`${theme.textSecondary} mt-2`}>
+              Discover {sortedJobs.length} opportunities that match your skills
+            </p>
+          </div>
+          {/* Manual refresh button + last updated time */}
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={handleManualRefresh}
+              className={`px-3 py-1.5 text-xs ${theme.border} border rounded-lg ${theme.hover} ${theme.textSecondary} flex items-center gap-1`}
+            >
+              🔄 Refresh
+            </button>
+            {lastRefreshed && (
+              <span className={`text-xs ${theme.textMuted}`}>
+                Updated {lastRefreshed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Search and Sort Bar — UNCHANGED */}
-      <div
-        className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}
-      >
+      {/* Search and Sort Bar */}
+      <div className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border mb-6`}>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -190,19 +239,14 @@ const handleSort = useCallback((value) => {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
           <div className="w-full md:w-48">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => handleSort(e.target.value)}
               className={`w-full px-4 py-3 ${theme.border} border rounded-lg ${theme.focus} ${theme.textPrimary} ${theme.cardBg} text-sm outline-none`}
             >
               <option value="latest">Latest First</option>
@@ -213,7 +257,7 @@ const handleSort = useCallback((value) => {
           </div>
         </div>
 
-        {/* Results Count + Page Size — UPDATED */}
+        {/* Results Count + Page Size */}
         <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
           <div className={`text-sm ${theme.textSecondary}`}>{summaryText}</div>
           <div className="flex items-center gap-2">
@@ -231,7 +275,7 @@ const handleSort = useCallback((value) => {
           </div>
         </div>
 
-        {/* Active Filter Chips — UNCHANGED */}
+        {/* Active Filter Chips */}
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {activeFilters.map((filter, index) => (
@@ -240,12 +284,7 @@ const handleSort = useCallback((value) => {
                 className={`flex items-center gap-1 px-3 py-1 ${theme.infoBg} ${theme.infoText} rounded-full text-xs font-medium`}
               >
                 {filter.label}
-                <button
-                  onClick={() => removeFilter(filter.key, filter.value)}
-                  className="ml-1 hover:opacity-70"
-                >
-                  ×
-                </button>
+                <button onClick={() => removeFilter(filter.key, filter.value)} className="ml-1 hover:opacity-70">×</button>
               </span>
             ))}
             <button
@@ -258,7 +297,7 @@ const handleSort = useCallback((value) => {
         )}
       </div>
 
-      {/* Main Content — UNCHANGED layout */}
+      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
           <FilterPanel
@@ -270,7 +309,6 @@ const handleSort = useCallback((value) => {
         </div>
 
         <div className="lg:col-span-3">
-          {/* Job List — now uses paginatedItems */}
           <div className="space-y-4">
             {paginatedItems.map((job) => (
               <JobCard
@@ -283,18 +321,12 @@ const handleSort = useCallback((value) => {
             ))}
           </div>
 
-          {/* Improved Empty State — UPDATED */}
+          {/* Empty State */}
           {sortedJobs.length === 0 && (
-            <div
-              className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}
-            >
+            <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
               <div className="text-5xl mb-4">🔍</div>
-              <h3 className={`text-lg font-semibold ${theme.textPrimary} mb-2`}>
-                No jobs found
-              </h3>
-              <p className={`${theme.textMuted} text-sm mb-2`}>
-                No results for your current filters. Try:
-              </p>
+              <h3 className={`text-lg font-semibold ${theme.textPrimary} mb-2`}>No jobs found</h3>
+              <p className={`${theme.textMuted} text-sm mb-2`}>No results for your current filters. Try:</p>
               <ul className={`text-sm ${theme.textMuted} mb-6 space-y-1`}>
                 <li>• Using fewer or broader keywords</li>
                 <li>• Removing the location filter</li>
@@ -310,10 +342,9 @@ const handleSort = useCallback((value) => {
             </div>
           )}
 
-          {/* Pagination Controls — NEW */}
+          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
-              {/* Prev button */}
               <button
                 onClick={goToPrev}
                 disabled={currentPage === 1}
@@ -322,22 +353,13 @@ const handleSort = useCallback((value) => {
                 ← Prev
               </button>
 
-              {/* First page + ellipsis */}
               {pageNumbers[0] > 1 && (
                 <>
-                  <button
-                    onClick={() => goToPage(1)}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}
-                  >
-                    1
-                  </button>
-                  {pageNumbers[0] > 2 && (
-                    <span className={`px-1 ${theme.textMuted}`}>...</span>
-                  )}
+                  <button onClick={() => goToPage(1)} className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}>1</button>
+                  {pageNumbers[0] > 2 && <span className={`px-1 ${theme.textMuted}`}>...</span>}
                 </>
               )}
 
-              {/* Page numbers */}
               {pageNumbers.map((page) => (
                 <button
                   key={page}
@@ -352,22 +374,13 @@ const handleSort = useCallback((value) => {
                 </button>
               ))}
 
-              {/* Last page + ellipsis */}
               {pageNumbers[pageNumbers.length - 1] < totalPages && (
                 <>
-                  {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                    <span className={`px-1 ${theme.textMuted}`}>...</span>
-                  )}
-                  <button
-                    onClick={() => goToPage(totalPages)}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}
-                  >
-                    {totalPages}
-                  </button>
+                  {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className={`px-1 ${theme.textMuted}`}>...</span>}
+                  <button onClick={() => goToPage(totalPages)} className={`w-9 h-9 rounded-lg text-sm font-medium ${theme.border} border ${theme.textPrimary} ${theme.hover}`}>{totalPages}</button>
                 </>
               )}
 
-              {/* Next button */}
               <button
                 onClick={goToNext}
                 disabled={currentPage === totalPages}
@@ -378,7 +391,6 @@ const handleSort = useCallback((value) => {
             </div>
           )}
 
-          {/* Page indicator */}
           {totalPages > 1 && (
             <p className={`text-center text-sm ${theme.textMuted} mt-3`}>
               Page {currentPage} of {totalPages}
