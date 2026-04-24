@@ -50,6 +50,69 @@ export const fetchEmployerActivity = async () => {
   });
 };
 
+// ─── EMPLOYER ANALYTICS CHARTS ───────────────────────────
+
+// GET /employer/analytics/applications-trend
+// Line chart — applications received per week over last 8 weeks
+export const fetchApplicationTrend = async () => {
+  // const response = await api.get("/employer/analytics/applications-trend");
+  // return response.data;
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { week: "Week 1", applications: 12, shortlisted: 4, hired: 1 },
+        { week: "Week 2", applications: 19, shortlisted: 6, hired: 2 },
+        { week: "Week 3", applications: 15, shortlisted: 5, hired: 1 },
+        { week: "Week 4", applications: 28, shortlisted: 9, hired: 3 },
+        { week: "Week 5", applications: 22, shortlisted: 8, hired: 2 },
+        { week: "Week 6", applications: 35, shortlisted: 12, hired: 4 },
+        { week: "Week 7", applications: 30, shortlisted: 10, hired: 3 },
+        { week: "Week 8", applications: 42, shortlisted: 15, hired: 5 },
+      ]);
+    }, 900);
+  });
+};
+
+// GET /employer/analytics/hiring-funnel
+// Funnel chart — how many candidates move through each stage
+export const fetchHiringFunnel = async () => {
+  // const response = await api.get("/employer/analytics/hiring-funnel");
+  // return response.data;
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { stage: "Total Applied",        value: 156, fill: "#3B82F6" },
+        { stage: "Reviewed",             value: 98,  fill: "#8B5CF6" },
+        { stage: "Shortlisted",          value: 54,  fill: "#F59E0B" },
+        { stage: "Interview Scheduled",  value: 28,  fill: "#10B981" },
+        { stage: "Offer Sent",           value: 12,  fill: "#06B6D4" },
+        { stage: "Hired",                value: 8,   fill: "#22C55E" },
+      ]);
+    }, 700);
+  });
+};
+
+// GET /employer/analytics/candidate-pipeline
+// Bar chart — candidates per job position
+export const fetchCandidatePipeline = async () => {
+  // const response = await api.get("/employer/analytics/candidate-pipeline");
+  // return response.data;
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { position: "React Dev",      applied: 45, shortlisted: 12, hired: 3 },
+        { position: "UI/UX Designer", applied: 32, shortlisted: 8,  hired: 2 },
+        { position: "Backend Dev",    applied: 28, shortlisted: 7,  hired: 1 },
+        { position: "Product Mgr",    applied: 22, shortlisted: 5,  hired: 1 },
+        { position: "DevOps",         applied: 18, shortlisted: 4,  hired: 1 },
+      ]);
+    }, 800);
+  });
+};
+
 // ─── CANDIDATE DASHBOARD ─────────────────────────────────
 
 export const fetchCandidateStats = async () => {
@@ -98,7 +161,7 @@ export const fetchRecommendedJobs = async () => {
   });
 };
 
-// ─── ATS (Application Tracking System) ───────────────────
+// ─── ATS ─────────────────────────────────────────────────
 
 export const fetchAllApplications = async () => {
   // const response = await api.get("/employer/applications");
