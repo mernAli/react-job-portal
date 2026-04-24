@@ -31,7 +31,7 @@ const PostJob = lazy(() => import("./pages/employer/PostJob"));
 const MyJobs = lazy(() => import("./pages/employer/MyJobs"));
 const Applications = lazy(() => import("./pages/employer/Applications"));
 const EmployerDashboard = lazy(() => import("./pages/employer/EmployerDashboard"));
-
+const EmployerAnalytics = lazy(() => import("./pages/employer/EmployerAnalytics"))
 
 //Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"))
@@ -137,6 +137,16 @@ function App() {
                           <Applications />
                         </RoleRoute>
                       } />
+
+                    <Route 
+                      path="employer-analytics"
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <EmployerAnalytics />
+                        </RoleRoute>
+                      }
+                    />
+                      
 
                     {/* Dashboard pages */}
                     <Route 
