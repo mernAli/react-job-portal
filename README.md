@@ -1,6 +1,6 @@
 # ZECPATH — Job Portal Frontend
 
-A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 38-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, ATS, admin panel, payment flows, real-time notifications, scalable Redux state management, smart API caching, and interactive Recharts analytics dashboards.
+A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 39-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, Redux state management, smart API caching, and interactive analytics dashboards.
 
 ---
 
@@ -19,77 +19,78 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 
 ## 🛠 Tech Stack
 
-| Category       | Technology                        |
-|----------------|-----------------------------------|
-| Framework      | React 18 + Vite                   |
-| Styling        | Tailwind CSS                      |
-| Routing        | React Router v6                   |
-| HTTP Client    | Axios                             |
-| State          | Redux Toolkit + React Context API |
-| Caching        | Custom in-memory cache (useCache) |
-| Charts         | Recharts                          |
-| Auth           | JWT + localStorage                |
-| Deployment     | Vercel                            |
+| Category       | Technology                          |
+|----------------|-------------------------------------|
+| Framework      | React 18 + Vite                     |
+| Styling        | Tailwind CSS                        |
+| Routing        | React Router v6                     |
+| HTTP Client    | Axios                               |
+| State          | Redux Toolkit + React Context API   |
+| Caching        | Custom in-memory cache (useCache)   |
+| Charts         | Recharts                            |
+| Auth           | JWT + localStorage                  |
+| Deployment     | Vercel                              |
 
 ---
 
 ## ✨ Features
 
 ### 🔐 Authentication System
-- JWT-based login and registration
-- Role-based access: **Candidate**, **Employer**, **Admin**
+- JWT-based login and registration with role selection
+- Role-based access control: **Candidate**, **Employer**, **Admin**
 - Session persistence across page refreshes
 - Auto logout after 30 minutes of inactivity
 - Token expiry validation before every API call
 - Secure token storage with expiry timestamp
+- Protected routes with clean 403 unauthorized page
 
 ### 👤 Candidate Features
-- Browse and search jobs with advanced filters
+- Browse and search jobs with advanced multi-criteria filters
 - Debounced keyword search + URL-synced filter state
-- Apply for jobs with optimistic UI
-- Track and manage applications in My Applications
-- Optimistic withdraw — application removed instantly, reverts on failure
-- Candidate dashboard with stats
-- Resume upload with drag & drop + progress bar
+- Apply for jobs with optimistic UI — instant feedback, reverts on failure
+- Track and manage applications with status indicators
+- Optimistic withdraw — application disappears instantly, reverts on failure
+- Candidate dashboard with stats and recommended jobs
+- Resume upload with drag & drop and progress bar
 - Profile image upload with live preview
-- Full profile editor (experience, education, skills)
+- Full profile editor — experience, education, skills CRUD
 
 ### 🏢 Employer Features
-- Post jobs with multi-step form
-- Manage job listings (edit, close)
-- Full ATS (Application Tracking System)
-- Shortlist, reject, and schedule interviews
+- Post jobs with 3-step multi-step form
+- Manage job listings — edit, close, view applicants
+- Full ATS — shortlist, reject, and schedule interviews
+- **Interview Scheduler** — calendar view, slot selection, 3-step booking flow, status management
 - Employer dashboard with stats, activity feed, and mini trend chart
-- Full hiring analytics page with 3 interactive Recharts charts
-- Pricing plans with monthly/yearly billing
+- Full hiring analytics page — application trend, hiring funnel, candidate pipeline
+- Pricing plans with monthly/yearly billing toggle
 
 ### 🛡️ Admin Features
-- Admin dashboard with 8 platform metrics
+- Admin dashboard with 8 real-time platform metrics
 - User management — search, filter, suspend, activate, delete
 - Job management — search, filter, activate, close, flag
 - Analytics page with sparkline charts and distribution bars
 - Cross-role access to all dashboards
 
 ### 🔔 Notification System
-- Event-driven notification context
-- Bell icon with live unread count badge
-- Notification dropdown (last 5)
+- Event-driven notification context — any component can fire notifications
+- Bell icon with live unread count badge in topbar
+- Notification dropdown showing last 5 notifications
 - Mark as read / mark all as read
-- Auto-generated notifications from user actions
+- Auto-generated from user actions (apply, status change, payment, schedule)
 - Full notification history page
 
 ### 💳 Payment & Monetization
-- Role-specific pricing pages (Candidate & Employer)
-- Monthly / Yearly billing toggle with 20% discount
+- Role-specific pricing pages for candidates and employers
+- Monthly / yearly billing toggle with 20% yearly discount
 - Checkout form with card validation and auto-formatting
-- Payment state management (idle → loading → success/error)
-- Test card simulation (success + decline)
-- Payment success page with receipt
+- Four payment states: idle → loading → success / error
+- Test card simulation — success card and decline card
+- Payment success page with full receipt and unlocked features list
 
 ### 🎨 Theme System
 - Three themes: **Light**, **Dark**, **Darker**
-- All components use theme variables — zero hardcoded colors
-- Theme persists across sessions
+- All components use CSS theme variables — zero hardcoded colors
+- Theme persists across sessions via localStorage
 
 ---
 
@@ -110,7 +111,7 @@ src/
 │   └── ErrorBoundary.jsx
 ├── context/
 │   ├── AuthContext.jsx
-│   ├── AuthProvider.jsx        ← dispatches to Redux store
+│   ├── AuthProvider.jsx
 │   ├── NotificationContext.jsx
 │   ├── ThemeContext.jsx
 │   └── useAuth.js
@@ -140,9 +141,10 @@ src/
 │   │   └── Profile.jsx
 │   ├── employer/
 │   │   ├── Applications.jsx
-│   │   ├── EmployerAnalytics.jsx   ← NEW (Day 38)
-│   │   ├── EmployerDashboard.jsx   ← UPDATED (Day 38)
+│   │   ├── EmployerAnalytics.jsx
+│   │   ├── EmployerDashboard.jsx
 │   │   ├── EmployerPricing.jsx
+│   │   ├── InterviewScheduler.jsx
 │   │   ├── MyJobs.jsx
 │   │   └── PostJob.jsx
 │   ├── Checkout.jsx
@@ -164,9 +166,10 @@ src/
 │   ├── adminService.js
 │   ├── api.js
 │   ├── authService.js
-│   ├── dashboardService.js        ← UPDATED (Day 38)
+│   ├── dashboardService.js
 │   ├── JobService.js
 │   ├── paymentService.js
+│   ├── scheduleService.js
 │   └── uploadService.js
 ├── store/
 │   ├── authSlice.js
@@ -195,49 +198,56 @@ src/
 
 ## 🏗️ Architecture Decisions
 
-### Charts & Analytics (Day 38)
-Recharts is used for all interactive data visualizations. Charts are loaded only on the analytics page via React lazy loading — zero bundle cost on other pages. All chart data comes through the service layer so switching to a real backend requires only uncommenting one line per function:
+### Redux Toolkit Store
+Global state is managed through three dedicated slices. `AuthProvider` acts as the bridge — it dispatches thunks and reads from Redux via `useSelector`, while exposing the same `useAuth()` interface to all components. Zero breaking changes across the codebase.
 
-```javascript
-// Application trend — Line chart
-export const fetchApplicationTrend = async () => {
-  // const response = await api.get("/employer/analytics/applications-trend");
-  // return response.data;
-  return new Promise((resolve) => { setTimeout(() => resolve([...]), 900) });
-};
+```
+store/
+├── authSlice.js    — user, token, authLoading, authError + async thunks
+├── profileSlice.js — candidate profile data and upload states
+├── uiSlice.js      — global loading overlay and page title
+├── index.js        — configureStore
+└── hooks.js        — typed selectors
 ```
 
-Three chart types are used: `LineChart` for trends over time, a horizontal `BarChart` for the hiring funnel with per-stage color coding, and a grouped `BarChart` for pipeline comparison across job positions.
-
-### API Caching Strategy (Day 37)
-A custom `useCache` hook provides in-memory response caching using a module-level `Map`. Cache entries have a configurable TTL (default 60 seconds):
+### API Caching Strategy
+A custom `useCache` hook provides in-memory response caching using a module-level `Map` with configurable TTL. `Jobs.jsx` and `BrowseJobs.jsx` share the same cache key so navigating between them never triggers a duplicate request within 60 seconds.
 
 ```javascript
 const { getCache, setCache, isFresh, invalidate } = useCache(60000);
 
-const loadJobs = async (forceRefresh = false) => {
-  if (!forceRefresh && isFresh("browse-jobs")) {
-    setJobs(getCache("browse-jobs"));
-    return;
-  }
-  const data = await fetchJobs();
-  setCache("browse-jobs", data);
-  setJobs(data);
-};
+if (!forceRefresh && isFresh("browse-jobs")) {
+  setJobs(getCache("browse-jobs"));
+  return;
+}
 ```
 
-### Auto-Refresh Pattern (Day 37)
-`useAutoRefresh` runs a callback on a configurable interval, pausing when the browser tab is not visible:
+### Auto-Refresh Pattern
+`useAutoRefresh` runs a callback on a configurable interval. It checks `document.visibilityState` before each tick — pausing when the browser tab is hidden to avoid wasted requests.
 
 ```javascript
 useAutoRefresh(() => loadJobs(true), 60000);
 ```
 
-### Redux Toolkit Store (Day 36)
-Global state managed through three slices — `authSlice`, `profileSlice`, `uiSlice`. `AuthProvider` acts as the bridge, dispatching thunks while exposing the same `useAuth()` interface so all existing components work without changes.
+### Interview Scheduling Architecture
+The scheduler is built without any external calendar library. A pure JavaScript `Date`-based calendar generates a 7-column grid of date cells, each annotated as available, booked, past, weekend, or selected. A 3-step modal manages the booking flow — Select Date → Choose Slot & Details → Confirm — with form state persisted across steps and full optimistic UI on status changes.
+
+### Charts & Analytics
+Recharts powers all data visualizations, lazy-loaded so the chart library never adds to the main bundle. Three chart types are used: `LineChart` for application trends, a horizontal `BarChart` for the hiring funnel with per-stage `Cell` color overrides, and a grouped `BarChart` for pipeline comparison. All chart data flows through the service layer.
+
+### Service Layer Pattern
+All API calls go through dedicated service files — never directly from components. Every function is backend-ready with the real API call commented in:
+
+```javascript
+export const fetchJobs = async () => {
+  // const response = await api.get("/jobs");
+  // return response.data;
+  return new Promise((resolve) => { ... });
+};
+```
 
 ### Optimistic UI Pattern
-All state-changing actions update the UI immediately and revert on failure:
+All mutations update the UI before the API responds and revert automatically on failure:
 
 ```javascript
 setApplications(prev => prev.filter(app => app.id !== applicationId));
@@ -245,11 +255,8 @@ await withdrawApplication(applicationId);
 // On failure: setApplications(originalApplications)
 ```
 
-### Service Layer Pattern
-All API calls go through dedicated service files — never directly from components. Backend-ready with real calls commented in alongside each simulation.
-
 ### Centralized Permission System
-All role checks in `utils/permissions.js`:
+All role logic lives in one file:
 
 ```javascript
 export const getPermissions = (user) => ({
@@ -267,17 +274,17 @@ export const getPermissions = (user) => ({
 | Technique | Applied To |
 |-----------|------------|
 | `React.memo` | StatCard, JobCard, FilterPanel, Checkbox |
-| `useCallback` | BrowseJobs handlers, JobCard handlers |
+| `useCallback` | BrowseJobs handlers, JobCard handlers, interview status updates |
 | `useMemo` | sortedJobs, filteredJobs, activeFilters, paginatedItems |
 | Lazy loading | All route-level pages via `React.lazy()` |
 | Code splitting | Automatic via Vite + lazy routes |
 | Debouncing | Search inputs (400ms delay) |
-| Static data outside components | FilterPanel options, StatCard color map |
-| Redux selectors | Prevent unnecessary re-renders via memoized selectors |
-| In-memory caching | Job listings cached for 60s — zero re-fetch on navigation |
+| Static data outside components | FilterPanel options, StatCard color map, calendar constants |
+| Redux selectors | Prevent unnecessary re-renders |
+| In-memory caching | Job listings cached 60s — zero re-fetch on navigation |
 | Background refresh | Silent auto-refetch every 60s — no loading spinner |
-| Tab visibility check | Auto-refresh pauses when tab is not visible |
-| Chart lazy loading | Recharts only loads on analytics page visit |
+| Tab visibility check | Auto-refresh pauses when tab is hidden |
+| Chart lazy loading | Recharts loads only on analytics page visit |
 
 ---
 
@@ -286,11 +293,12 @@ export const getPermissions = (user) => ({
 | Feature | Implementation |
 |---------|----------------|
 | Route protection | `PrivateRoute` + `RoleRoute` |
+| Role enforcement | Employer routes blocked from candidates and vice versa |
 | Token expiry | Checked before every API call |
 | Session timeout | 30 min inactivity auto-logout |
 | 401 handling | `session:expired` CustomEvent → toast → redirect |
 | 403 handling | `session:forbidden` CustomEvent → toast |
-| Unauthorized page | Clean 403 UI with role context |
+| Unauthorized page | Clean 403 UI showing user's role and email |
 | Auth data cleanup | All keys cleared on logout including `tokenExpiry` |
 
 ---
@@ -299,7 +307,7 @@ export const getPermissions = (user) => ({
 
 **External API:** [Arbeitnow Job Board API](https://www.arbeitnow.com/api/job-board-api)
 
-All other features use simulated service functions that match real backend patterns. Switching to a real backend requires uncommenting 2 lines per service function.
+All internal features use simulated service functions that match real backend patterns. Switching to a real backend requires uncommenting 2 lines per service function.
 
 **Axios instance** (`services/api.js`):
 - Base URL from `VITE_API_BASE_URL` environment variable
@@ -353,96 +361,8 @@ npm run preview
 | 34–35 | Security & stability, production readiness          |
 | 36    | Redux Toolkit — global state management             |
 | 37    | API caching, optimistic UI, auto-refresh            |
-| 38    | Charts & analytics UI — Recharts integration        |
-
----
-
-## ✅ Day 36 — State Management Architecture
-
-### Objective
-Introduce scalable global state management using Redux Toolkit to replace scattered `useState` across components.
-
-### What Was Implemented
-- `authSlice` — user, token, authLoading, authError with async thunks for login, register, session restore
-- `profileSlice` — candidate profile data and upload states
-- `uiSlice` — global loading overlay and page title
-- `store/hooks.js` — typed selectors for clean component access
-- `AuthProvider` kept as bridge layer — zero breaking changes to existing components
-
-**Files Created:** `src/store/` (authSlice, profileSlice, uiSlice, index, hooks)
-**Files Modified:** `src/main.jsx`, `src/context/AuthProvider.jsx`
-
-### Concepts Learned
-Redux Toolkit slice architecture · `createAsyncThunk` · `extraReducers` builder pattern · typed selectors · gradual Context → Redux migration
-
----
-
-## ✅ Day 37 — API Caching & Optimistic UI
-
-### Objective
-Improve UX performance — eliminate redundant network requests, make UI actions feel instant, keep data fresh automatically.
-
-### What Was Implemented
-- `useCache` hook — module-level Map with configurable TTL, `isFresh`, `invalidate`, `invalidateAll`
-- `useAutoRefresh` hook — interval-based silent background refresh, pauses on hidden tabs
-- `BrowseJobs` + `Jobs` — caching, auto-refresh, manual refresh button, shared cache key
-- `MyApplications` — connected to real service, optimistic withdraw with full revert
-- `JobService` — `fetchMyApplications()` and `withdrawApplication()` added
-
-**Files Created:** `src/hooks/useCache.js`, `src/hooks/useAutoRefresh.js`
-**Files Modified:** `JobService.js`, `Jobs.jsx`, `BrowseJobs.jsx`, `MyApplications.jsx`
-
-### Concepts Learned
-In-memory caching with TTL · cache invalidation after mutations · tab visibility API · optimistic UI with rollback · shared cache keys across pages
-
----
-
-## ✅ Day 38 — Charts & Analytics UI
-
-### Objective
-Visualize hiring insights for employers using interactive Recharts components integrated into a dedicated analytics dashboard.
-
-### What Was Implemented
-
-**`EmployerAnalytics.jsx`** — New standalone analytics page at `/app/employer-analytics` with:
-- **Application Trend** — `LineChart` showing applications, shortlisted, and hired per week over 8 weeks. Three lines with distinct colors allow at-a-glance comparison of funnel efficiency over time.
-- **Hiring Funnel** — Horizontal `BarChart` with 6 stages (Applied → Reviewed → Shortlisted → Interview → Offer → Hired). Each bar is color-coded per stage. A conversion rate summary is displayed below.
-- **Candidate Pipeline** — Grouped `BarChart` comparing applied, shortlisted, and hired counts across all active job positions side by side.
-- Summary stat chips at the top — Total Applications, Hired, Conversion Rate, Avg. Time to Hire — all derived from chart data.
-
-**`EmployerDashboard.jsx`** — Mini `LineChart` added between stat cards and the applications table. Shows the 8-week application trend at a glance with a "Full Analytics →" button linking to the dedicated page.
-
-**`dashboardService.js`** — Three new backend-ready functions:
-- `fetchApplicationTrend()` — weekly applications, shortlists, hires
-- `fetchHiringFunnel()` — candidate counts per recruitment stage
-- `fetchCandidatePipeline()` — applied/shortlisted/hired per job position
-
-### Chart Design Decisions
-- `ResponsiveContainer` wraps every chart — fully responsive on all screen sizes
-- Recharts `Tooltip` styled with consistent `borderRadius` and `fontSize`
-- Funnel bars use individual `Cell` components for per-bar color control
-- X-axis labels on the pipeline chart are angled at -25° to prevent overlap on mobile
-- All chart data flows through the service layer — backend-ready with two-line swap
-
-### Files Created
-```
-src/pages/employer/EmployerAnalytics.jsx   ← full analytics page with 3 charts
-```
-
-### Files Modified
-```
-src/services/dashboardService.js    ← 3 chart data functions added
-src/pages/employer/EmployerDashboard.jsx  ← mini trend chart + analytics link
-App.jsx                             ← employer-analytics route registered
-```
-
-### Concepts Learned
-- Recharts `LineChart`, `BarChart`, `FunnelChart` composition
-- `ResponsiveContainer` for adaptive chart sizing
-- `Cell` component for per-bar color overrides
-- Deriving summary metrics from raw chart data
-- Lazy-loading chart pages to keep main bundle size small
-- Integrating chart libraries with existing theme and service layer
+| 38    | Charts & analytics — Recharts integration           |
+| 39    | Interview scheduling module                         |
 
 ---
 
@@ -450,6 +370,6 @@ App.jsx                             ← employer-analytics route registered
 
 **Ali Aman** — Frontend Developer (React.js)
 - Location: Feroke, Kozhikode
-- Internship: ZECPATH Frontend (Days 7–38)
+- Internship: ZECPATH Frontend (Days 7–39)
 
 ---
