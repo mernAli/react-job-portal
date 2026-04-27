@@ -64,6 +64,34 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 - Full hiring analytics page — application trend, hiring funnel, candidate pipeline
 - Pricing plans with monthly/yearly billing toggle
 
+### 🤖 AI Insights & Smart Hiring (NEW)
+
+An AI-powered insights system designed to enhance decision-making for both candidates and employers through structured data visualization and intelligent recommendations.
+
+#### 👤 Candidate AI Insights
+- AI profile score with visual indicator (score ring)
+- Skill-level breakdown using progress bars
+- Interview progress tracking
+- AI-generated personalized remarks for improvement
+- Dedicated insights dashboard with clean visual hierarchy
+
+#### 🏢 Employer AI Insights
+- Candidate ranking system based on AI scores
+- Visual score cards for quick evaluation
+- AI-driven hiring recommendations (shortlist, interview, reject)
+- Top candidates preview directly on dashboard
+- Dedicated employer insights panel for smarter hiring decisions
+
+#### 🔗 Dashboard Integration
+- Candidate dashboard includes AI score preview with quick access
+- Employer dashboard includes top candidate insights preview
+- Seamless navigation to full AI insights pages
+
+#### 🧠 AI Service Layer
+- Centralized `aiService.js` for generating insights data
+- Structured mock AI responses (backend-ready)
+- Supports candidate scoring, interview analytics, and employer recommendations
+
 ### 🛡️ Admin Features
 - Admin dashboard with 8 real-time platform metrics
 - User management — search, filter, suspend, activate, delete
@@ -136,6 +164,7 @@ src/
 │   ├── candidate/
 │   │   ├── BrowseJobs.jsx
 │   │   ├── CandidateDashboard.jsx
+        ├── AIInsights.jsx
 │   │   ├── CandidatePricing.jsx
 │   │   ├── MyApplications.jsx
 │   │   └── Profile.jsx
@@ -143,6 +172,7 @@ src/
 │   │   ├── Applications.jsx
 │   │   ├── EmployerAnalytics.jsx
 │   │   ├── EmployerDashboard.jsx
+        ├── AIInsights.jsx
 │   │   ├── EmployerPricing.jsx
 │   │   ├── InterviewScheduler.jsx
 │   │   ├── MyJobs.jsx
@@ -167,6 +197,7 @@ src/
 │   ├── api.js
 │   ├── authService.js
 │   ├── dashboardService.js
+    ├── aiService.js
 │   ├── JobService.js
 │   ├── paymentService.js
 │   ├── scheduleService.js
@@ -363,6 +394,21 @@ npm run preview
 | 37    | API caching, optimistic UI, auto-refresh            |
 | 38    | Charts & analytics — Recharts integration           |
 | 39    | Interview scheduling module                         |
+| 40    | AI insightsDashboard—score visualization,smart hiring panels 
+
+---
+
+---
+
+## 🤖 AI Feature Highlight
+
+ZECPATH now includes an AI-driven insights layer that transforms user and application data into meaningful visual feedback.
+
+- Candidates receive actionable insights on profile strength and interview readiness
+- Employers get intelligent candidate rankings and hiring suggestions
+- Designed with a focus on **clarity, visual hierarchy, and decision support**
+
+This feature simulates real-world AI integration while maintaining a scalable frontend architecture ready for backend AI services.
 
 ---
 
