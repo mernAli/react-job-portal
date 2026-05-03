@@ -1,6 +1,6 @@
 # ZECPATH — Job Portal Frontend
 
-A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 39-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, Redux state management, smart API caching, and interactive analytics dashboards.
+A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 41-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, WebSocket-powered live UI, Redux state management, smart API caching, and interactive analytics dashboards.
 
 ---
 
@@ -29,6 +29,7 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 | Caching        | Custom in-memory cache (useCache)   |
 | Charts         | Recharts                            |
 | Auth           | JWT + localStorage                  |
+| Real-time      | WebSocket (MockWebSocket / WS-ready)|
 | Deployment     | Vercel                              |
 
 ---
@@ -50,7 +51,7 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 - Apply for jobs with optimistic UI — instant feedback, reverts on failure
 - Track and manage applications with status indicators
 - Optimistic withdraw — application disappears instantly, reverts on failure
-- Candidate dashboard with stats and recommended jobs
+- Candidate dashboard with stats, recommended jobs, and live activity feed
 - Resume upload with drag & drop and progress bar
 - Profile image upload with live preview
 - Full profile editor — experience, education, skills CRUD
@@ -60,11 +61,11 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 - Manage job listings — edit, close, view applicants
 - Full ATS — shortlist, reject, and schedule interviews
 - **Interview Scheduler** — calendar view, slot selection, 3-step booking flow, status management
-- Employer dashboard with stats, activity feed, and mini trend chart
+- Employer dashboard with stats, live activity feed, and mini trend chart
 - Full hiring analytics page — application trend, hiring funnel, candidate pipeline
 - Pricing plans with monthly/yearly billing toggle
 
-### 🤖 AI Insights & Smart Hiring (NEW)
+### 🤖 AI Insights & Smart Hiring
 
 An AI-powered insights system designed to enhance decision-making for both candidates and employers through structured data visualization and intelligent recommendations.
 
@@ -92,12 +93,65 @@ An AI-powered insights system designed to enhance decision-making for both candi
 - Structured mock AI responses (backend-ready)
 - Supports candidate scoring, interview analytics, and employer recommendations
 
+### 📡 Real-Time UI — WebSocket System (Day 41)
+
+A fully event-driven real-time layer built on the WebSocket protocol, powering live UI updates across all three dashboards without any page refresh.
+
+#### 🔌 MockWebSocket Engine
+- Custom `MockWebSocket` class that mirrors the exact browser `WebSocket` API (`onopen`, `onmessage`, `onclose`, `send`, `close`)
+- Emits three event types every 5 seconds: `notification`, `interview_status`, `activity`
+- Swapping to a real backend requires changing **one line** — `new MockWebSocket(url)` → `new WebSocket(url)`
+- Proper cleanup on unmount — no memory leaks, no runaway intervals
+
+#### 🌐 WebSocketContext
+- Global context provider wrapping the entire app
+- Consumes `NotificationContext` to push live bell icon updates automatically
+- Maintains three live state values: `connected`, `activityFeed`, `interviewUpdates`
+- StrictMode-safe — guards against React's double-mount behaviour in development
+- Exposes a `send()` function for future two-way communication with a real backend
+
+#### 🔔 Live Notifications
+- WebSocket `notification` events automatically call `addNotification()` in `NotificationContext`
+- Bell icon unread count updates in real time across all pages
+- New notifications appear at the top of the notifications page instantly
+- Fully integrated with existing notification types — `status_update`, `success`, `info`, `error`
+
+#### 📋 Live Interview Status Updates
+- WebSocket `interview_status` events are captured in `interviewUpdates` state
+- Admin dashboard displays the latest 3 interview updates in a dedicated panel
+- Status badges colour-coded: Shortlisted (green), Interview Scheduled (blue), Rejected (red)
+- Rolling buffer keeps last 50 updates — memory safe
+
+#### 🏃 Live Activity Feed Component
+- Reusable `LiveActivityFeed` component used across all three dashboards
+- Pulsing green dot indicator — shows live/offline connection status
+- Newest item highlighted with subtle blue tint on arrival
+- Actor icons: ⚙️ System, 🏢 Employer, 👤 Candidate
+- Live `getTimeAgo` timestamps: "Just now", "5s ago", "2m ago"
+- Configurable `maxItems` prop — Candidate (6), Employer (8), Admin (10)
+- Auto-rolls — oldest items drop off as new ones arrive
+
+#### 🛰️ Admin Platform Pulse Panel
+- Admin dashboard features a dedicated "Platform Pulse" section
+- Live Activity Feed (2/3 width) + System Status sidebar (1/3 width)
+- System Status card shows: WebSocket connection state, total live event count, interview update count
+- Live/Offline pill badge directly in the Admin dashboard header
+
+#### 🎨 Per-Role Dashboard Integration
+
+| Dashboard | Live Feature | Layout |
+|---|---|---|
+| Employer | LiveActivityFeed replaces static activity | Full width below trend chart |
+| Candidate | LiveActivityFeed beside Profile Completion card | 2/3 + 1/3 grid |
+| Admin | Platform Pulse — feed + system status + interview updates | 2/3 + 1/3 grid |
+
 ### 🛡️ Admin Features
 - Admin dashboard with 8 real-time platform metrics
 - User management — search, filter, suspend, activate, delete
 - Job management — search, filter, activate, close, flag
 - Analytics page with sparkline charts and distribution bars
 - Cross-role access to all dashboards
+- Live platform pulse panel with WebSocket monitoring
 
 ### 🔔 Notification System
 - Event-driven notification context — any component can fire notifications
@@ -105,6 +159,7 @@ An AI-powered insights system designed to enhance decision-making for both candi
 - Notification dropdown showing last 5 notifications
 - Mark as read / mark all as read
 - Auto-generated from user actions (apply, status change, payment, schedule)
+- **WebSocket-powered** — live notifications arrive without any user action
 - Full notification history page
 
 ### 💳 Payment & Monetization
@@ -124,6 +179,7 @@ An AI-powered insights system designed to enhance decision-making for both candi
 
 ## 📁 Project Structure
 
+
 ```
 src/
 ├── components/
@@ -131,7 +187,8 @@ src/
 │   │   ├── Sidebar.jsx
 │   │   ├── Topbar.jsx
 │   │   ├── BottomNav.jsx
-│   │   └── StatCard.jsx
+│   │   ├── StatCard.jsx
+│   │   └── LiveActivityFeed.jsx       ← NEW (Day 41)
 │   ├── Jobs/
 │   │   ├── JobCard.jsx
 │   │   ├── FilterPanel.jsx
@@ -142,6 +199,7 @@ src/
 │   ├── AuthProvider.jsx
 │   ├── NotificationContext.jsx
 │   ├── ThemeContext.jsx
+│   ├── WebSocketContext.jsx           ← NEW (Day 41)
 │   └── useAuth.js
 ├── hooks/
 │   ├── useApi.js
@@ -157,22 +215,22 @@ src/
 │   └── AuthLayout.jsx
 ├── pages/
 │   ├── admin/
-│   │   ├── AdminDashboard.jsx
+│   │   ├── AdminDashboard.jsx         ← UPDATED (Day 41)
 │   │   ├── AdminUsers.jsx
 │   │   ├── AdminJobs.jsx
 │   │   └── AdminAnalytics.jsx
 │   ├── candidate/
 │   │   ├── BrowseJobs.jsx
-│   │   ├── CandidateDashboard.jsx
-        ├── AIInsights.jsx
+│   │   ├── CandidateDashboard.jsx     ← UPDATED (Day 41)
+│   │   ├── AIInsights.jsx
 │   │   ├── CandidatePricing.jsx
 │   │   ├── MyApplications.jsx
 │   │   └── Profile.jsx
 │   ├── employer/
 │   │   ├── Applications.jsx
 │   │   ├── EmployerAnalytics.jsx
-│   │   ├── EmployerDashboard.jsx
-        ├── AIInsights.jsx
+│   │   ├── EmployerDashboard.jsx      ← UPDATED (Day 41)
+│   │   ├── AIInsights.jsx
 │   │   ├── EmployerPricing.jsx
 │   │   ├── InterviewScheduler.jsx
 │   │   ├── MyJobs.jsx
@@ -197,8 +255,9 @@ src/
 │   ├── api.js
 │   ├── authService.js
 │   ├── dashboardService.js
-    ├── aiService.js
+│   ├── aiService.js
 │   ├── JobService.js
+│   ├── mockWebSocket.js               ← NEW (Day 41)
 │   ├── paymentService.js
 │   ├── scheduleService.js
 │   └── uploadService.js
@@ -220,9 +279,10 @@ src/
 │   ├── Modal.jsx
 │   └── UploadProgress.jsx
 └── utils/
-    ├── auth.js
-    ├── performance.js
-    └── permissions.js
+├── auth.js
+├── performance.js
+└── permissions.js
+
 ```
 
 ---
@@ -239,6 +299,31 @@ store/
 ├── uiSlice.js      — global loading overlay and page title
 ├── index.js        — configureStore
 └── hooks.js        — typed selectors
+
+```
+
+### WebSocket Architecture (Day 41)
+Real-time communication is handled through a dedicated `WebSocketContext` that sits inside `NotificationProvider` in the provider tree. This gives the WebSocket layer direct access to `addNotification()` without prop drilling, allowing any incoming WS event to automatically update the bell icon across the entire app.
+
+```
+main.jsx
+└── NotificationProvider     ← provides addNotification
+└── WebSocketProvider    ← consumes addNotification, manages WS connection
+└── App
+└── any page
+├── useWebSocket() → activityFeed, interviewUpdates, connected
+└── useNotifications() → auto-updates from WS events
+
+```
+
+The `MockWebSocket` class mirrors the real browser `WebSocket` API exactly. Switching to a production backend is a single-line change:
+
+```javascript
+// Development (mock)
+const ws = new MockWebSocket("wss://mock.zecpath.com/ws");
+
+// Production (real backend — one line change)
+const ws = new WebSocket("wss://api.zecpath.com/ws");
 ```
 
 ### API Caching Strategy
@@ -316,6 +401,8 @@ export const getPermissions = (user) => ({
 | Background refresh | Silent auto-refetch every 60s — no loading spinner |
 | Tab visibility check | Auto-refresh pauses when tab is hidden |
 | Chart lazy loading | Recharts loads only on analytics page visit |
+| WS interval cleanup | All intervals cleared on component unmount |
+| WS StrictMode guard | `readyState` check prevents double-connection in development |
 
 ---
 
@@ -376,33 +463,32 @@ npm run preview
 
 ## 📅 Development Timeline
 
-| Days  | Focus Area                                          |
-|-------|-----------------------------------------------------|
-| 7–10  | React hooks, API integration, component basics      |
-| 11–12 | Tailwind CSS, responsive layouts, landing page      |
-| 13–16 | Authentication, protected routes, sessions          |
-| 17    | Role-based dashboard system                         |
-| 18–19 | Job module, multi-step forms, candidate profile     |
-| 20–23 | Polish, Axios integration, API service layer        |
-| 24–25 | Dashboards, ATS system                              |
-| 26–27 | Advanced search & filters, pagination               |
-| 28–29 | Notifications system, payment flows                 |
-| 30–31 | File uploads, multi-role dashboard                  |
-| 32–33 | Admin panel, performance optimization               |
-| 34–35 | Security & stability, production readiness          |
-| 36    | Redux Toolkit — global state management             |
-| 37    | API caching, optimistic UI, auto-refresh            |
-| 38    | Charts & analytics — Recharts integration           |
-| 39    | Interview scheduling module                         |
-| 40    | AI insightsDashboard—score visualization,smart hiring panels 
-
----
+| Days  | Focus Area                                                        |
+|-------|-------------------------------------------------------------------|
+| 7–10  | React hooks, API integration, component basics                    |
+| 11–12 | Tailwind CSS, responsive layouts, landing page                    |
+| 13–16 | Authentication, protected routes, sessions                        |
+| 17    | Role-based dashboard system                                       |
+| 18–19 | Job module, multi-step forms, candidate profile                   |
+| 20–23 | Polish, Axios integration, API service layer                      |
+| 24–25 | Dashboards, ATS system                                            |
+| 26–27 | Advanced search & filters, pagination                             |
+| 28–29 | Notifications system, payment flows                               |
+| 30–31 | File uploads, multi-role dashboard                                |
+| 32–33 | Admin panel, performance optimization                             |
+| 34–35 | Security & stability, production readiness                        |
+| 36    | Redux Toolkit — global state management                           |
+| 37    | API caching, optimistic UI, auto-refresh                          |
+| 38    | Charts & analytics — Recharts integration                         |
+| 39    | Interview scheduling module                                       |
+| 40    | AI Insights Dashboard — score visualization, smart hiring panels  |
+| 41    | Real-time UI — WebSocket system, live activity feed, live notifications |
 
 ---
 
 ## 🤖 AI Feature Highlight
 
-ZECPATH now includes an AI-driven insights layer that transforms user and application data into meaningful visual feedback.
+ZECPATH includes an AI-driven insights layer that transforms user and application data into meaningful visual feedback.
 
 - Candidates receive actionable insights on profile strength and interview readiness
 - Employers get intelligent candidate rankings and hiring suggestions
@@ -412,10 +498,19 @@ This feature simulates real-world AI integration while maintaining a scalable fr
 
 ---
 
+## 📡 Real-Time Feature Highlight
+
+ZECPATH now features a fully event-driven real-time layer powered by WebSockets.
+
+- All three dashboards (Candidate, Employer, Admin) display a live activity feed that updates automatically every 5 seconds
+- The bell icon notification count updates in real time across every page without any user interaction
+- The Admin dashboard includes a dedicated Platform Pulse panel with live system status monitoring
+- The entire WebSocket layer is backend-ready — one line swap from mock to production
+
+---
+
 ## 👨‍💻 Developer
 
 **Ali Aman** — Frontend Developer (React.js)
 - Location: Feroke, Kozhikode
-- Internship: ZECPATH Frontend (Days 7–39)
-
----
+- Internship: ZECPATH Frontend (Days 7–41)
