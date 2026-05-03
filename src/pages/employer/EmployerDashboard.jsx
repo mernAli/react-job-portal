@@ -7,7 +7,6 @@ import ApiError from "../../ui/ApiError";
 import {
   fetchEmployerStats,
   fetchRecentApplications,
-  fetchEmployerActivity,
   fetchApplicationTrend,
 } from "../../services/dashboardService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
@@ -31,12 +30,10 @@ const EmployerDashboard = () => {
 
   const [stats, setStats] = useState([]);
   const [recentApplications, setRecentApplications] = useState([]);
-  const [activity, setActivity] = useState([]);
   const [trend, setTrend] = useState([]);
 
   const [statsLoading, setStatsLoading] = useState(true);
   const [applicationsLoading, setApplicationsLoading] = useState(true);
-  const [activityLoading, setActivityLoading] = useState(true);
   const [trendLoading, setTrendLoading] = useState(true);
 
   const [statsError, setStatsError] = useState(null);
@@ -45,7 +42,6 @@ const EmployerDashboard = () => {
   useEffect(() => {
     loadStats();
     loadApplications();
-    loadActivity();
     loadTrend();
   }, []);
 
@@ -75,18 +71,7 @@ const EmployerDashboard = () => {
     }
   };
 
-  const loadActivity = async () => {
-    try {
-      setActivityLoading(true);
-      const data = await fetchEmployerActivity();
-      setActivity(data);
-    } catch (error) {
-      console.error("Failed to load activity:", error);
-    } finally {
-      setActivityLoading(false);
-    }
-  };
-
+ 
   const loadTrend = async () => {
     try {
       setTrendLoading(true);
@@ -359,7 +344,7 @@ const EmployerDashboard = () => {
       </SectionErrorBoundary>
 
       {/* Activity Feed */}
-      <SectionErrorBoundary>
+      {/* <SectionErrorBoundary>
         <div className={`${theme.cardBg} rounded-xl ${theme.border} border`}>
           <div className={`p-4 sm:p-6 ${theme.border} border-b`}>
             <h2
@@ -400,6 +385,11 @@ const EmployerDashboard = () => {
             </div>
           )}
         </div>
+      </SectionErrorBoundary> */}
+
+      {/* Live Activity Feed — WebSocket powered */}
+      <SectionErrorBoundary>
+        <LiveActivityFeed maxItems={8} />
       </SectionErrorBoundary>
 
       {/* Quick Actions */}

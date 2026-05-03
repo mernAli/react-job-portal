@@ -13,6 +13,7 @@ import { fetchCandidateAIScore } from "../../services/aiService.js";
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 import { SectionErrorBoundary } from "../../components/ErrorBoundary.jsx";
 import { useNavigate } from "react-router-dom";
+import LiveActivityFeed from "../../components/Dashboard/LiveActivityFeed";
 
 // Mini score ring for dashboard preview
 const MiniScoreRing = ({ score, size = 80, strokeWidth = 7 }) => {
@@ -42,17 +43,17 @@ const CandidateDashboard = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const [stats, setStats]                       = useState([]);
+  const [stats, setStats]                           = useState([]);
   const [recentApplications, setRecentApplications] = useState([]);
-  const [recommendedJobs, setRecommendedJobs]   = useState([]);
-  const [aiScore, setAiScore]                   = useState(null);
+  const [recommendedJobs, setRecommendedJobs]       = useState([]);
+  const [aiScore, setAiScore]                       = useState(null);
 
   const [statsLoading, setStatsLoading]               = useState(true);
   const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [jobsLoading, setJobsLoading]                 = useState(true);
   const [aiLoading, setAiLoading]                     = useState(true);
 
-  const [statsError, setStatsError]             = useState(null);
+  const [statsError, setStatsError]               = useState(null);
   const [applicationsError, setApplicationsError] = useState(null);
 
   useEffect(() => {
@@ -198,8 +199,9 @@ const CandidateDashboard = () => {
         </div>
       </SectionErrorBoundary>
 
-      {/* Two Column Layout */}
+      {/* Two Column Layout — Recent Applications + Recommended Jobs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         {/* Recent Applications */}
         <SectionErrorBoundary>
           <div className={`lg:col-span-2 ${theme.cardBg} rounded-xl ${theme.border} border`}>
@@ -236,7 +238,10 @@ const CandidateDashboard = () => {
               </div>
             )}
             <div className={`p-4 ${theme.border} border-t`}>
-              <button className={`w-full py-2 text-sm ${theme.primaryText} font-medium ${theme.hover} rounded-lg transition-colors`}>
+              <button
+                onClick={() => navigate("/app/my-applications")}
+                className={`w-full py-2 text-sm ${theme.primaryText} font-medium ${theme.hover} rounded-lg transition-colors`}
+              >
                 View All Applications →
               </button>
             </div>
@@ -273,28 +278,43 @@ const CandidateDashboard = () => {
         </SectionErrorBoundary>
       </div>
 
-      {/* Profile Completion */}
-      <div className={`${theme.primary} rounded-xl p-6 text-white`}>
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      {/* ── Live Feed + Profile Completion Row ────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Live Activity Feed — 2/3 width */}
+        <SectionErrorBoundary>
+          <div className="lg:col-span-2">
+            <LiveActivityFeed maxItems={6} />
+          </div>
+        </SectionErrorBoundary>
+
+        {/* Profile Completion — 1/3 width */}
+        <div className={`${theme.primary} rounded-xl p-6 text-white flex flex-col justify-between min-h-[200px]`}>
           <div>
             <h3 className="text-lg font-semibold mb-2">Complete Your Profile</h3>
             <p className="text-white/80 text-sm">
               A complete profile increases your chances of getting hired by 40%
             </p>
           </div>
-          <div className="flex items-center gap-4 w-full lg:w-auto">
-            <div className="text-right">
-              <div className="text-3xl font-bold">75%</div>
-              <div className="text-xs text-white/70">Complete</div>
+          <div>
+            <div className="flex items-center justify-between mb-3 mt-4">
+              <div>
+                <div className="text-3xl font-bold">75%</div>
+                <div className="text-xs text-white/70">Complete</div>
+              </div>
+              <button
+                onClick={() => navigate("/app/profile")}
+                className={`bg-white ${theme.primaryText} px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap text-sm`}
+              >
+                Update Profile
+              </button>
             </div>
-            <button className={`bg-white ${theme.primaryText} px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap`}>
-              Update Profile
-            </button>
+            <div className="bg-white/30 rounded-full h-2">
+              <div className="bg-white h-2 rounded-full" style={{ width: "75%" }} />
+            </div>
           </div>
         </div>
-        <div className="mt-4 bg-white/30 rounded-full h-2">
-          <div className="bg-white h-2 rounded-full" style={{ width: "75%" }} />
-        </div>
+
       </div>
     </div>
   );
