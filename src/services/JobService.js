@@ -96,6 +96,56 @@ export const fetchMyApplications = async () => {
   });
 };
 
+// ─── NEW ─────────────────────────────────────────────────
+// GET /candidate/applications/:id/interview
+// Returns the interview schedule linked to a specific application.
+// When the real backend is ready, uncomment the api call and delete the mock.
+export const fetchCandidateInterviewDetails = async (applicationId) => {
+  // const response = await api.get(`/candidate/applications/${applicationId}/interview`);
+  // return response.data;
+
+  // Mock data — one interview record per "Interview Scheduled" application.
+  // applicationId 2 = "Frontend Engineer" at "StartupXYZ"
+  const MOCK_INTERVIEWS = {
+    2: {
+      applicationId:  2,
+      jobTitle:       "Frontend Engineer",
+      company:        "StartupXYZ",
+      location:       "San Francisco, CA",
+      salary:         "$90k - $130k",
+      jobType:        "Full Time",
+      // Interview schedule fields
+      date:           "2026-06-10",
+      time:           "10:00 AM",
+      duration:       60,
+      platform:       "Google Meet",
+      meetingLink:    "https://meet.google.com/abc-defg-hij",
+      interviewerName: "HR Team",
+      notes:          "Please prepare a brief portfolio walkthrough.",
+      status:         "Scheduled",
+      // Job description extras
+      skills:         ["React", "JavaScript", "Tailwind CSS", "REST APIs"],
+      experience:     "2–4 years",
+      about:
+        "StartupXYZ is building the next generation of developer tools. " +
+        "You will join a small, fast-moving frontend team and own key " +
+        "product surfaces end-to-end.",
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const interview = MOCK_INTERVIEWS[applicationId];
+      if (interview) {
+        resolve(interview);
+      } else {
+        reject(new Error("No interview details found for this application."));
+      }
+    }, 600);
+  });
+};
+// ─────────────────────────────────────────────────────────
+
 // DELETE /candidate/applications/:id — withdraw an application
 export const withdrawApplication = async (applicationId) => {
   // const response = await api.delete(`/candidate/applications/${applicationId}`);
