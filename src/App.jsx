@@ -8,50 +8,61 @@ import Loader from "./ui/Loader";
 import RoleRoute from "./route/RoleRoute";
 
 // Lazy load pages
-const Landing   = lazy(() => import("./pages/Landing"));
-const Login     = lazy(() => import("./pages/Login"));
-const Register  = lazy(() => import("./pages/Register"));
-const Home      = lazy(() => import("./pages/Home"));
-const Jobs      = lazy(() => import("./pages/Jobs"));
-const Network   = lazy(() => import("./pages/Network"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Home = lazy(() => import("./pages/Home"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const Network = lazy(() => import("./pages/Network"));
 const Notification = lazy(() => import("./pages/Notification"));
-const JobDetails   = lazy(() => import("./pages/JobDetails"));
-const NotFound     = lazy(() => import("./pages/NotFound"));
-const UIDemo       = lazy(() => import("./pages/UIDemo"));
+const JobDetails = lazy(() => import("./pages/JobDetails"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const UIDemo = lazy(() => import("./pages/UIDemo"));
 
 // Candidate pages
-const BrowseJobs        = lazy(() => import("./pages/candidate/BrowseJobs"));
-const MyApplications    = lazy(() => import("./pages/candidate/MyApplications"));
-const Profile           = lazy(() => import("./pages/candidate/Profile"));
-const CandidateDashboard = lazy(() => import("./pages/candidate/CandidateDashboard"));
+const BrowseJobs = lazy(() => import("./pages/candidate/BrowseJobs"));
+const MyApplications = lazy(() => import("./pages/candidate/MyApplications"));
+const Profile = lazy(() => import("./pages/candidate/Profile"));
+const CandidateDashboard = lazy(
+  () => import("./pages/candidate/CandidateDashboard"),
+);
 const CandidateAIInsights = lazy(() => import("./pages/candidate/AIInsights")); // ← NEW
+const VideoInterview = lazy(() => import("./pages/candidate/VideoInterview"));
 
 // Employer pages
-const PostJob            = lazy(() => import("./pages/employer/PostJob"));
-const MyJobs             = lazy(() => import("./pages/employer/MyJobs"));
-const Applications       = lazy(() => import("./pages/employer/Applications"));
-const EmployerDashboard  = lazy(() => import("./pages/employer/EmployerDashboard"));
-const EmployerAnalytics  = lazy(() => import("./pages/employer/EmployerAnalytics"));
-const InterviewScheduler = lazy(() => import("./pages/employer/InterviewScheduler"));
+const PostJob = lazy(() => import("./pages/employer/PostJob"));
+const MyJobs = lazy(() => import("./pages/employer/MyJobs"));
+const Applications = lazy(() => import("./pages/employer/Applications"));
+const EmployerDashboard = lazy(
+  () => import("./pages/employer/EmployerDashboard"),
+);
+const EmployerAnalytics = lazy(
+  () => import("./pages/employer/EmployerAnalytics"),
+);
+const InterviewScheduler = lazy(
+  () => import("./pages/employer/InterviewScheduler"),
+);
 const EmployerAIInsights = lazy(() => import("./pages/employer/AIInsights")); // ← NEW
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminUsers     = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminJobs      = lazy(() => import("./pages/admin/AdminJobs"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 
 const Unauthorized = lazy(() => import("./pages/Unauthorized"));
 
 // Layouts (don't lazy load these)
-import AppLayout    from "./layouts/AppLayout";
-import AuthLayout   from "./layouts/AuthLayout";
+import AppLayout from "./layouts/AppLayout";
+import AuthLayout from "./layouts/AuthLayout";
 import PrivateRoute from "./route/PrivateRoute";
 
 // Payment pages
 const EmployerPricing = lazy(() => import("./pages/employer/EmployerPricing"));
-const CandidatePricing = lazy(() => import("./pages/candidate/CandidatePricing"));
-const Checkout       = lazy(() => import("./pages/Checkout"));
+const CandidatePricing = lazy(
+  () => import("./pages/candidate/CandidatePricing"),
+);
+const Checkout = lazy(() => import("./pages/Checkout"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 
 const LoadingFallback = () => (
@@ -74,7 +85,7 @@ function App() {
 
                   {/* Auth pages */}
                   <Route element={<AuthLayout />}>
-                    <Route path="/login"    element={<Login />} />
+                    <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                   </Route>
 
@@ -87,14 +98,14 @@ function App() {
                       </PrivateRoute>
                     }
                   >
-                    <Route index        element={<Home />} />
-                    <Route path="home"  element={<Home />} />
-                    <Route path="jobs"  element={<Jobs />} />
+                    <Route index element={<Home />} />
+                    <Route path="home" element={<Home />} />
+                    <Route path="jobs" element={<Jobs />} />
                     <Route path="jobs/:jobId" element={<JobDetails />} />
-                    <Route path="network"       element={<Network />} />
+                    <Route path="network" element={<Network />} />
                     <Route path="notifications" element={<Notification />} />
-                    <Route path="profile"       element={<Profile />} />
-                    <Route path="ui-demo"       element={<UIDemo />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="ui-demo" element={<UIDemo />} />
 
                     {/* Candidate specific */}
                     <Route
@@ -110,6 +121,15 @@ function App() {
                       element={
                         <RoleRoute allowedRoles={["candidate", "admin"]}>
                           <MyApplications />
+                        </RoleRoute>
+                      }
+                    />
+
+                    <Route
+                      path="video-interview"
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin"]}>
+                          <VideoInterview />
                         </RoleRoute>
                       }
                     />
@@ -243,8 +263,11 @@ function App() {
                         </RoleRoute>
                       }
                     />
-                    <Route path="checkout"        element={<Checkout />} />
-                    <Route path="payment-success" element={<PaymentSuccess />} />
+                    <Route path="checkout" element={<Checkout />} />
+                    <Route
+                      path="payment-success"
+                      element={<PaymentSuccess />}
+                    />
                   </Route>
 
                   {/* Unauthorized */}

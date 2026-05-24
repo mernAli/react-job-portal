@@ -1,89 +1,397 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Loader from "../../ui/Loader";
 import ApiError from "../../ui/ApiError";
 import { useToast } from "../../ui/toast/useToast";
-import { fetchMyApplications, withdrawApplication } from "../../services/JobService";
+import {
+  fetchMyApplications,
+  withdrawApplication,
+  fetchCandidateInterviewDetails,   // ← NEW
+} from "../../services/JobService";
 import useCache from "../../hooks/useCache";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const CACHE_KEY = "my-applications";
 
-const MyApplications = () => {
-  const { theme } = useTheme();
-  const { showToast } = useToast();
+// ─────────────────────────────────────────────────────────
+// Interview Details Modal
+// Shows full job + schedule info and a "Join Interview" CTA
+// ─────────────────────────────────────────────────────────
+const InterviewDetailsModal = ({ application, onClose, theme }) => {
+  const navigate = useNavigate();
+  const [details, setDetails]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [error,   setError]     = useState(null);
 
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("all");
+  // Fetch interview details when modal opens
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchCandidateInterviewDetails(application.id);
+        setDetails(data);
+      } catch (err) {
+        setError(err.message || "Failed to load interview details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [application.id]);
+
+  // Close on backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  const handleJoin = () => {
+    onClose();
+    navigate("/app/video-interview");
+  };
+
+  // Platform icon helper
+  const platformIcon = (platform = "") => {
+    if (platform.toLowerCase().includes("zoom"))   return "🟦";
+    if (platform.toLowerCase().includes("teams"))  return "🟪";
+    if (platform.toLowerCase().includes("phone"))  return "📞";
+    return "🟢"; // Google Meet default
+  };
+
+  // Status colour helper  — reuses your existing theme tokens
+  const statusStyle = (status) => {
+    switch (status) {
+      case "Confirmed":  return `${theme.successBg} ${theme.successText}`;
+      case "Cancelled":  return `${theme.dangerBg}  ${theme.dangerText}`;
+      case "Completed":  return `${theme.bg}        ${theme.textMuted}`;
+      default:           return `${theme.infoBg}    ${theme.infoText}`;   // Scheduled
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="interview-modal-title"
+    >
+      <div
+        className={`${theme.cardBg} ${theme.border} border rounded-2xl
+                    w-full max-w-lg max-h-[90vh] overflow-y-auto`}
+      >
+        {/* ── Modal header ── */}
+        <div
+          className={`flex items-center justify-between p-5
+                      border-b ${theme.border} sticky top-0 ${theme.cardBg} z-10`}
+        >
+          <h2
+            id="interview-modal-title"
+            className={`text-lg font-bold ${theme.textPrimary}`}
+          >
+            Interview Details
+          </h2>
+          <button
+            onClick={onClose}
+            aria-label="Close modal"
+            className={`${theme.textMuted} ${theme.hover} p-1.5 rounded-lg
+                        transition-colors text-xl leading-none`}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* ── Body ── */}
+        <div className="p-5 space-y-5">
+
+          {/* Loading */}
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader size="md" />
+            </div>
+          )}
+
+          {/* Error */}
+          {!loading && error && (
+            <div
+              className={`${theme.dangerBg} ${theme.dangerText} ${theme.border}
+                          border rounded-xl p-4 text-sm flex gap-2`}
+              role="alert"
+            >
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Content */}
+          {!loading && details && (
+            <>
+              {/* Job info block */}
+              <div
+                className={`${theme.bg} ${theme.border} border rounded-xl p-4
+                            space-y-1`}
+              >
+                <h3 className={`text-base font-bold ${theme.textPrimary}`}>
+                  {details.jobTitle}
+                </h3>
+                <p className={`text-sm ${theme.textSecondary}`}>
+                  {details.company}
+                </p>
+                <div
+                  className={`flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs
+                              ${theme.textMuted}`}
+                >
+                  <span>📍 {details.location}</span>
+                  <span>💰 {details.salary}</span>
+                  <span>🧳 {details.jobType}</span>
+                  <span>🛠 {details.experience} experience</span>
+                </div>
+
+                {/* Skills chips */}
+                {details.skills?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {details.skills.map((s) => (
+                      <span
+                        key={s}
+                        className={`text-xs px-2.5 py-0.5 rounded-full
+                                    ${theme.infoBg} ${theme.infoText}
+                                    font-medium`}
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* About */}
+                {details.about && (
+                  <p className={`text-xs ${theme.textMuted} mt-3 leading-relaxed`}>
+                    {details.about}
+                  </p>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className={`border-t ${theme.border}`} />
+
+              {/* Interview schedule block */}
+              <div>
+                <h4
+                  className={`text-xs font-semibold uppercase tracking-wide
+                              ${theme.textMuted} mb-3`}
+                >
+                  📅 Scheduled Interview
+                </h4>
+
+                <div className="space-y-2.5">
+                  {[
+                    { icon: "📆", label: "Date",        value: details.date },
+                    { icon: "🕐", label: "Time",        value: details.time },
+                    { icon: "⏱",  label: "Duration",    value: `${details.duration} minutes` },
+                    {
+                      icon: platformIcon(details.platform),
+                      label: "Platform",
+                      value: details.platform,
+                    },
+                    {
+                      icon: "👤",
+                      label: "Interviewer",
+                      value: details.interviewerName || "—",
+                    },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} className="flex items-start gap-3">
+                      <span className="text-base flex-shrink-0 w-5">{icon}</span>
+                      <span
+                        className={`text-xs ${theme.textMuted} w-20 flex-shrink-0 pt-0.5`}
+                      >
+                        {label}
+                      </span>
+                      <span
+                        className={`text-sm font-medium ${theme.textPrimary} flex-1`}
+                      >
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* Status badge inline */}
+                  <div className="flex items-start gap-3">
+                    <span className="text-base flex-shrink-0 w-5">🔖</span>
+                    <span
+                      className={`text-xs ${theme.textMuted} w-20 flex-shrink-0 pt-0.5`}
+                    >
+                      Status
+                    </span>
+                    <span
+                      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full
+                                  ${statusStyle(details.status)}`}
+                    >
+                      {details.status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {details.notes && (
+                  <div
+                    className={`mt-4 ${theme.warningBg} ${theme.border} border
+                                rounded-xl p-3 flex gap-2 text-sm`}
+                  >
+                    <span className="flex-shrink-0">📝</span>
+                    <span className={theme.textSecondary}>{details.notes}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Meeting link */}
+              {details.meetingLink && (
+                <div
+                  className={`${theme.bg} ${theme.border} border rounded-xl p-3
+                              flex items-center gap-3`}
+                >
+                  <span className="text-lg">🔗</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs ${theme.textMuted}`}>Meeting link</p>
+                    <p
+                      className={`text-xs ${theme.primaryText} font-medium
+                                  truncate`}
+                    >
+                      {details.meetingLink}
+                    </p>
+                  </div>
+                  <a
+                    href={details.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-xs ${theme.primaryText} ${theme.border} border
+                                px-2.5 py-1.5 rounded-lg ${theme.hover} font-medium
+                                whitespace-nowrap transition-colors`}
+                  >
+                    Open ↗
+                  </a>
+                </div>
+              )}
+
+              {/* ── CTA buttons ── */}
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={onClose}
+                  className={`flex-1 py-2.5 rounded-xl border ${theme.border}
+                              ${theme.textSecondary} ${theme.hover} text-sm
+                              font-medium transition-colors`}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleJoin}
+                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white
+                             text-sm font-semibold hover:bg-blue-700
+                             transition-colors flex items-center justify-center gap-2"
+                >
+                  🎥 Join Interview
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* No interview data (non-scheduled application) */}
+          {!loading && !error && !details && (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">📋</div>
+              <p className={`text-sm font-medium ${theme.textPrimary}`}>
+                No interview scheduled yet
+              </p>
+              <p className={`text-xs ${theme.textMuted} mt-1`}>
+                You will be notified when an interview is scheduled.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────
+// Main Page
+// ─────────────────────────────────────────────────────────
+const MyApplications = () => {
+  const { theme }      = useTheme();
+  const { showToast }  = useToast();
+
+  const [applications,  setApplications]  = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState(null);
+  const [filter,        setFilter]        = useState("all");
   const [withdrawingId, setWithdrawingId] = useState(null);
+
+  // ── NEW: modal state ──
+  const [selectedApp,   setSelectedApp]   = useState(null); // application object | null
 
   const { getCache, setCache, isFresh, invalidate } = useCache(60000);
 
-  // ── Load applications with cache ───────────────────────
-  const loadApplications = useCallback(async (forceRefresh = false) => {
-    if (!forceRefresh && isFresh(CACHE_KEY)) {
-      const cached = getCache(CACHE_KEY);
-      if (cached) {
-        setApplications(cached);
-        setLoading(false);
-        return;
+  // ── Load applications with cache ──────────────────────
+  const loadApplications = useCallback(
+    async (forceRefresh = false) => {
+      if (!forceRefresh && isFresh(CACHE_KEY)) {
+        const cached = getCache(CACHE_KEY);
+        if (cached) {
+          setApplications(cached);
+          setLoading(false);
+          return;
+        }
       }
-    }
+      try {
+        if (applications.length === 0) setLoading(true);
+        setError(null);
+        const data = await fetchMyApplications();
+        setCache(CACHE_KEY, data);
+        setApplications(data);
+      } catch (err) {
+        setError(err.message || "Failed to load applications");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [applications.length, isFresh, getCache, setCache]
+  );
 
-    try {
-      if (applications.length === 0) setLoading(true);
-      setError(null);
-      const data = await fetchMyApplications();
-      setCache(CACHE_KEY, data);
-      setApplications(data);
-    } catch (err) {
-      setError(err.message || "Failed to load applications");
-    } finally {
-      setLoading(false);
-    }
-  }, [applications.length, isFresh, getCache, setCache]);
-
-  useEffect(() => {
-    loadApplications();
-  }, []);
-
-  // Auto-refresh every 60 seconds
+  useEffect(() => { loadApplications(); }, []);
   useAutoRefresh(() => loadApplications(true), 60000);
 
-  // ── Optimistic Withdraw ────────────────────────────────
-  const handleWithdraw = useCallback(async (applicationId) => {
-    // Save original list in case we need to revert
-    const originalApplications = applications;
+  // ── Optimistic Withdraw ───────────────────────────────
+  const handleWithdraw = useCallback(
+    async (applicationId) => {
+      const originalApplications = applications;
+      try {
+        setWithdrawingId(applicationId);
+        setApplications((prev) =>
+          prev.filter((app) => app.id !== applicationId)
+        );
+        await withdrawApplication(applicationId);
+        invalidate(CACHE_KEY);
+        showToast("Application withdrawn successfully", "success");
+      } catch (err) {
+        setApplications(originalApplications);
+        showToast(err.message || "Failed to withdraw application", "error");
+      } finally {
+        setWithdrawingId(null);
+      }
+    },
+    [applications, invalidate, showToast]
+  );
 
-    try {
-      setWithdrawingId(applicationId);
-
-      // Optimistic update — remove from list immediately
-      setApplications((prev) => prev.filter((app) => app.id !== applicationId));
-
-      await withdrawApplication(applicationId);
-
-      // Invalidate cache so next load fetches fresh data
-      invalidate(CACHE_KEY);
-      showToast("Application withdrawn successfully", "success");
-    } catch (err) {
-      // Revert on failure
-      setApplications(originalApplications);
-      showToast(err.message || "Failed to withdraw application", "error");
-    } finally {
-      setWithdrawingId(null);
-    }
-  }, [applications, invalidate, showToast]);
-
-  // ── Filter logic ───────────────────────────────────────
+  // ── Filter logic ──────────────────────────────────────
   const filteredApplications =
     filter === "all"
       ? applications
-      : applications.filter((app) => app.status.toLowerCase().includes(filter));
+      : applications.filter((app) =>
+          app.status.toLowerCase().includes(filter)
+        );
 
+  // ── Loading / error states ────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -91,7 +399,6 @@ const MyApplications = () => {
       </div>
     );
   }
-
   if (error) {
     return <ApiError message={error} onRetry={() => loadApplications(true)} />;
   }
@@ -100,9 +407,20 @@ const MyApplications = () => {
     <div className="space-y-6">
       <Sidebar />
 
+      {/* Interview Details Modal */}
+      {selectedApp && (
+        <InterviewDetailsModal
+          application={selectedApp}
+          onClose={() => setSelectedApp(null)}
+          theme={theme}
+        />
+      )}
+
       {/* Header */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
-        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>My Applications</h1>
+        <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
+          My Applications
+        </h1>
         <p className={`${theme.textSecondary} mt-2`}>
           Track the status of your job applications
         </p>
@@ -110,45 +428,52 @@ const MyApplications = () => {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
-          <p className={`text-xs ${theme.textMuted} font-medium`}>Total</p>
-          <h3 className={`text-2xl font-bold ${theme.textPrimary} mt-1`}>{applications.length}</h3>
-        </div>
-        <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
-          <p className={`text-xs ${theme.textMuted} font-medium`}>Under Review</p>
-          <h3 className={`text-2xl font-bold ${theme.warningText} mt-1`}>
-            {applications.filter((a) => a.status === "Under Review").length}
-          </h3>
-        </div>
-        <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
-          <p className={`text-xs ${theme.textMuted} font-medium`}>Interviews</p>
-          <h3 className={`text-2xl font-bold ${theme.infoText} mt-1`}>
-            {applications.filter((a) => a.status === "Interview Scheduled").length}
-          </h3>
-        </div>
-        <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
-          <p className={`text-xs ${theme.textMuted} font-medium`}>Offers</p>
-          <h3 className={`text-2xl font-bold ${theme.successText} mt-1`}>
-            {applications.filter((a) => a.status === "Offer Received").length}
-          </h3>
-        </div>
-        <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
-          <p className={`text-xs ${theme.textMuted} font-medium`}>Rejected</p>
-          <h3 className={`text-2xl font-bold ${theme.dangerText} mt-1`}>
-            {applications.filter((a) => a.status === "Rejected").length}
-          </h3>
-        </div>
+        {[
+          {
+            label: "Total",
+            value: applications.length,
+            color: theme.textPrimary,
+          },
+          {
+            label: "Under Review",
+            value: applications.filter((a) => a.status === "Under Review").length,
+            color: theme.warningText,
+          },
+          {
+            label: "Interviews",
+            value: applications.filter((a) => a.status === "Interview Scheduled").length,
+            color: theme.infoText,
+          },
+          {
+            label: "Offers",
+            value: applications.filter((a) => a.status === "Offer Received").length,
+            color: theme.successText,
+          },
+          {
+            label: "Rejected",
+            value: applications.filter((a) => a.status === "Rejected").length,
+            color: theme.dangerText,
+          },
+        ].map(({ label, value, color }) => (
+          <div
+            key={label}
+            className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}
+          >
+            <p className={`text-xs ${theme.textMuted} font-medium`}>{label}</p>
+            <h3 className={`text-2xl font-bold ${color} mt-1`}>{value}</h3>
+          </div>
+        ))}
       </div>
 
       {/* Filter Buttons */}
       <div className={`${theme.cardBg} p-4 rounded-xl ${theme.border} border`}>
         <div className="flex gap-3 flex-wrap">
           {[
-            { key: "all", label: `All (${applications.length})` },
+            { key: "all",          label: `All (${applications.length})` },
             { key: "under review", label: "Under Review" },
-            { key: "interview", label: "Interview Scheduled" },
-            { key: "offer", label: "Offer Received" },
-            { key: "rejected", label: "Rejected" },
+            { key: "interview",    label: "Interview Scheduled" },
+            { key: "offer",        label: "Offer Received" },
+            { key: "rejected",     label: "Rejected" },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -170,24 +495,43 @@ const MyApplications = () => {
         {filteredApplications.map((application) => (
           <div
             key={application.id}
-            className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border ${theme.hover} transition-all ${
+            className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border
+                        ${theme.hover} transition-all ${
               withdrawingId === application.id ? "opacity-50" : ""
             }`}
           >
             <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
+
+              {/* ── Left: job info ── */}
               <div className="flex-1">
                 <h3 className={`text-lg font-semibold ${theme.textPrimary}`}>
                   {application.jobTitle}
                 </h3>
-                <p className={`${theme.textSecondary} mt-1`}>{application.company}</p>
-                <div className={`flex flex-wrap items-center gap-4 mt-3 text-sm ${theme.textMuted}`}>
+                <p className={`${theme.textSecondary} mt-1`}>
+                  {application.company}
+                </p>
+                <div
+                  className={`flex flex-wrap items-center gap-4 mt-3 text-sm
+                              ${theme.textMuted}`}
+                >
                   <span>📍 {application.location}</span>
                   <span>💰 {application.salary}</span>
                   <span>📅 Applied: {application.appliedDate}</span>
                 </div>
+
+                {/* ── NEW: interview date/time chip ── */}
+                {/* Shown only on cards whose status is "Interview Scheduled"  */}
+                {application.status === "Interview Scheduled" && (
+                  <div className="mt-3">
+                    <InterviewScheduleChip
+                      applicationId={application.id}
+                      theme={theme}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Status and Actions */}
+              {/* ── Right: status badge + action buttons ── */}
               <div className="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto">
                 <span
                   className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -204,14 +548,26 @@ const MyApplications = () => {
                 </span>
 
                 <div className="flex gap-2 w-full lg:w-auto">
-                  <button className={`flex-1 lg:flex-none px-3 py-1.5 text-sm ${theme.primaryText} ${theme.border} border rounded-lg ${theme.hover} font-medium`}>
+                  {/* ── UPDATED: "View Details" now opens modal ── */}
+                  <button
+                    onClick={() => setSelectedApp(application)}
+                    className={`flex-1 lg:flex-none px-3 py-1.5 text-sm
+                                ${theme.primaryText} ${theme.border} border
+                                rounded-lg ${theme.hover} font-medium
+                                transition-colors`}
+                  >
                     View Details
                   </button>
+
                   {application.status !== "Rejected" && (
                     <button
                       onClick={() => handleWithdraw(application.id)}
                       disabled={withdrawingId === application.id}
-                      className={`flex-1 lg:flex-none px-3 py-1.5 text-sm ${theme.dangerText} ${theme.border} border rounded-lg ${theme.hover} font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className={`flex-1 lg:flex-none px-3 py-1.5 text-sm
+                                  ${theme.dangerText} ${theme.border} border
+                                  rounded-lg ${theme.hover} font-medium
+                                  disabled:opacity-50 disabled:cursor-not-allowed
+                                  transition-colors`}
                     >
                       {withdrawingId === application.id ? "..." : "Withdraw"}
                     </button>
@@ -225,11 +581,18 @@ const MyApplications = () => {
 
       {/* Empty State */}
       {filteredApplications.length === 0 && (
-        <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
+        <div
+          className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border
+                      text-center`}
+        >
           <div className="text-4xl mb-3">📋</div>
-          <p className={`${theme.textPrimary} font-medium mb-1`}>No applications found</p>
+          <p className={`${theme.textPrimary} font-medium mb-1`}>
+            No applications found
+          </p>
           <p className={`${theme.textMuted} text-sm`}>
-            {filter === "all" ? "You haven't applied to any jobs yet." : "No applications match this filter."}
+            {filter === "all"
+              ? "You haven't applied to any jobs yet."
+              : "No applications match this filter."}
           </p>
         </div>
       )}
@@ -238,3 +601,50 @@ const MyApplications = () => {
 };
 
 export default MyApplications;
+
+// ─────────────────────────────────────────────────────────
+// InterviewScheduleChip
+// Small inline chip that fetches + shows date/time for one
+// "Interview Scheduled" application card.
+// Kept outside MyApplications so it has its own loading state
+// without blocking the parent list render.
+// ─────────────────────────────────────────────────────────
+const InterviewScheduleChip = ({ applicationId, theme }) => {
+  const [info,    setInfo]    = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCandidateInterviewDetails(applicationId)
+      .then((data) => { if (!cancelled) { setInfo(data); setLoading(false); } })
+      .catch(()    => { if (!cancelled)   setLoading(false); });
+    return () => { cancelled = true; };
+  }, [applicationId]);
+
+  if (loading) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs ${theme.textMuted}
+                    ${theme.bg} px-3 py-1 rounded-full ${theme.border} border`}
+      >
+        <span
+          className="w-3 h-3 border border-current border-t-transparent
+                     rounded-full animate-spin"
+        />
+        Loading schedule…
+      </span>
+    );
+  }
+
+  if (!info) return null;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-2 text-xs font-medium
+                  ${theme.infoBg} ${theme.infoText} ${theme.border} border
+                  px-3 py-1 rounded-full`}
+    >
+      📅 {info.date} &nbsp;·&nbsp; 🕐 {info.time} &nbsp;·&nbsp; {info.platform}
+    </span>
+  );
+};

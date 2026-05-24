@@ -127,11 +127,7 @@ useEffect(() => {
     }
   }, []);
 
-  const send = useCallback((data) => {
-    if (wsRef.current?.readyState === 1) {
-      wsRef.current.send(JSON.stringify(data));
-    }
-  }, []);
+  
 
   return (
     <WebSocketContext.Provider
