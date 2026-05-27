@@ -1,6 +1,6 @@
 # ZECPATH — Job Portal Frontend
 
-A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 42-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, WebSocket-powered live UI, Redux state management, smart API caching, interactive analytics dashboards, and a fully functional AI video interview interface.
+A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 43-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, WebSocket-powered live UI, Redux state management, smart API caching, interactive analytics dashboards, and a fully functional AI video interview interface.
 
 ---
 
@@ -87,15 +87,34 @@ A fully functional, 4-screen AI video interview experience built on the WebRTC `
 - Pre-interview checklist (quiet location, close tabs, no mobile phone, etc.)
 - Interview info card — job title, company, AI interviewer name, duration
 
-#### Screen 3 — Live Interview
+#### Screen 3 — Instructions & Compliance (Day 43)
+- Six interview rules presented as an interactive checklist — each must be individually ticked
+- 30-second read timer with animated SVG arc ring — "I Agree" button locked until timer completes
+- `visibilitychange` API detects tab switches in real time during the instructions phase
+- Real-time compliance status panel: timer status, rules acknowledged count, tab switch count
+- Shared `ViolationAlert` component — severity scales from warning → danger → critical
+- Consent note displayed before proceeding
+- Step indicator updated from 3 steps to 4 (Permissions → Waiting Room → Instructions → Interview)
+
+#### Screen 4 — Live Interview
 - Top status bar: REC badge, elapsed timer, integrity monitoring indicator
 - AI interviewer tile with animated speaking ring (pulses green when speaking)
 - Candidate self-view tile with camera-off overlay and muted mic badge
-- Mic and camera toggles — tracks enabled/disabled in real time
+- Mic and camera toggles — tracks enabled/dis#### Screen 3 — Instructions & Compliance (Day 43)
+- Six interview rules presented as an interactive checklist — each must be individually ticked
+- 30-second read timer with animated SVG arc ring — "I Agree" button locked until timer completes
+- `visibilitychange` API detects tab switches in real time during the instructions phase
+- Real-time compliance status panel: timer status, rules acknowledged count, tab switch count
+- Shared `ViolationAlert` component — severity scales from warning → danger → critical
+- Consent note displayed before proceeding
+- Step indicator updated from 3 steps to 4 (Permissions → Waiting Room → Instructions → Interview)abled in real time
 - End Interview button triggers confirmation modal (same pattern as InterviewScheduler)
 - Modal — "Keep going" or "End interview" with clean focus management
+- `ViolationAlert` banner fires on tab switch (visibilitychange) and camera-off events
+- Violation counter badge in top status bar shows running total of flagged actions
+- Camera-off violation auto-clears when camera is re-enabled
 
-#### Screen 4 — Interview Complete
+#### Screen 5 — Interview Complete
 - Duration display with formatted elapsed time
 - Confirmation message with AI analysis note
 - "Back to Dashboard" button navigating to `/app/candidate-dashboard`
