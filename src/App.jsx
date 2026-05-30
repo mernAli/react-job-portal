@@ -43,6 +43,7 @@ const InterviewScheduler = lazy(
   () => import("./pages/employer/InterviewScheduler"),
 );
 const EmployerAIInsights = lazy(() => import("./pages/employer/AIInsights")); // ← NEW
+const RecruiterReview = lazy(() => import("./pages/employer/RecruiterReview"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -181,6 +182,14 @@ function App() {
                       element={
                         <RoleRoute allowedRoles={["employer", "admin"]}>
                           <InterviewScheduler />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="recruiter-review"
+                      element={
+                        <RoleRoute allowedRoles={["employer", "admin"]}>
+                          <RecruiterReview />
                         </RoleRoute>
                       }
                     />

@@ -454,6 +454,15 @@ const Topbar = () => {
                       >
                         📄 Applications
                       </button>
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigate("/app/recruiter-review");
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${theme.textPrimary} ${theme.hover}`}
+                      >
+                        ✍️ Recruiter Review
+                      </button>
                     </>
                   )}
                   {user?.role === "admin" && (
