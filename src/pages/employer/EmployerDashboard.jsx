@@ -12,6 +12,7 @@ import {
 import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 import { useNavigate } from "react-router-dom";
 import { SectionErrorBoundary } from "../../components/ErrorBoundary.jsx";
+import LiveActivityFeed from "../../components/Dashboard/LiveActivityFeed";
 import {
   LineChart,
   Line,
