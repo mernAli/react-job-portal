@@ -1,6 +1,6 @@
 # ZECPATH — Job Portal Frontend
 
-A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 43-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, WebSocket-powered live UI, Redux state management, smart API caching, interactive analytics dashboards, and a fully functional AI video interview interface.
+A production-grade job portal web application built with React, Vite, and Tailwind CSS during a 44-day frontend internship. ZECPATH connects candidates and employers through a feature-rich platform with role-based dashboards, a full ATS with interview scheduling, admin panel, payment flows, real-time notifications, WebSocket-powered live UI, Redux state management, smart API caching, interactive analytics dashboards, a fully functional AI video interview interface with compliance monitoring, and a recruiter review dashboard with video playback and AI-generated hiring reports.
 
 ---
 
@@ -68,6 +68,7 @@ A production-grade job portal web application built with React, Vite, and Tailwi
 - Employer dashboard with stats, live activity feed, and mini trend chart
 - Full hiring analytics page — application trend, hiring funnel, candidate pipeline
 - Pricing plans with monthly/yearly billing toggle
+- **Recruiter Review Dashboard** — video playback, AI scores, dimension bars, integrity flags, Hire/Hold/Reject decisions (Day 44)
 
 ### 🎥 Video Interview Interface (Day 42)
 
@@ -94,25 +95,15 @@ A fully functional, 4-screen AI video interview experience built on the WebRTC `
 - Real-time compliance status panel: timer status, rules acknowledged count, tab switch count
 - Shared `ViolationAlert` component — severity scales from warning → danger → critical
 - Consent note displayed before proceeding
-- Step indicator updated from 3 steps to 4 (Permissions → Waiting Room → Instructions → Interview)
 
 #### Screen 4 — Live Interview
-- Top status bar: REC badge, elapsed timer, integrity monitoring indicator
+- Top status bar: REC badge, elapsed timer, integrity monitoring indicator, violation count badge
 - AI interviewer tile with animated speaking ring (pulses green when speaking)
 - Candidate self-view tile with camera-off overlay and muted mic badge
-- Mic and camera toggles — tracks enabled/dis#### Screen 3 — Instructions & Compliance (Day 43)
-- Six interview rules presented as an interactive checklist — each must be individually ticked
-- 30-second read timer with animated SVG arc ring — "I Agree" button locked until timer completes
-- `visibilitychange` API detects tab switches in real time during the instructions phase
-- Real-time compliance status panel: timer status, rules acknowledged count, tab switch count
-- Shared `ViolationAlert` component — severity scales from warning → danger → critical
-- Consent note displayed before proceeding
-- Step indicator updated from 3 steps to 4 (Permissions → Waiting Room → Instructions → Interview)abled in real time
+- Mic and camera toggles — tracks enabled/disabled in real time
+- `ViolationAlert` banner fires on tab switch (`visibilitychange`) and camera-off events
 - End Interview button triggers confirmation modal (same pattern as InterviewScheduler)
 - Modal — "Keep going" or "End interview" with clean focus management
-- `ViolationAlert` banner fires on tab switch (visibilitychange) and camera-off events
-- Violation counter badge in top status bar shows running total of flagged actions
-- Camera-off violation auto-clears when camera is re-enabled
 
 #### Screen 5 — Interview Complete
 - Duration display with formatted elapsed time
@@ -120,7 +111,7 @@ A fully functional, 4-screen AI video interview experience built on the WebRTC `
 - "Back to Dashboard" button navigating to `/app/candidate-dashboard`
 
 #### Step Indicator
-- 3-step progress indicator in the page header: Permissions → Waiting Room → Interview
+- 4-step progress indicator in the page header: Permissions → Waiting Room → Instructions → Interview
 - Active step highlighted in blue, completed steps show a ✓ checkmark
 
 #### Integration with My Applications
@@ -136,6 +127,28 @@ A fully functional, 4-screen AI video interview experience built on the WebRTC `
 - AI-generated personalized remarks for improvement
 - Candidate ranking system based on AI scores
 - AI-driven hiring recommendations (shortlist, interview, reject)
+
+### 🎬 Recruiter Review Dashboard (Day 44)
+
+A dedicated employer-side page for reviewing completed AI video interviews, evaluating candidates, and making hiring decisions — all in one place.
+
+#### Candidate Review Cards
+- Summary strip: total reviewed, recommended, needs review, flagged, average AI score, decisions made
+- Each card shows avatar, AI verdict badge, top 3 dimension bars, integrity badge, score ring, recording chip
+- Filter by: all, recommended, needs review, flagged, pending decision, decided
+- Sort by: score, date, name
+
+#### Review Modal (opens on "Review" click)
+- Interview metadata row: date, time, duration, platform
+- **Video Playback Panel** — native `<video>` with real URL, mock playback UI for demo; AI highlight timestamps shown below
+- **AI Score Panel** — overall score ring, verdict badge, confidence level, all 5 dimension bars, integrity flags block
+- **AI Remark** block — full AI-generated candidate summary
+- **Recruiter Decision** — Hire / Hold / Reject buttons + free-text feedback textarea + save with optimistic state update
+
+#### Integrity System
+- `IntegrityBadge` — Clean / Minor Flags / Critical Flags driven by violation count
+- Tab switch and camera-off event counts shown in dedicated danger block
+- `fetchInterviewReviews()` added to `scheduleService.js` — backend-ready
 
 ### 📡 Real-Time UI — WebSocket System
 - Custom `MockWebSocket` class mirroring the browser `WebSocket` API
@@ -227,7 +240,8 @@ src/
 │   │   ├── EmployerPricing.jsx
 │   │   ├── InterviewScheduler.jsx
 │   │   ├── MyJobs.jsx
-│   │   └── PostJob.jsx
+│   │   ├── PostJob.jsx
+│   │   └── RecruiterReview.jsx         ← NEW (Day 44)
 │   ├── Checkout.jsx
 │   ├── Home.jsx
 │   ├── JobDetails.jsx
@@ -252,7 +266,7 @@ src/
 │   ├── JobService.js                   ← UPDATED (Day 42)
 │   ├── mockWebSocket.js
 │   ├── paymentService.js
-│   ├── scheduleService.js
+│   ├── scheduleService.js              ← UPDATED (Day 44)
 │   └── uploadService.js
 ├── store/
 │   ├── authSlice.js
@@ -281,18 +295,30 @@ src/
 
 ## 🏗️ Architecture Decisions
 
-### Video Interview Architecture (Day 42)
-The video interview flow is a single-file, 4-component state machine. The root `VideoInterview` component holds one `screen` state variable and passes the live `MediaStream` object forward through all screens so permissions are requested exactly once.
+### Video Interview Architecture (Day 42–43)
+The video interview flow is a single-file, 5-component state machine. The root `VideoInterview` component holds one `screen` state variable and passes the live `MediaStream` object forward through all screens so permissions are requested exactly once.
 
 ```
 VideoInterview (root)
-├── screen = "permission"  →  PermissionScreen   (getUserMedia, live preview)
-├── screen = "waiting"     →  WaitingRoom        (countdown, mic/cam toggles)
-├── screen = "interview"   →  InterviewScreen    (AI tile, self-view PiP, controls)
-└── screen = "ended"       →  EndedScreen        (duration, back to dashboard)
+├── screen = "permission"    →  PermissionScreen    (getUserMedia, live preview)
+├── screen = "waiting"       →  WaitingRoom         (countdown, mic/cam toggles)
+├── screen = "instructions"  →  InstructionsScreen  (rules checklist, read timer, tab-switch detection)
+├── screen = "interview"     →  InterviewScreen     (AI tile, self-view, controls, violation alerts)
+└── screen = "ended"         →  EndedScreen         (duration, back to dashboard)
 ```
 
-Switching to a real WebRTC peer connection requires replacing the mock AI avatar tile with a remote `<video>` element — everything else (stream management, controls, modal, routing) stays identical.
+The shared `ViolationAlert` component is used in both `InstructionsScreen` and `InterviewScreen` — severity auto-escalates from warning → danger → critical based on violation count.
+
+### Recruiter Review Architecture (Day 44)
+The review dashboard is fully self-contained. `fetchInterviewReviews()` is the single data contract — it returns enriched interview records with AI scores, dimension breakdowns, integrity data, and video metadata. The `ReviewModal` uses optimistic state update on save: `handleDecision` updates the parent `reviews` array immediately without waiting for a re-fetch.
+
+```
+RecruiterReview (root)
+├── ReviewCard       — list item with mini bars, integrity badge, score ring
+├── ReviewModal      — full detail: metadata, VideoPlaybackPanel, AI scores, decision
+│   └── VideoPlaybackPanel  — native <video> or mock playback UI + highlight timestamps
+└── fetchInterviewReviews() → scheduleService.js (backend-ready)
+```
 
 ### My Applications → Video Interview Integration
 `fetchCandidateInterviewDetails(applicationId)` in `JobService.js` is the single data contract between the applications list and the interview flow. The `InterviewScheduleChip` component fetches and renders inline on the card with its own loading state so the parent list never blocks. The modal's "Join Interview" button calls `navigate("/app/video-interview")` — one line to swap for a dynamic route with interview ID when the backend is ready.
@@ -400,12 +426,14 @@ npm run preview
 | 40    | AI Insights Dashboard — score visualization, smart hiring panels                    |
 | 41    | Real-time UI — WebSocket system, live activity feed, live notifications             |
 | 42    | Video Interview Interface — permission flow, waiting room, live interview, My Applications integration |
+| 43    | Interview Instructions & Compliance — rules checklist, read timer, ViolationAlert, tab-switch detection |
+| 44    | Recruiter Review Dashboard — video playback UI, AI score breakdown, integrity flags, Hire/Hold/Reject decisions |
 
 ---
 
 ## 🤖 AI Feature Highlight
 
-ZECPATH includes an AI-driven insights layer and a fully autonomous AI video interview system. Candidates receive actionable insights on profile strength, and employers get intelligent candidate rankings. The video interview interface simulates a real AI HR interviewer with voice state animations, integrity monitoring, and a complete post-interview summary flow.
+ZECPATH includes an AI-driven insights layer, a fully autonomous AI video interview system with compliance monitoring, and a recruiter review dashboard. Candidates receive actionable insights on profile strength and go through a rules-enforced interview flow with real-time violation detection. Employers get intelligent candidate rankings, AI-generated interview reports, video playback with highlight timestamps, and a one-click Hire/Hold/Reject decision system.
 
 ---
 
@@ -419,4 +447,4 @@ ZECPATH features a fully event-driven real-time layer powered by WebSockets. All
 
 **Ali Aman** — Frontend Developer (React.js)
 - Location: Feroke, Kozhikode
-- Internship: ZECPATH Frontend (Days 7–42)
+- Internship: ZECPATH Frontend (Days 7–44)
