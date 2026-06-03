@@ -11,6 +11,7 @@ import {
 } from "../../services/scheduleService";
 import useNotifications from "../../context/useNotifications";
 import { NOTIF_TYPES } from "../../context/NotificationContext";
+import LockedFeature from "../../components/LockedFeature";
 
 // ─── Constants ────────────────────────────────────────────
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -523,6 +524,12 @@ const InterviewScheduler = () => {
     <div className="space-y-6 px-2 sm:px-0">
       <Sidebar />
 
+      <LockedFeature
+        featureKey="INTERVIEW_SCHEDULER"
+        mode="hidden"
+        pricingPath="/app/employer-pricing"
+      >
+
       {/* Schedule modal */}
       {showModal && (
         <ScheduleModal
@@ -734,6 +741,7 @@ const InterviewScheduler = () => {
           )}
         </div>
       </div>
+      </LockedFeature>
     </div>
   );
 };

@@ -12,6 +12,7 @@ import {
   LineChart, Line, BarChart, Bar, FunnelChart, Funnel, LabelList,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell,
 } from "recharts";
+import LockedFeature from "../../components/LockedFeature";
 
 // ─── Shared tooltip style ─────────────────────────────────
 const TooltipStyle = {
@@ -91,6 +92,12 @@ const EmployerAnalytics = () => {
   return (
     <div className="space-y-6 px-2 sm:px-0">
       <Sidebar />
+
+      <LockedFeature
+        featureKey="ADVANCED_ANALYTICS"
+        mode="hidden"
+        pricingPath="/app/employer-pricing"
+      >
 
       {/* Page Header */}
       <div className={`${theme.cardBg} p-4 sm:p-6 rounded-xl ${theme.border} border`}>
@@ -219,6 +226,7 @@ const EmployerAnalytics = () => {
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
+      </LockedFeature>
     </div>
   );
 };

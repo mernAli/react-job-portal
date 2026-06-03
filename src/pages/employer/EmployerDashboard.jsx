@@ -23,6 +23,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import LockedFeature from "../../components/LockedFeature.jsx";
 
 const EmployerDashboard = () => {
   const { user } = useAuth();
@@ -424,6 +425,11 @@ const EmployerDashboard = () => {
           </button>
         </div>
         <div className={`${theme.success} rounded-xl p-4 sm:p-6 text-white`}>
+          <LockedFeature
+            featureKey="AI_INSIGHTS"
+            mode="blur"
+            pricingPath="/app/employer-pricing"
+          >
           <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
             AI Candidate Insights
           </h3>
@@ -437,6 +443,7 @@ const EmployerDashboard = () => {
           >
             View Insights
           </button>
+          </LockedFeature>
         </div>
       </div>
     </div>

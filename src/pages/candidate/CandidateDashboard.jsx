@@ -14,6 +14,7 @@ import Sidebar from "../../components/Dashboard/Sidebar.jsx";
 import { SectionErrorBoundary } from "../../components/ErrorBoundary.jsx";
 import { useNavigate } from "react-router-dom";
 import LiveActivityFeed from "../../components/Dashboard/LiveActivityFeed";
+import LockedFeature from "../../components/LockedFeature.jsx";
 
 // Mini score ring for dashboard preview
 const MiniScoreRing = ({ score, size = 80, strokeWidth = 7 }) => {
@@ -144,6 +145,11 @@ const CandidateDashboard = () => {
 
       {/* ── Mini AI Score Preview ─────────────────────── */}
       <SectionErrorBoundary>
+        <LockedFeature
+          featureKey="AI_SCORE"
+          mode="blur"
+          pricingPath="/app/candidate-pricing"
+        >
         <div className={`${theme.cardBg} rounded-xl ${theme.border} border p-5`}>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -197,6 +203,7 @@ const CandidateDashboard = () => {
             </div>
           ) : null}
         </div>
+        </LockedFeature>
       </SectionErrorBoundary>
 
       {/* Two Column Layout — Recent Applications + Recommended Jobs */}

@@ -12,6 +12,7 @@ import {
 } from "../../services/JobService";
 import useCache from "../../hooks/useCache";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
+import LockedFeature from "../../components/LockedFeature";
 
 const CACHE_KEY = "my-applications";
 
@@ -78,6 +79,12 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
       aria-modal="true"
       aria-labelledby="interview-modal-title"
     >
+
+      <LockedFeature
+          featureKey="VIDEO_INTERVIEW"
+          mode="banner"
+          pricingPath="/app/candidate-pricing"
+      >
       <div
         className={`${theme.cardBg} ${theme.border} border rounded-2xl
                     w-full max-w-lg max-h-[90vh] overflow-y-auto`}
@@ -310,6 +317,7 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
           )}
         </div>
       </div>
+      </LockedFeature>
     </div>
   );
 };

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../ui/toast/useToast";
-import { processPayment } from "../services/paymentService";
+import { processPayment, saveUserPlan } from "../services/paymentService";
 import useNotifications from "../context/useNotifications";
 import { NOTIF_TYPES } from "../context/NotificationContext";
 import Sidebar from "../components/Dashboard/Sidebar";
+
 
 const Checkout = () => {
   const { theme } = useTheme();
@@ -82,6 +83,9 @@ const Checkout = () => {
         amount: plan.price,
         billing: plan.billing,
       });
+
+      saveUserPlan(plan.name); // saves "Pro" or "Enterprise" to localStorage
+
 
       // Success — navigate to success page
       addNotification(
