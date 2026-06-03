@@ -7,6 +7,7 @@ import {
   fetchCandidateScoreCards,
   fetchHiringInsights,
 } from "../../services/aiService";
+import LockedFeature from "../../components/LockedFeature";
 
 // ─── Mini score ring ──────────────────────────────────────
 const MiniRing = ({ score, size = 56, strokeWidth = 5 }) => {
@@ -129,6 +130,12 @@ const EmployerAIInsights = () => {
   return (
     <div className="space-y-6 px-2 sm:px-0">
       <Sidebar />
+
+      <LockedFeature
+        featureKey="AI_INSIGHTS"
+        mode="hidden"
+        pricingPath="/app/employer-pricing"
+      >
 
       {/* Page Header */}
       <div className={`${theme.cardBg} p-4 sm:p-6 rounded-xl ${theme.border} border`}>
@@ -261,6 +268,7 @@ const EmployerAIInsights = () => {
           })}
         </div>
       </div>
+      </LockedFeature>
     </div>
   );
 };

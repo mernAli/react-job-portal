@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext";
 import Loader from "../../ui/Loader";
 import ApiError from "../../ui/ApiError";
 import { fetchEmployerPlans } from "../../services/paymentService";
+import Sidebar from "../../components/Dashboard/Sidebar";
 
 const EmployerPricing
  = () => {
@@ -69,6 +70,7 @@ const EmployerPricing
 
   return (
     <div className="space-y-8">
+      <Sidebar />
       {/* Header */}
       <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border text-center`}>
         <h1 className={`text-3xl font-bold ${theme.textPrimary} mb-3`}>

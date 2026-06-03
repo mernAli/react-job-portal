@@ -7,6 +7,7 @@ import ApiError from "../../ui/ApiError";
 import { useToast } from "../../ui/toast/useToast";
 import { SectionErrorBoundary } from "../../components/ErrorBoundary";
 import { fetchInterviewReviews } from "../../services/scheduleService";
+import LockedFeature from "../../components/LockedFeature";
 
 // ─────────────────────────────────────────────────────────
 // Score Ring — same pattern as AIInsights.jsx
@@ -585,6 +586,12 @@ const RecruiterReview = () => {
     <div className="space-y-6 px-2 sm:px-0 mt-5">
       <Sidebar />
 
+      <LockedFeature
+        featureKey="RECRUITER_REVIEW"
+        mode="hidden"
+        pricingPath="/app/employer-pricing"
+      >
+
       {/* Modal */}
       {selected && (
         <ReviewModal
@@ -715,6 +722,8 @@ const RecruiterReview = () => {
           </p>
         </div>
       )}
+
+      </LockedFeature>
     </div>
   );
 };

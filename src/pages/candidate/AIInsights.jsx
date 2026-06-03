@@ -8,6 +8,7 @@ import {
   fetchInterviewProgress,
   fetchCandidateAIRemarks,
 } from "../../services/aiService";
+import LockedFeature from "../../components/LockedFeature";
 
 // ─── Score Ring (SVG circle progress) ────────────────────
 const ScoreRing = ({ score, size = 120, strokeWidth = 10 }) => {
@@ -143,9 +144,15 @@ const CandidateAIInsights = () => {
     scoreData.overallScore >= 50 ? theme.warningText : theme.dangerText;
 
   return (
+    
     <div className="space-y-6 px-2 sm:px-0">
       <Sidebar />
 
+      <LockedFeature
+          featureKey="RECRUITER_REVIEW"
+          mode="hidden"
+          pricingPath="/app/employer-pricing"
+      >
       {/* Page Header */}
       <div className={`${theme.cardBg} p-4 sm:p-6 rounded-xl ${theme.border} border`}>
         <div className="flex items-center justify-between">
@@ -260,6 +267,7 @@ const CandidateAIInsights = () => {
           ))}
         </div>
       </div>
+      </LockedFeature>
     </div>
   );
 };
