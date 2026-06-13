@@ -3,7 +3,7 @@ import api from "./api";
 // ─── Plan persistence key ─────────────────────────────────
 // Used by getUserPlan() to read the active plan from localStorage.
 // Written by saveUserPlan() immediately after a successful payment.
-const PLAN_KEY = "zecpath_user_plan";
+const planKey = (userEmail) => `zecpath_plan_${userEmail}`;
 
 // ─── NEW (Day 45) ─────────────────────────────────────────
 // Saves the purchased plan to localStorage.
@@ -15,27 +15,23 @@ const PLAN_KEY = "zecpath_user_plan";
 // This makes getUserPlan() return the correct plan instantly on the
 // next render, so ALL LockedFeature gates across the app disappear
 // without requiring a page reload.
-export const saveUserPlan = (planName) => {
+export const saveUserPlan = (planName, userEmail) => {
   // planName should be "free" | "pro" | "enterprise"
-  localStorage.setItem(PLAN_KEY, planName.toLowerCase());
+  localStorage.setItem(planKey(userEmail), planName.toLowerCase());
+  // Notify all useFeatureAccess hook instances to re-fetch
+  window.dispatchEvent(new CustomEvent("plan:updated"));
 };
 
 // GET /user/plan
 // Reads from localStorage first (set on payment success).
 // Falls back to "free" if nothing is stored.
 // When real backend is ready: uncomment the api.get line.
-export const getUserPlan = async () => {
+export const getUserPlan = async (userEmail) => {
   // const response = await api.get("/user/plan");
   // return response.data.plan;
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const stored = localStorage.getItem(PLAN_KEY);
-      // stored is "pro" or "enterprise" after a successful payment,
-      // "free" or null before any payment.
-      resolve(stored || "free");
-    }, 300);
-  });
+  const stored = localStorage.getItem(planKey(userEmail));
+  return stored || "free";
 };
 // ──────────────────────────────────────────────────────────
 

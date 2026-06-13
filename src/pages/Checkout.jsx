@@ -6,9 +6,10 @@ import { processPayment, saveUserPlan } from "../services/paymentService";
 import useNotifications from "../context/useNotifications";
 import { NOTIF_TYPES } from "../context/NotificationContext";
 import Sidebar from "../components/Dashboard/Sidebar";
-
+import { useAuth } from "../context/useAuth";
 
 const Checkout = () => {
+  const { user } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
   const { addNotification } = useNotifications();
@@ -84,7 +85,7 @@ const Checkout = () => {
         billing: plan.billing,
       });
 
-      saveUserPlan(plan.name); // saves "Pro" or "Enterprise" to localStorage
+      saveUserPlan(plan.name, user.email); // saves "Pro" or "Enterprise" to localStorage
 
 
       // Success — navigate to success page
@@ -96,6 +97,8 @@ const Checkout = () => {
 
       showToast(`Payment successful! Welcome to ${plan.name}!`, "success");
 
+      // 1. What is saved in localStorage?
+      console.log(localStorage.getItem('zecpath_plan_' + user.email));
       navigate("/app/payment-success", {
         state: { result, plan },
         replace: true, // Prevent going back to checkout after success
