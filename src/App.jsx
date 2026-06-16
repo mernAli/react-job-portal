@@ -28,6 +28,7 @@ const CandidateDashboard = lazy(
 );
 const CandidateAIInsights = lazy(() => import("./pages/candidate/AIInsights")); // ← NEW
 const VideoInterview = lazy(() => import("./pages/candidate/VideoInterview"));
+const MachineTest = lazy(() => import("./pages/candidate/MachineTest"));
 
 // Employer pages
 const PostJob = lazy(() => import("./pages/employer/PostJob"));
@@ -131,6 +132,15 @@ function App() {
                       element={
                         <RoleRoute allowedRoles={["candidate", "admin"]}>
                           <VideoInterview />
+                        </RoleRoute>
+                      }
+                    />
+
+                    <Route
+                      path="machine-test"
+                      element={
+                        <RoleRoute allowedRoles={["candidate", "admin"]}>
+                          <MachineTest />
                         </RoleRoute>
                       }
                     />

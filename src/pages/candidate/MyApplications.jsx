@@ -8,7 +8,7 @@ import { useToast } from "../../ui/toast/useToast";
 import {
   fetchMyApplications,
   withdrawApplication,
-  fetchCandidateInterviewDetails,   // ← NEW
+  fetchCandidateInterviewDetails,
 } from "../../services/JobService";
 import useCache from "../../hooks/useCache";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
@@ -18,7 +18,7 @@ const CACHE_KEY = "my-applications";
 
 // ─────────────────────────────────────────────────────────
 // Interview Details Modal
-// Shows full job + schedule info and a "Join Interview" CTA
+// Shows full job + schedule info and dual options for AI & Coding
 // ─────────────────────────────────────────────────────────
 const InterviewDetailsModal = ({ application, onClose, theme }) => {
   const navigate = useNavigate();
@@ -48,9 +48,16 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleJoin = () => {
+  // Option 1: AI Video Interview Navigation
+  const handleJoinAIInterview = () => {
     onClose();
     navigate("/app/video-interview");
+  };
+
+  // Option 2: Machine Coding Test Navigation
+  const handleStartMachineTest = () => {
+    onClose();
+    navigate("/app/machine-test");
   };
 
   // Platform icon helper
@@ -61,13 +68,13 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
     return "🟢"; // Google Meet default
   };
 
-  // Status colour helper  — reuses your existing theme tokens
+  // Status colour helper
   const statusStyle = (status) => {
     switch (status) {
       case "Confirmed":  return `${theme.successBg} ${theme.successText}`;
       case "Cancelled":  return `${theme.dangerBg}  ${theme.dangerText}`;
       case "Completed":  return `${theme.bg}        ${theme.textMuted}`;
-      default:           return `${theme.infoBg}    ${theme.infoText}`;   // Scheduled
+      default:           return `${theme.infoBg}    ${theme.infoText}`; // Scheduled
     }
   };
 
@@ -79,7 +86,6 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
       aria-modal="true"
       aria-labelledby="interview-modal-title"
     >
-
       <LockedFeature
           featureKey="VIDEO_INTERVIEW"
           mode="banner"
@@ -281,23 +287,38 @@ const InterviewDetailsModal = ({ application, onClose, theme }) => {
                 </div>
               )}
 
-              {/* ── CTA buttons ── */}
-              <div className="flex gap-3 pt-1">
+              {/* Divider */}
+              <div className={`border-t ${theme.border}`} />
+
+              {/* ── Responsive Action CTA Layout block ── */}
+              <div className="flex flex-col gap-3 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={handleJoinAIInterview}
+                    className="w-full py-2.5 rounded-xl bg-blue-600 text-white
+                               text-sm font-semibold hover:bg-blue-700
+                               transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    🎥 Start AI Interview
+                  </button>
+                  
+                  <button
+                    onClick={handleStartMachineTest}
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 text-white
+                               text-sm font-semibold hover:bg-emerald-700
+                               transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    💻 Launch Coding Sandbox
+                  </button>
+                </div>
+
                 <button
                   onClick={onClose}
-                  className={`flex-1 py-2.5 rounded-xl border ${theme.border}
+                  className={`w-full py-2.5 rounded-xl border ${theme.border}
                               ${theme.textSecondary} ${theme.hover} text-sm
                               font-medium transition-colors`}
                 >
-                  Close
-                </button>
-                <button
-                  onClick={handleJoin}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white
-                             text-sm font-semibold hover:bg-blue-700
-                             transition-colors flex items-center justify-center gap-2"
-                >
-                  🎥 Join Interview
+                  Close Window
                 </button>
               </div>
             </>
@@ -332,15 +353,13 @@ const MyApplications = () => {
   const [applications,  setApplications]  = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState(null);
-  const [filter,        setFilter]        = useState("all");
+  const [filter,         setFilter]        = useState("all");
   const [withdrawingId, setWithdrawingId] = useState(null);
 
-  // ── NEW: modal state ──
-  const [selectedApp,   setSelectedApp]   = useState(null); // application object | null
+  const [selectedApp,   setSelectedApp]   = useState(null); 
 
   const { getCache, setCache, isFresh, invalidate } = useCache(60000);
 
-  // ── Load applications with cache ──────────────────────
   const loadApplications = useCallback(
     async (forceRefresh = false) => {
       if (!forceRefresh && isFresh(CACHE_KEY)) {
@@ -369,7 +388,6 @@ const MyApplications = () => {
   useEffect(() => { loadApplications(); }, []);
   useAutoRefresh(() => loadApplications(true), 60000);
 
-  // ── Optimistic Withdraw ───────────────────────────────
   const handleWithdraw = useCallback(
     async (applicationId) => {
       const originalApplications = applications;
@@ -391,7 +409,6 @@ const MyApplications = () => {
     [applications, invalidate, showToast]
   );
 
-  // ── Filter logic ──────────────────────────────────────
   const filteredApplications =
     filter === "all"
       ? applications
@@ -399,7 +416,6 @@ const MyApplications = () => {
           app.status.toLowerCase().includes(filter)
         );
 
-  // ── Loading / error states ────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -415,7 +431,6 @@ const MyApplications = () => {
     <div className="space-y-6">
       <Sidebar />
 
-      {/* Interview Details Modal */}
       {selectedApp && (
         <InterviewDetailsModal
           application={selectedApp}
@@ -437,31 +452,11 @@ const MyApplications = () => {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          {
-            label: "Total",
-            value: applications.length,
-            color: theme.textPrimary,
-          },
-          {
-            label: "Under Review",
-            value: applications.filter((a) => a.status === "Under Review").length,
-            color: theme.warningText,
-          },
-          {
-            label: "Interviews",
-            value: applications.filter((a) => a.status === "Interview Scheduled").length,
-            color: theme.infoText,
-          },
-          {
-            label: "Offers",
-            value: applications.filter((a) => a.status === "Offer Received").length,
-            color: theme.successText,
-          },
-          {
-            label: "Rejected",
-            value: applications.filter((a) => a.status === "Rejected").length,
-            color: theme.dangerText,
-          },
+          { label: "Total", value: applications.length, color: theme.textPrimary },
+          { label: "Under Review", value: applications.filter((a) => a.status === "Under Review").length, color: theme.warningText },
+          { label: "Interviews", value: applications.filter((a) => a.status === "Interview Scheduled").length, color: theme.infoText },
+          { label: "Offers", value: applications.filter((a) => a.status === "Offer Received").length, color: theme.successText },
+          { label: "Rejected", value: applications.filter((a) => a.status === "Rejected").length, color: theme.dangerText },
         ].map(({ label, value, color }) => (
           <div
             key={label}
@@ -509,8 +504,6 @@ const MyApplications = () => {
             }`}
           >
             <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
-
-              {/* ── Left: job info ── */}
               <div className="flex-1">
                 <h3 className={`text-lg font-semibold ${theme.textPrimary}`}>
                   {application.jobTitle}
@@ -527,8 +520,6 @@ const MyApplications = () => {
                   <span>📅 Applied: {application.appliedDate}</span>
                 </div>
 
-                {/* ── NEW: interview date/time chip ── */}
-                {/* Shown only on cards whose status is "Interview Scheduled"  */}
                 {application.status === "Interview Scheduled" && (
                   <div className="mt-3">
                     <InterviewScheduleChip
@@ -539,7 +530,6 @@ const MyApplications = () => {
                 )}
               </div>
 
-              {/* ── Right: status badge + action buttons ── */}
               <div className="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto">
                 <span
                   className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -556,7 +546,6 @@ const MyApplications = () => {
                 </span>
 
                 <div className="flex gap-2 w-full lg:w-auto">
-                  {/* ── UPDATED: "View Details" now opens modal ── */}
                   <button
                     onClick={() => setSelectedApp(application)}
                     className={`flex-1 lg:flex-none px-3 py-1.5 text-sm
@@ -587,20 +576,12 @@ const MyApplications = () => {
         ))}
       </div>
 
-      {/* Empty State */}
       {filteredApplications.length === 0 && (
-        <div
-          className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border
-                      text-center`}
-        >
+        <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
           <div className="text-4xl mb-3">📋</div>
-          <p className={`${theme.textPrimary} font-medium mb-1`}>
-            No applications found
-          </p>
+          <p className={`${theme.textPrimary} font-medium mb-1`}>No applications found</p>
           <p className={`${theme.textMuted} text-sm`}>
-            {filter === "all"
-              ? "You haven't applied to any jobs yet."
-              : "No applications match this filter."}
+            {filter === "all" ? "You haven't applied to any jobs yet." : "No applications match this filter."}
           </p>
         </div>
       )}
@@ -612,10 +593,6 @@ export default MyApplications;
 
 // ─────────────────────────────────────────────────────────
 // InterviewScheduleChip
-// Small inline chip that fetches + shows date/time for one
-// "Interview Scheduled" application card.
-// Kept outside MyApplications so it has its own loading state
-// without blocking the parent list render.
 // ─────────────────────────────────────────────────────────
 const InterviewScheduleChip = ({ applicationId, theme }) => {
   const [info,    setInfo]    = useState(null);
@@ -635,10 +612,7 @@ const InterviewScheduleChip = ({ applicationId, theme }) => {
         className={`inline-flex items-center gap-1.5 text-xs ${theme.textMuted}
                     ${theme.bg} px-3 py-1 rounded-full ${theme.border} border`}
       >
-        <span
-          className="w-3 h-3 border border-current border-t-transparent
-                     rounded-full animate-spin"
-        />
+        <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
         Loading schedule…
       </span>
     );
