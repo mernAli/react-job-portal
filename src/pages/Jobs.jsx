@@ -9,6 +9,8 @@ import PreferencesModal from "../components/Jobs/PreferencesModal";
 import { useNavigate } from "react-router-dom";
 import useCache from "../hooks/useCache";
 import useAutoRefresh from "../hooks/useAutoRefresh";
+import {usePageTransition} from "../components/ui/PageWrapper.jsx";
+
 
 // Cache key — shared with BrowseJobs so both pages use the same cached data
 const JOBS_CACHE_KEY = "browse-jobs";
@@ -26,6 +28,8 @@ const Jobs = () => {
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   // Cache hook — 60 second TTL, same key as BrowseJobs
   const { getCache, setCache, isFresh, invalidate } = useCache(60000);
@@ -274,7 +278,7 @@ const Jobs = () => {
   }
 
   return (
-    <div className={`min-h-screen lg:pb-0 w-70 lg:w-200 sm:w-160 ${theme.bg}`}>
+    <div ref={transitionRef} className={`min-h-screen lg:pb-0 w-70 lg:w-200 sm:w-160 ${theme.bg}`}>
       {/* Desktop Sidebar */}
       <SideBarJobs onPreferencesClick={() => setIsPreferencesOpen(true)} />
 

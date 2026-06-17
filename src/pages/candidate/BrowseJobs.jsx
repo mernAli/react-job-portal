@@ -13,6 +13,8 @@ import useNotifications from "../../context/useNotifications.js";
 import { NOTIF_TYPES } from "../../context/NotificationContext.jsx";
 import useCache from "../../hooks/useCache.js";
 import useAutoRefresh from "../../hooks/useAutoRefresh.js";
+import {usePageTransition} from "../../components/ui/PageWrapper.jsx";
+import EmptyState from "../../components/ui/EmptyState.jsx";
 
 // Cache key for jobs data
 const JOBS_CACHE_KEY = "browse-jobs";
@@ -26,6 +28,8 @@ const BrowseJobs = () => {
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const { showToast } = useToast();
   const { addNotification } = useNotifications();
+
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   // Cache hook — jobs stay fresh for 60 seconds
   const { getCache, setCache, isFresh, invalidate } = useCache(60000);
@@ -192,7 +196,8 @@ const BrowseJobs = () => {
   }
 
   return (
-    <div>
+    
+    <div ref={transitionRef}>
       <SidebarJobs />
 
       {/* Header */}
@@ -322,7 +327,7 @@ const BrowseJobs = () => {
           </div>
 
           {/* Empty State */}
-          {sortedJobs.length === 0 && (
+          {/* {sortedJobs.length === 0 && (
             <div className={`${theme.cardBg} p-12 rounded-xl ${theme.border} border text-center`}>
               <div className="text-5xl mb-4">🔍</div>
               <h3 className={`text-lg font-semibold ${theme.textPrimary} mb-2`}>No jobs found</h3>
@@ -340,6 +345,15 @@ const BrowseJobs = () => {
                 Clear All Filters
               </button>
             </div>
+          )} */}
+
+          {sortedJobs.length === 0 && (
+            <EmptyState 
+              message="No jobs found matching your search"
+              description="Try altering your search keywords, broadening your location criteria, or clearing selected filters."
+              buttonText="Clear All Filters"
+              onButtonClick={resetFilters}
+            />
           )}
 
           {/* Pagination Controls */}
@@ -399,6 +413,7 @@ const BrowseJobs = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 
