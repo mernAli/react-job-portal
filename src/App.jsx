@@ -80,221 +80,223 @@ function App() {
         <ToastProvider>
           <BrowserRouter>
             <AuthProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  {/* Public */}
-                  <Route path="/" element={<Landing />} />
+              
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    {/* Public */}
+                    <Route path="/" element={<Landing />} />
 
-                  {/* Auth pages */}
-                  <Route element={<AuthLayout />}>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                  </Route>
+                    {/* Auth pages */}
+                    <Route element={<AuthLayout />}>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                    </Route>
 
-                  {/* Protected Routes */}
-                  <Route
-                    path="/app"
-                    element={
-                      <PrivateRoute>
-                        <AppLayout />
-                      </PrivateRoute>
-                    }
-                  >
-                    <Route index element={<Home />} />
-                    <Route path="home" element={<Home />} />
-                    <Route path="jobs" element={<Jobs />} />
-                    <Route path="jobs/:jobId" element={<JobDetails />} />
-                    <Route path="network" element={<Network />} />
-                    <Route path="notifications" element={<Notification />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="ui-demo" element={<UIDemo />} />
+                    {/* Protected Routes */}
+                    <Route
+                      path="/app"
+                      element={
+                        <PrivateRoute>
+                          <AppLayout />
+                        </PrivateRoute>
+                      }
+                    >
+                      <Route index element={<Home />} />
+                      <Route path="home" element={<Home />} />
+                      <Route path="jobs" element={<Jobs />} />
+                      <Route path="jobs/:jobId" element={<JobDetails />} />
+                      <Route path="network" element={<Network />} />
+                      <Route path="notifications" element={<Notification />} />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="ui-demo" element={<UIDemo />} />
 
-                    {/* Candidate specific */}
-                    <Route
-                      path="browse-jobs"
-                      element={
-                        <RoleRoute allowedRoles={["admin", "candidate"]}>
-                          <BrowseJobs />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="my-applications"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <MyApplications />
-                        </RoleRoute>
-                      }
-                    />
+                      {/* Candidate specific */}
+                      <Route
+                        path="browse-jobs"
+                        element={
+                          <RoleRoute allowedRoles={["admin", "candidate"]}>
+                            <BrowseJobs />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="my-applications"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <MyApplications />
+                          </RoleRoute>
+                        }
+                      />
 
-                    <Route
-                      path="video-interview"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <VideoInterview />
-                        </RoleRoute>
-                      }
-                    />
+                      <Route
+                        path="video-interview"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <VideoInterview />
+                          </RoleRoute>
+                        }
+                      />
 
-                    <Route
-                      path="machine-test"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <MachineTest />
-                        </RoleRoute>
-                      }
-                    />
-                    {/* ── Candidate AI Insights ── NEW */}
-                    <Route
-                      path="candidate-ai-insights"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <CandidateAIInsights />
-                        </RoleRoute>
-                      }
-                    />
+                      <Route
+                        path="machine-test"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <MachineTest />
+                          </RoleRoute>
+                        }
+                      />
+                      {/* ── Candidate AI Insights ── NEW */}
+                      <Route
+                        path="candidate-ai-insights"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <CandidateAIInsights />
+                          </RoleRoute>
+                        }
+                      />
 
-                    {/* Employer specific */}
-                    <Route
-                      path="post-job"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <PostJob />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="my-jobs"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <MyJobs />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="applications"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <Applications />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="employer-analytics"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <EmployerAnalytics />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="interview-scheduler"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <InterviewScheduler />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="recruiter-review"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <RecruiterReview />
-                        </RoleRoute>
-                      }
-                    />
-                    {/* ── Employer AI Insights ── NEW */}
-                    <Route
-                      path="employer-ai-insights"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <EmployerAIInsights />
-                        </RoleRoute>
-                      }
-                    />
+                      {/* Employer specific */}
+                      <Route
+                        path="post-job"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <PostJob />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="my-jobs"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <MyJobs />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="applications"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <Applications />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="employer-analytics"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <EmployerAnalytics />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="interview-scheduler"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <InterviewScheduler />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="recruiter-review"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <RecruiterReview />
+                          </RoleRoute>
+                        }
+                      />
+                      {/* ── Employer AI Insights ── NEW */}
+                      <Route
+                        path="employer-ai-insights"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <EmployerAIInsights />
+                          </RoleRoute>
+                        }
+                      />
 
-                    {/* Dashboard pages */}
-                    <Route
-                      path="employer-dashboard"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <EmployerDashboard />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="candidate-dashboard"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <CandidateDashboard />
-                        </RoleRoute>
-                      }
-                    />
+                      {/* Dashboard pages */}
+                      <Route
+                        path="employer-dashboard"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <EmployerDashboard />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="candidate-dashboard"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <CandidateDashboard />
+                          </RoleRoute>
+                        }
+                      />
 
-                    {/* Admin only */}
-                    <Route
-                      path="admin-dashboard"
-                      element={
-                        <RoleRoute allowedRoles={["admin"]}>
-                          <AdminDashboard />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="admin/users"
-                      element={
-                        <RoleRoute allowedRoles={["admin"]}>
-                          <AdminUsers />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="admin/jobs"
-                      element={
-                        <RoleRoute allowedRoles={["admin"]}>
-                          <AdminJobs />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="admin/analytics"
-                      element={
-                        <RoleRoute allowedRoles={["admin"]}>
-                          <AdminAnalytics />
-                        </RoleRoute>
-                      }
-                    />
+                      {/* Admin only */}
+                      <Route
+                        path="admin-dashboard"
+                        element={
+                          <RoleRoute allowedRoles={["admin"]}>
+                            <AdminDashboard />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="admin/users"
+                        element={
+                          <RoleRoute allowedRoles={["admin"]}>
+                            <AdminUsers />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="admin/jobs"
+                        element={
+                          <RoleRoute allowedRoles={["admin"]}>
+                            <AdminJobs />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="admin/analytics"
+                        element={
+                          <RoleRoute allowedRoles={["admin"]}>
+                            <AdminAnalytics />
+                          </RoleRoute>
+                        }
+                      />
 
-                    {/* Payment pages */}
-                    <Route
-                      path="employer-pricing"
-                      element={
-                        <RoleRoute allowedRoles={["employer", "admin"]}>
-                          <EmployerPricing />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route
-                      path="candidate-pricing"
-                      element={
-                        <RoleRoute allowedRoles={["candidate", "admin"]}>
-                          <CandidatePricing />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route path="checkout" element={<Checkout />} />
-                    <Route
-                      path="payment-success"
-                      element={<PaymentSuccess />}
-                    />
-                  </Route>
+                      {/* Payment pages */}
+                      <Route
+                        path="employer-pricing"
+                        element={
+                          <RoleRoute allowedRoles={["employer", "admin"]}>
+                            <EmployerPricing />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route
+                        path="candidate-pricing"
+                        element={
+                          <RoleRoute allowedRoles={["candidate", "admin"]}>
+                            <CandidatePricing />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route path="checkout" element={<Checkout />} />
+                      <Route
+                        path="payment-success"
+                        element={<PaymentSuccess />}
+                      />
+                    </Route>
 
-                  {/* Unauthorized */}
-                  <Route path="/unauthorized" element={<Unauthorized />} />
-                  {/* 404 */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+                    {/* Unauthorized */}
+                    <Route path="/unauthorized" element={<Unauthorized />} />
+                    {/* 404 */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              
             </AuthProvider>
           </BrowserRouter>
         </ToastProvider>

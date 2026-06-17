@@ -42,7 +42,7 @@ const handleCardClick = () => {
 
   return (
     <div
-      className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border ${theme.hover} transition-all cursor-pointer`}
+      className={`${theme.cardBg} p-4 md:p-6 rounded-xl ${theme.border} border ${theme.hover} transition-all cursor-pointer duration-200 ease-out hover:-translate-y-1 hover:shadow-lg`}
       onClick={handleCardClick}
     >
       {/* Header */}
@@ -139,7 +139,7 @@ const handleCardClick = () => {
           <button
             onClick={handleApplyClick}
             disabled={isApplied}
-            className={`flex-1 sm:flex-none px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm`}
+            className={`flex-1 sm:flex-none px-6 py-2 ${theme.primary} text-white rounded-lg ${theme.primaryHover} font-medium text-sm transition-transform duration-100 active:scale-95`}
           >
             {isApplied ? "✓ Applied" : "Apply Now"}
           </button>

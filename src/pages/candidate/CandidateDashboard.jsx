@@ -15,6 +15,8 @@ import { SectionErrorBoundary } from "../../components/ErrorBoundary.jsx";
 import { useNavigate } from "react-router-dom";
 import LiveActivityFeed from "../../components/Dashboard/LiveActivityFeed";
 import LockedFeature from "../../components/LockedFeature.jsx";
+import {usePageTransition} from "../../components/ui/PageWrapper.jsx";
+
 
 // Mini score ring for dashboard preview
 const MiniScoreRing = ({ score, size = 80, strokeWidth = 7 }) => {
@@ -43,6 +45,8 @@ const CandidateDashboard = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
+
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   const [stats, setStats]                           = useState([]);
   const [recentApplications, setRecentApplications] = useState([]);
@@ -115,11 +119,12 @@ const CandidateDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    
+      <div  className="space-y-6">
       <Sidebar />
 
       {/* Welcome Header */}
-      <div className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
+      <div ref={transitionRef} className={`${theme.cardBg} p-6 rounded-xl ${theme.border} border`}>
         <h1 className={`text-2xl font-bold ${theme.textPrimary}`}>
           Welcome back, {user?.name}! 👋
         </h1>
@@ -324,6 +329,9 @@ const CandidateDashboard = () => {
 
       </div>
     </div>
+    
+
+  
   );
 };
 

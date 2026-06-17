@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Dashboard/Sidebar";
+import { usePageTransition } from "../components/ui/PageWrapper.jsx";
 
 const homeJobFeed = [
   {
@@ -42,6 +43,8 @@ const Home = () => {
   const [followedUsers, setFollowedUsers] = useState([]);
   const [showAllMessages, setShowAllMessages] = useState(false);
   const [showAllNews, setShowAllNews] = useState(false);
+
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   const [feed, setFeed] = useState(() =>
     homeJobFeed.map((job) => ({
@@ -87,7 +90,7 @@ const Home = () => {
 
   // Reusable panels to avoid duplication between mobile and desktop
   const MessagesPanel = () => (
-    <div className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}>
+    <div ref={transitionRef} className={`bg-white rounded-xl ${theme.shadow} overflow-hidden`}>
       <div className="p-4 flex items-center gap-2">
         <svg className="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
           <path

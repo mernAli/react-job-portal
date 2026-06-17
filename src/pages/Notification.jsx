@@ -2,10 +2,13 @@ import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Dashboard/Sidebar";
 import useNotifications from "../context/useNotifications";
 import { getNotifStyle } from "../context/NotificationContext";
+import { usePageTransition } from "../components/ui/PageWrapper";
 
 const Notification = () => {
   const { theme } = useTheme();
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotifications();
+
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   const getTimeAgo = (isoString) => {
     const diff = Date.now() - new Date(isoString).getTime();
@@ -23,7 +26,7 @@ const Notification = () => {
       <Sidebar />
 
       {/* Mobile Header — UNCHANGED */}
-      <div className={`lg:hidden p-4`}>
+      <div ref={transitionRef} className={`lg:hidden p-4`}>
         <h1 className="text-white text-lg font-semibold">Notifications</h1>
       </div>
 

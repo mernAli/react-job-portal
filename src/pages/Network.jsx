@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Dashboard/Sidebar";
+import { usePageTransition } from "../components/ui/PageWrapper.jsx";
 
 const Network = () => {
   const { theme } = useTheme();
+  const transitionRef = usePageTransition(); // Use the custom hook for page transition
 
   // Mock data for connection suggestions
   const [connections] = useState([
@@ -83,11 +85,11 @@ const Network = () => {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row lg:gap-6">
+    <div  className="min-h-screen flex flex-col lg:flex-row lg:gap-6">
       <Sidebar /> 
 
       {/* Main Content */}
-      <div className="flex-1 pb-20 lg:pb-0 ">
+      <div ref={transitionRef} className="flex-1 pb-20 lg:pb-0 ">
         <div className="space-y-6 px-4 py-4 lg:px-0 lg:py-0">
           {/* People in Similar Roles */}
           <div>
