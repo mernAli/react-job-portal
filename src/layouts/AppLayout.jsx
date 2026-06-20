@@ -8,6 +8,7 @@ import { useAuth } from "../context/useAuth";
 import { useToast } from "../ui/toast/useToast";
 import useSessionTimeout from "../hooks/useSessionTimeout";
 import { clearAuth } from "../utils/auth";
+import SkipLink from "../components/ui/SkipLink";
 
 const AppLayout = () => {
   const { theme } = useTheme();
@@ -56,6 +57,10 @@ const AppLayout = () => {
     <div className={`flex min-h-screen ${theme.bg}`}>
       {/* Sidebar - Desktop Only */}
       {/* <Sidebar /> */}
+
+      
+      {/* 🌟 PLACE SKIP LINK AT THE VERY TOP OF THE APP TREE */}
+      <SkipLink />
 
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col">

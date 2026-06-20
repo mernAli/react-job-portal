@@ -26,17 +26,38 @@ const FilterSection = memo(({ title, children, theme }) => (
 ));
 FilterSection.displayName = "FilterSection";
 
-const Checkbox = memo(({ label, checked, onChange, theme }) => (
-  <label className="flex items-center gap-2 mb-2 cursor-pointer">
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={onChange}
-      className={`w-4 h-4 rounded ${theme.primary}`}
-    />
-    <span className={`text-sm ${theme.textSecondary}`}>{label}</span>
-  </label>
-));
+// 🌟 ACCESSIBILITY UPGRADE: Keyboard-navigable & screen-reader-ready checkbox items
+const Checkbox = memo(({ label, checked, onChange, theme }) => {
+  // Capture keyboard interactions to toggle checkbox states natively
+  const handleKeyDown = (e) => {
+    if (e.key === " " || e.key === "Enter") {
+      e.preventDefault(); // Stop default webpage scroll behavior on Spacebar press
+      onChange();
+    }
+  };
+
+  return (
+    <label 
+      className={`flex items-center gap-2 mb-2 cursor-pointer rounded-md p-1 p-x-2 outline-none transition-all duration-100 
+        /* 🌟 Highlight parent container cleanly when focused via tab traversal */
+        focus-visible:ring-2 focus-visible:ring-blue-500/40`}
+      tabIndex={0} // Allows keyboard focus on the label container block
+      role="checkbox"
+      aria-checked={checked}
+      onKeyDown={handleKeyDown}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        tabIndex={-1} // Prevents redundant inner-element focus double tabs
+        aria-hidden="true" // Screen reader relies entirely on the parent label's ARIA state
+        className={`w-4 h-4 rounded ${theme.primary} focus:ring-0 focus:outline-none pointer-events-none`}
+      />
+      <span className={`text-sm ${theme.textSecondary}`}>{label}</span>
+    </label>
+  );
+});
 Checkbox.displayName = "Checkbox";
 
 // ✅ memo on FilterPanel — only re-renders when filters or callbacks change
@@ -44,7 +65,11 @@ const FilterPanel = memo(({ filters, onFilterChange, onToggleArray, onReset }) =
   const { theme } = useTheme();
 
   return (
-    <div className={`${theme.cardBg} rounded-xl ${theme.border} border p-4 md:p-6 sticky top-20`}>
+    <div 
+      role="search" // 🌟 Semantically registers this panel as a search/filtering subsystem
+      aria-label="Job exploration filters"
+      className={`${theme.cardBg} rounded-xl ${theme.border} border p-4 md:p-6 sticky top-20`}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className={`text-lg font-bold ${theme.textPrimary}`}>Filters</h2>
       </div>
@@ -52,10 +77,13 @@ const FilterPanel = memo(({ filters, onFilterChange, onToggleArray, onReset }) =
       <FilterSection title="Location" theme={theme}>
         <input
           type="text"
+          aria-label="Filter vacancies by geographical location" // 🌟 Provides clear input identification context
           placeholder="Search location..."
           value={filters.location}
           onChange={(e) => onFilterChange("location", e.target.value)}
-          className={`w-full px-3 py-2 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} text-sm outline-none ${theme.focus}`}
+          className={`w-full px-3 py-2 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} text-sm outline-none transition-all 
+            /* 🌟 Premium focus rings that honor the existing design theme configurations */
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent`}
         />
       </FilterSection>
 
@@ -100,8 +128,11 @@ const FilterPanel = memo(({ filters, onFilterChange, onToggleArray, onReset }) =
       <FilterSection title="Salary Range" theme={theme}>
         <select
           value={filters.salary}
+          aria-label="Select target annual salary range" // 🌟 Structural context for screen readers
           onChange={(e) => onFilterChange("salary", e.target.value)}
-          className={`w-full px-3 py-2 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} text-sm outline-none ${theme.focus}`}
+          className={`w-full px-3 py-2 rounded-lg ${theme.border} border ${theme.cardBg} ${theme.textPrimary} text-sm outline-none transition-all 
+            /* 🌟 Premium native dropdown element focus target profiles */
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent`}
         >
           {SALARY_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
@@ -112,7 +143,9 @@ const FilterPanel = memo(({ filters, onFilterChange, onToggleArray, onReset }) =
       <div className="space-y-2 pt-4 border-t">
         <button
           onClick={onReset}
-          className={`w-full py-2 ${theme.border} border rounded-lg ${theme.hover} font-medium text-sm`}
+          aria-label="Clear all current search filter parameters" // 🌟 Clear textual intent translation
+          className={`w-full py-2 ${theme.border} border rounded-lg ${theme.hover} font-medium text-sm transition-all duration-100
+            active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
         >
           Reset All
         </button>
